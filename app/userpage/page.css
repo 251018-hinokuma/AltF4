@@ -1,0 +1,243 @@
+.container{
+
+    width:100%;
+    height:100vh;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+/* 背景 */
+
+.sky{
+
+    position:absolute;
+
+    inset:0;
+
+    background:linear-gradient(
+        to bottom,
+        #63b8ff,
+        #bfe8ff
+    );
+
+}
+
+.mountain{
+
+    position:absolute;
+
+    bottom:140px;
+
+    width:100%;
+
+    height:170px;
+
+    background:#6e7d63;
+
+    clip-path:polygon(
+        0 100%,
+        18% 35%,
+        40% 80%,
+        55% 20%,
+        72% 75%,
+        85% 30%,
+        100% 100%
+    );
+
+}
+
+.forest{
+
+    position:absolute;
+
+    bottom:100px;
+
+    width:100%;
+
+    height:90px;
+
+    background:#2c6b35;
+
+}
+
+.ground{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+
+    height:100px;
+
+    background:#775236;
+
+    border-top:10px solid #42b442;
+
+}
+.window{
+
+    position:absolute;
+
+    top:60px;
+    left: 200px;
+    right:200px;
+    bottom:60px;
+
+    background:rgba(0,0,0,.82);
+
+    border:4px solid white;
+
+    border-radius:20px;
+
+    padding:35px;
+
+    z-index:10;
+
+}
+
+/* 全体 */
+
+.screen{
+
+    position:relative;
+
+    z-index:2;
+
+    padding:30px;
+
+}
+
+/* 戻る */
+
+.back{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:22px;
+
+    text-shadow:2px 2px black;
+
+}
+
+/* プロフィール */
+
+.profile{
+
+    margin-top:30px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:40px;
+
+}
+
+/* 情報 */
+
+.info{
+
+    flex:1;
+
+    border:3px solid white;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    color:white;
+
+    background:rgba(0,0,0,.82);
+
+}
+
+.info h2{
+
+    margin-bottom:15px;
+
+}
+
+.info h3{
+
+    margin-bottom:20px;
+
+}
+
+.hpBar{
+
+    width:320px;
+
+    height:18px;
+
+    border:2px solid white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+.hp{
+
+    width:100%;
+
+    height:100%;
+
+    background:#ff2d2d;
+
+}
+
+/* メニュー */
+.menuBox{
+
+    margin-top:40px;
+
+    border:3px solid white;
+
+    border-radius:15px;
+
+    background:rgba(0,0,0,.82);
+
+    padding:30px;
+
+    
+
+}
+
+.menu{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:25px;
+
+}
+
+.menuItem{
+
+    color:white;
+
+    font-size:30px;
+
+    text-decoration:none;
+
+    width:max-content;
+
+    transition:.2s;
+
+}
+
+.menuItem:hover{
+
+    color:#ffe55d;
+
+    transform:translateX(10px);
+
+}

@@ -1,0 +1,201 @@
+.container{
+    position:relative;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
+}
+
+/* 空 */
+
+.sky{
+    position:absolute;
+    inset:0;
+
+    background:
+    linear-gradient(
+        to bottom,
+        #63b8ff 0%,
+        #9fdcff 55%,
+        #dff7ff 100%
+    );
+}
+
+/* 雲 */
+
+.cloud1,
+.cloud2{
+
+    position:absolute;
+
+    width:180px;
+    height:60px;
+
+    background:white;
+
+    border-radius:50px;
+
+    opacity:.8;
+}
+
+.cloud1{
+
+    top:90px;
+    left:15%;
+}
+
+.cloud2{
+
+    top:180px;
+    right:18%;
+}
+
+/* 山 */
+
+.mountain{
+
+    position:absolute;
+
+    bottom:150px;
+
+    width:100%;
+    height:180px;
+
+    background:#7d8c6a;
+
+    clip-path:polygon(
+        0 100%,
+        15% 40%,
+        28% 80%,
+        45% 25%,
+        60% 75%,
+        75% 30%,
+        100% 100%
+    );
+}
+
+/* 森 */
+
+.forest{
+
+    position:absolute;
+
+    bottom:110px;
+
+    width:100%;
+    height:100px;
+
+    background:#2d6b35;
+}
+
+/* 地面 */
+
+.ground{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+    height:110px;
+
+    background:#7b5131;
+
+    border-top:10px solid #44af44;
+}
+
+/* ユーザー */
+
+.userBox{
+
+    position:absolute;
+
+    top:30px;
+    left:30px;
+
+    padding:12px 22px;
+
+    background:rgba(0,0,0,.45);
+
+    color:white;
+
+    border:2px solid #d6b66d;
+
+    border-radius:10px;
+
+    z-index:2;
+}
+
+/* メニュー */
+
+.menupage{
+
+    position:absolute;
+
+    top:50%;
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:20px;
+
+    z-index:2;
+}
+
+/* タイトル */
+
+.title{
+
+    font-size:64px;
+
+    color:white;
+
+    text-shadow:
+        3px 3px #315d1c,
+        5px 5px #1c3810;
+}
+
+.subTitle{
+
+    margin-bottom:30px;
+
+    color:white;
+
+    font-size:18px;
+}
+
+/* ボタン */
+
+.button{
+
+    width:280px;
+
+    padding:16px;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    color:#fff;
+
+    font-size:20px;
+
+    background:#8b5a2b;
+
+    border:4px solid #5d3818;
+
+    border-radius:12px;
+
+    transition:.2s;
+}
+
+.button:hover{
+
+    background:#a56c34;
+
+    transform:translateY(-2px);
+}
