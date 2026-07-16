@@ -1,0 +1,225 @@
+/* 全体コンテナ */
+.container {
+    width: 900px;
+    margin: 30px auto;
+    border: 2px solid black;
+    box-sizing: border-box; /* 境界線を含めたサイズ計算にする */
+}
+
+/* すべての子要素に box-sizing を適用 */
+.container *, .container *::before, .container *::after {
+    box-sizing: border-box;
+}
+
+/*==========================
+  ヘッダー
+==========================*/
+
+.header {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    border-bottom: 2px solid black;
+}
+
+
+/*==========================
+  マーキング
+==========================*/
+
+.markArea {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 180px;
+    height: 100%;
+    border-right: 2px solid black;
+}
+
+.markText {
+    font-size: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.starButton {
+    border: none;
+    background: white;
+    font-size: 36px;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.starButton:hover {
+    transform: scale(1.15);
+}
+
+.starButton:active {
+    transform: scale(0.95);
+}
+
+
+/*==========================
+  正解表示
+==========================*/
+
+.result {
+    flex: 1; /* 残りのスペースを埋める（中央に配置される） */
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black; /* 右側の境界線 */
+}
+
+
+/*==========================
+  HP
+==========================*/
+
+.hp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 110px; /* 画像の比率に合わせた幅 */
+    height: 100%;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black; /* 右側の境界線 */
+}
+
+
+/*==========================
+  経過時間
+==========================*/
+
+.timerArea {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 200px; /* 画像の「経過時間」エリアの幅 */
+    height: 100%;
+}
+
+.timerTitle {
+    display: flex;
+    justify-content: center; /* 中央寄せ */
+    align-items: center;
+    height: 35px;
+    border-bottom: 2px solid black; /* 下の境界線 */
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.timer {
+    display: flex;
+    justify-content: center; /* 中央寄せ */
+    align-items: center;
+    flex: 1;
+    font-size: 24px;
+    letter-spacing: 2px; /* 数字に少し隙間を持たせる */
+}
+
+
+/*==========================
+  問題文
+==========================*/
+
+.question {
+    height: 180px;
+    border-bottom: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    text-align: center;
+    padding: 20px;
+}
+
+
+/*==========================
+  選択肢一覧
+==========================*/
+
+.answerArea {
+    width: 100%;
+}
+
+.answerRow {
+    display: grid;
+    /* 画像の「1」「選択文」「説明」の比率（70px, 90px, 残り） */
+    grid-template-columns: 70px 90px 1fr; 
+     border-bottom: 2px solid black;
+}
+
+.answerRow:not(:last-child) {
+    border-bottom: 2px solid black;
+}
+
+.choiceNo,
+.choiceText,
+.explanation {
+    min-height: 68px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    padding: 10px;
+}
+
+.choiceNo {
+    border-right: 2px solid black;
+}
+
+.choiceText {
+    border-right: 2px solid black;
+}
+
+
+/*==========================
+  下部ボタン
+==========================*/
+
+.bottom {
+    display: grid;
+    /* 3つのエリアに分割（左右均等、中央はボタンサイズ200px） */
+    grid-template-columns: 1fr 200px 1fr; 
+    height: 80px;
+    align-items: center;
+}
+
+/* 左側のエリアに右境界線を追加 */
+.bottom::before {
+    content: "";
+    height: 100%;
+    border-right: 2px solid black;
+}
+
+/* 右側のエリアに左境界線を追加 */
+.bottom::after {
+    content: "";
+    height: 100%;
+    border-left: 2px solid black;
+}
+
+.nextButton {
+    grid-column: 2; /* 中央の列にボタンを配置 */
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+    border: none; /* 外枠と干渉するため元々のボタン枠線は除去 */
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nextButton:hover {
+    background: #f5f5f5;
+}
