@@ -1,104 +1,155 @@
+/* 全体コンテナ */
 .container {
     width: 900px;
     margin: 30px auto;
     border: 2px solid black;
+    box-sizing: border-box; 
 }
 
-/* ---------- ヘッダー ---------- */
+.container *, .container *::before, .container *::after {
+    box-sizing: border-box;
+}
 
+/*==========================
+  ヘッダー
+==========================*/
 .header {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    display: flex;
+    align-items: center;
+    height: 80px;
     border-bottom: 2px solid black;
 }
 
-.blank {
+/* （JS側でインラインスタイルを当てている空白エリアも念のため定義） */
+.blankArea {
+    height: 100%;
     border-right: 2px solid black;
 }
 
-.questionCount,
-.hp {
+
+/*==========================
+  【No.3】 問題番号
+==========================*/
+.quiz_now {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-right: 2px solid black;
-    font-size: 22px;
+    width: 120px;
+    height: 100%;
+    font-size: 18px;
     font-weight: bold;
+    border-right: 2px solid black;
 }
 
-.timerArea {
+
+/*==========================
+  【No.4】 HP
+==========================*/
+.quiz_HP {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 110px;
+    height: 100%;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black;
+}
+
+
+/*==========================
+  【No.5】 経過時間
+==========================*/
+.quiz_Time {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    width: 200px; 
+    height: 100%;
 }
 
 .timerTitle {
-    text-align: center;
-    padding: 8px;
-    border-bottom: 2px solid black;
-    font-weight: bold;
-}
-
-.timer {
-    text-align: center;
-    padding: 15px;
-    font-size: 24px;
-}
-
-/* ---------- 問題文 ---------- */
-
-.question {
-    height: 220px;
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 35px;
+    border-bottom: 2px solid black; 
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.timer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+
+/*==========================
+  【No.6】 問題文
+==========================*/
+.quiz_text {
+    height: 180px;
     border-bottom: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 28px;
     text-align: center;
     padding: 20px;
 }
 
-/* ---------- 選択肢 ---------- */
 
+/*==========================
+  選択肢エリア
+==========================*/
 .choiceArea {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-    padding: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
+/* ボタン全体をグリッド化して、解答画面のレイアウト（左70px）に合わせる */
 .choiceButton {
-    display: flex;
-    cursor: pointer;
-    border: none;
+    display: grid;
+    grid-template-columns: 70px 1fr; /* 説明文がないので残りは1fr */
+    width: 100%;
+    min-height: 68px;
     background: white;
+    border: none;
+    border-bottom: 2px solid black;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.choiceButton:last-child {
+    border-bottom: none; /* コンテナ外枠と被らないように最後だけ線を消す */
 }
 
 .choiceButton:hover {
-    transform: scale(1.02);
+    background: #f5f5f5;
 }
 
+/* 選択肢番号 */
 .choiceNumber {
-    width: 70px;
-    height: 70px;
-    border: 2px solid black;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 22px;
+    border-right: 2px solid black;
 }
 
-.choiceText {
-    flex: 1;
-    height: 70px;
-    border: 2px solid black;
-    border-left: none;
-
+/*==========================
+  【No.7】 選択肢テキスト
+==========================*/
+.quiz_choices {
     display: flex;
     justify-content: center;
     align-items: center;
-
     font-size: 22px;
+    padding: 10px;
 }
