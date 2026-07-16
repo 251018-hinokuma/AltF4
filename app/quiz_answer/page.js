@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import "./page.css";
@@ -15,12 +15,25 @@ export default function QuizAnswer() {
   const isCorrect = currentQuiz ? game.selectedAnswer === currentQuiz.answer : false;
   const isMarked = currentQuiz ? game.user.markingQuizIds.includes(currentQuiz.quizId) : false;
 
+  //=========================================
+  // 【★超重要】二重実行防止用のフラグ（useRef）
+  //=========================================
+  const processedRef = useRef(null);
+
   // HP減少と結果（履歴）追加を1回だけ安全に行う
   useEffect(() => {
     if (!currentQuiz) return;
     
     const quizId = currentQuiz.quizId;
-    // 重複実行を防止
+
+    // すでにこの問題の判定処理が終わっている場合は、絶対に処理を通さない
+    if (processedRef.current === quizId) {
+      return;
+    }
+
+    // 処理開始時にフラグを立てる（StrictModeの二重実行を瞬時にブロックします）
+    processedRef.current = quizId;
+
     if (!game.user.resultQuizIds.includes(quizId)) {
       addResultQuiz(quizId);
       if (game.selectedAnswer !== currentQuiz.answer) {
@@ -37,13 +50,9 @@ export default function QuizAnswer() {
     return `${minute}:${second}`;
   }, [game.elapsedTime]);
 
-  //=========================================
-  // 【★新規追加】最終問題、もしくはHPが0かどうかの判定
-  //=========================================
+  // 最終問題、もしくはHPが0かどうかの判定
   const isLastOrDead = useMemo(() => {
-    // 最終問題かどうか
     const isLast = game.currentQuestion >= (game.totalQuestion || game.quizzes?.length || 10);
-    // HPが0以下（戦闘不能）かどうか
     const isDead = game.hp <= 0;
     
     return isLast || isDead;
@@ -58,15 +67,11 @@ export default function QuizAnswer() {
     );
   }
 
-  //=========================================
   // 下部ボタン（次の問題 / 結果へ）クリック処理
-  //=========================================
   const handleNext = () => {
     if (isLastOrDead) {
-      // 最終問題 or HPが0ならリザルト画面へ
       router.push("/quiz_result");
     } else {
-      // 次の問題に進んでQuestion画面へ戻る
       nextQuestion();
       router.push("/quiz_question");
     }
@@ -155,7 +160,7 @@ export default function QuizAnswer() {
       </div>
 
       {/*============================*/}
-      {/* 【★修正】下部ボタンエリア */}
+      {/* 下部ボタンエリア */}
       {/*============================*/}
       <div className="bottom">
         <button className="quiz_move_nextbutton" onClick={handleNext}>
