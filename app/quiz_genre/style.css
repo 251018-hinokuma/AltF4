@@ -1,0 +1,21 @@
+.genreBox {
+  display: flex;
+  text-decoration: none;
+  color: black;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.genreBox:hover {
+  background-color: #f0f0f0;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90px;
+  text-decoration: none;
+  color: black;
+  border: 1px solid black;
+}
