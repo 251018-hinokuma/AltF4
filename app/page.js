@@ -92,7 +92,7 @@ export default function Home() {
 
 
   return (
-    <main className="container">
+    <main className="containerMain">
 
       {/* 背景 */}
       <div className="sky"></div>

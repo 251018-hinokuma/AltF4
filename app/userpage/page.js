@@ -240,7 +240,7 @@ export default function UserPage() {
         }
     };
     return (
-        <main className="container">
+        <main className="containerUser">
             {/* 背景 */}
             <div className="sky"></div>
             <div className="mountain"></div>
@@ -323,7 +323,7 @@ export default function UserPage() {
                 </section>
                 {/*メニュー*/}
                 <div className="menuBox">
-                    <nav className="menu">
+                    <nav className="menuUser">
                         <Link href="/genre_percentage" className="menuItem">
                             ▶ ジャンル別正答率
                         </Link>
