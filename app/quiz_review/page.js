@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import "./page.css";
@@ -9,138 +9,206 @@ export default function QuizReview() {
   const router = useRouter();
   const { game, toggleMarking } = useGame();
 
-  // 復習画面で現在表示している問題のインデックス（0からスタート）
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // 復習画面で何問目を表示しているかのインデックス（0始まり）
+  const [reviewIndex, setReviewIndex] = useState(0);
 
-  // 本来は resultQuizIds を元にDB等から履歴データを取得しますが、
-  // 今回はUIを確認するためのモックデータを用意しています。
-  const resultQuizIds = game.user.resultQuizIds || [1, 2, 3]; 
-  const currentQuizId = resultQuizIds[currentIndex];
+  // 出題された問題リスト
+  const quizzes = game.quizzes || [];
+  const currentQuiz = quizzes[reviewIndex] || null;
 
-  // モック用のクイズデータ（currentQuizId に応じて変化する想定）
-  const mockReviewData = {
-    quizId: currentQuizId,
-    question: `問題ID: ${currentQuizId} の問題文です。JavaScriptで配列を表す記号は？`,
-    isCorrect: currentIndex % 2 !== 0, // モック用（偶数インデックスは不正解、奇数は正解とする）
-    explanations: [
-      { choice: "[]", explanation: "配列は [] を使用します。" },
-      { choice: "{}", explanation: "{} はオブジェクトです。" },
-      { choice: "()", explanation: "() は関数呼び出しなどで使用します。" },
-      { choice: "<>", explanation: "<> は配列ではありません。" }
-    ]
-  };
+  // 問題IDの柔軟な取得（quizId または id）
+  const quizId = currentQuiz ? (currentQuiz.quizId || currentQuiz.id) : null;
+
+  // ジャンルIDの取得
+  const genreId = currentQuiz?.genreId || game.genreId || 1;
+
+  // マーキング状態の取得
+  const isMarked = quizId ? game.user.markingQuizIds.includes(quizId) : false;
+
+  // ユーザーが選択した回答の取得
+  const userAnswer = quizId ? game.userAnswers?.[quizId] : undefined;
 
   //=========================================
-  // 【No.1】マーキングボタン処理
+  // 【★重要】正誤判定ヘルパー関数（型・インデックス変換対応）
   //=========================================
-  const toggleMark = () => {
-    toggleMarking(mockReviewData.quizId);
-  };
-
-  //=========================================
-  // 【No.6】前の問題ボタン処理
-  //=========================================
-  const handleBefore = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+  const checkIsCorrect = (quiz, userAns) => {
+    if (!quiz || userAns === undefined || userAns === null || userAns === "") {
+      return false;
     }
-  };
 
-  //=========================================
-  // 【No.7】次の問題ボタン処理
-  //=========================================
-  const handleNext = () => {
-    if (currentIndex < resultQuizIds.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    const realAns = quiz.answer;
+
+    // 1. 完全一致（文字列同士、数値同士）
+    if (userAns === realAns) return true;
+
+    // 2. 文字列と数値の型の違いを吸収（"0" と 0 など）
+    if (String(userAns).trim() === String(realAns).trim()) return true;
+
+    // 3. answer がインデックス（数値）で userAns が選択肢テキスト（文字列）の場合の相互変換
+    if (Array.isArray(quiz.choices)) {
+      // realAns がインデックスの場合
+      const ansIndex = Number(realAns);
+      if (!isNaN(ansIndex) && quiz.choices[ansIndex] !== undefined) {
+        if (quiz.choices[ansIndex] === userAns) return true;
+      }
+
+      // userAns がインデックスの場合
+      const userIndex = Number(userAns);
+      if (!isNaN(userIndex) && quiz.choices[userIndex] !== undefined) {
+        if (quiz.choices[userIndex] === realAns) return true;
+      }
     }
+
+    return false;
   };
 
   //=========================================
-  // ホームへ戻る処理（画像レイアウト再現用）
+  // 回答ステータスの判定 ('correct' | 'incorrect' | 'unanswered')
   //=========================================
-  const handleHome = () => {
-    router.push("/"); // ホーム画面のパスに合わせて変更してください
+  const answerStatus = useMemo(() => {
+    if (!currentQuiz || !quizId) return "unanswered";
+
+    // 解答履歴（resultQuizIds）に含まれているかチェック
+    const isAnswered = game.user?.resultQuizIds?.includes(quizId);
+
+    // 回答していない（HP0による終了など）場合は未回答
+    if (!isAnswered) {
+      return "unanswered";
+    }
+
+    // 正解判定
+    const isCorrect = checkIsCorrect(currentQuiz, userAnswer);
+
+    return isCorrect ? "correct" : "incorrect";
+  }, [currentQuiz, quizId, game.user?.resultQuizIds, userAnswer]);
+
+  // ステージ選択画面への遷移
+  const handleGoToStageSelection = () => {
+    router.push(`/quiz_stageSelection?genreId=${genreId}`);
   };
 
-  // マーキングされているかの判定
-  const isMarked = game.user.markingQuizIds?.includes(mockReviewData.quizId);
+  if (!currentQuiz || quizzes.length === 0) {
+    return (
+      <main className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+        <h2>復習する問題がありません</h2>
+      </main>
+    );
+  }
+
+  // ステータスに応じたスタイルの決定
+  const statusStyle = {
+    correct: { text: "正解", bg: "#e8f5e9", color: "#2e7d32" },
+    incorrect: { text: "不正解", bg: "#ffebee", color: "#c62828" },
+    unanswered: { text: "未回答", bg: "#f5f5f5", color: "#757575" },
+  }[answerStatus];
 
   return (
     <main className="container">
-      {/*===========================*/}
+      {/*============================*/}
       {/* ヘッダー */}
-      {/*===========================*/}
+      {/*============================*/}
       <div className="header">
-        {/* マーキング */}
+        {/* マーキングボタン */}
         <div className="markArea">
           <span className="markText">マーキング</span>
-          <button
-            className="markingbutton"
-            onClick={toggleMark}
+          <button 
+            className="markingbutton" 
+            onClick={() => quizId && toggleMarking(quizId)}
           >
             {isMarked ? "★" : "☆"}
           </button>
         </div>
 
-        {/* 【No.2】判定結果 */}
-        <div className="quiz_result">
-          {mockReviewData.isCorrect ? "正解" : "不正解"}
+        {/* 判定結果（正解 / 不正解 / 未回答） */}
+        <div 
+          className="quiz_result" 
+          style={{ 
+            backgroundColor: statusStyle.bg,
+            color: statusStyle.color
+          }}
+        >
+          {statusStyle.text}
         </div>
 
-        {/* 右側の余白（画像に合わせたレイアウト） */}
-        <div className="headerBlank"></div>
+        {/* 問題番号 */}
+        <div className="quiz_now">
+          {reviewIndex + 1}問 / {quizzes.length}問
+        </div>
       </div>
 
-      {/*===========================*/}
-      {/* 【No.3】問題文 */}
-      {/*===========================*/}
+      {/*============================*/}
+      {/* 問題文 */}
+      {/*============================*/}
       <div className="quiz_text">
-        {mockReviewData.question}
+        {currentQuiz.quizText || currentQuiz.question}
       </div>
 
-      {/*===========================*/}
-      {/* 選択肢エリア */}
-      {/*===========================*/}
+      {/*============================*/}
+      {/* 選択肢一覧 */}
+      {/*============================*/}
       <div className="answerArea">
-        {mockReviewData.explanations.map((item, index) => (
-          <div className="answerRow" key={index}>
-            <div className="choiceNo">{index + 1}</div>
-            
-            {/* 【No.4】選択肢 */}
-            <div className="quiz_choices">{item.choice}</div>
-            
-            {/* 【No.5】選択肢説明 */}
-            <div className="quiz_explanation">{item.explanation}</div>
-          </div>
-        ))}
+        {currentQuiz.choices.map((choiceText, index) => {
+          // 正解の選択肢かどうかを判定
+          const isRealAnswer = 
+            currentQuiz.answer === choiceText ||
+            String(currentQuiz.answer) === String(index) ||
+            currentQuiz.choices[Number(currentQuiz.answer)] === choiceText;
+
+          // ユーザーが選択した選択肢かどうかを判定
+          const isUserSelected = 
+            userAnswer === choiceText ||
+            String(userAnswer) === String(index) ||
+            currentQuiz.choices[Number(userAnswer)] === choiceText;
+
+          // 解説テキストの取得
+          const explanationText = Array.isArray(currentQuiz.explanation)
+            ? currentQuiz.explanation[index]
+            : (currentQuiz.explanations?.find(e => e.choice === choiceText)?.explanation || "");
+
+          // 背景色の指定
+          let rowBgColor = "#fff";
+          if (isRealAnswer) {
+            rowBgColor = "#e8f5e9"; // 正解行（薄い緑）
+          } else if (isUserSelected) {
+            rowBgColor = "#ffebee"; // 間違えて選択した行（薄い赤）
+          }
+
+          return (
+            <div key={index} className="answerRow">
+              <div className="choiceNo" style={{ backgroundColor: rowBgColor }}>
+                {index + 1}
+              </div>
+              <div className="quiz_choices" style={{ backgroundColor: rowBgColor }}>
+                {choiceText}
+              </div>
+              <div className="quiz_explanation" style={{ backgroundColor: rowBgColor }}>
+                {explanationText}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/*===========================*/}
-      {/* 下部ボタンエリア */}
-      {/*===========================*/}
-      <div className="bottom">
-        {/* 【No.6】前の問題 */}
-        <button
-          className="quiz_move_beforebutton"
-          onClick={handleBefore}
-          disabled={currentIndex === 0} // 最初の問題の時は無効化
+      {/*============================*/}
+      {/* 下部ボタン */}
+      {/*============================*/}
+      <div className="review_bottom">
+        <button 
+          className="review_nav_button" 
+          onClick={() => setReviewIndex((prev) => Math.max(0, prev - 1))}
+          disabled={reviewIndex === 0}
         >
           前の問題
         </button>
 
-        {/* ホームへ */}
-        <button 
-          className="homeButton"
-          onClick={handleHome}
-        >
-          ホームへ
+        <button className="quiz_move_nextbutton" onClick={handleGoToStageSelection}>
+          ステージ選択へ
         </button>
 
-        {/* 【No.7】次の問題 */}
-        <button
-          className="quiz_move_nextbutton"
-          onClick={handleNext}
-          disabled={currentIndex === resultQuizIds.length - 1} // 最後の問題の時は無効化
+        <button 
+          className="review_nav_button" 
+          onClick={() => setReviewIndex((prev) => Math.min(quizzes.length - 1, prev + 1))}
+          disabled={reviewIndex === quizzes.length - 1}
         >
           次の問題
         </button>
