@@ -1,0 +1,140 @@
+/* スター獲得状況ページ用のスタイル（白背景版） */
+
+.star-container {
+  min-height: 100vh;
+  background-color: #ffffff; /* 背景を白に */
+  color: #333333;            /* 文字色をダークグレーに */
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+/* タブナビゲーション */
+.star-tabs {
+  display: flex;
+  border: 1px solid #333333; /* 枠線をダークグレーに */
+  width: fit-content;
+  margin-bottom: 3rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.star-tab-button {
+  padding: 0.75rem 2rem;
+  border-right: 1px solid #333333;
+  background: transparent;
+  color: #333333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+/* ホバー時の背景色を薄いグレーに */
+.star-tab-button:hover {
+  background-color: rgba(0, 0, 0, 0.05); 
+}
+
+/* アクティブなタブの背景色 */
+.star-tab-button-active {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-right: none;
+}
+
+/* ジャンルセクション */
+.star-genre-section {
+  border: 1px solid #333333;
+  margin-bottom: 2rem;
+  max-width: 64rem;
+}
+
+.star-genre-header {
+  display: flex;
+  border-bottom: 1px solid #333333;
+}
+
+.star-genre-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+}
+
+.star-genre-big-star {
+  width: 6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: 1px solid #333333;
+  padding: 0.75rem 0;
+}
+
+.star-genre-score {
+  width: 8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-left: 1px solid #333333;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+/* ステージグリッド */
+.star-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.star-stage-card {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #333333;
+}
+
+.star-stage-card:last-child {
+  border-right: none;
+}
+
+.star-stage-title {
+  text-align: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #333333;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.star-star-list {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.5rem;
+  height: 4rem;
+}
+
+.star-star-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.star-star-label {
+  font-size: 9px;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* アイコンサイズ */
+.star-icon-small {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.star-icon-large {
+  width: 3rem;
+  height: 3rem;
+}
+
+
