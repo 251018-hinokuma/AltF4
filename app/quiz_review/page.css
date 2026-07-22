@@ -20,13 +20,12 @@
     border-bottom: 2px solid black;
 }
 
-/* マーキング */
 .markArea {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 12px;
-    width: 250px; /* 画像の比率に合わせて調整 */
+    width: 180px;
     height: 100%;
     border-right: 2px solid black;
 }
@@ -51,30 +50,30 @@
     transform: scale(1.15);
 }
 
-.markingbutton:active {
-    transform: scale(0.95);
-}
-
-/* 【No.2】 判定結果 */
 .quiz_result {
+    flex: 1;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 250px; /* 画像の比率に合わせて調整 */
-    height: 100%;
     font-size: 22px;
     font-weight: bold;
     border-right: 2px solid black; 
 }
 
-/* ヘッダー右側の空白エリア */
-.headerBlank {
-    flex: 1;
+.quiz_now {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 140px;
     height: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    /* 右端のため右側の枠線はなし */
 }
 
 /*==========================
-  【No.3】 問題文
+  問題文
 ==========================*/
 .quiz_text {
     height: 180px;
@@ -88,19 +87,16 @@
 }
 
 /*==========================
-  選択肢一覧
+  選択肢一覧（横幅自動調整テーブル）
 ==========================*/
 .answerArea {
     width: 100%;
+    display: grid;
+    grid-template-columns: 70px max-content 1fr;
 }
 
 .answerRow {
-    display: grid;
-    grid-template-columns: 70px 120px 1fr; /* 選択文の幅を少し広めに設定 */
-}
-
-.answerRow:not(:last-child) {
-    border-bottom: 2px solid black;
+    display: contents; 
 }
 
 .choiceNo,
@@ -112,38 +108,50 @@
     align-items: center;
     font-size: 22px;
     padding: 10px;
+    border-bottom: 2px solid black; 
 }
 
 .choiceNo {
     border-right: 2px solid black;
 }
 
-/* 【No.4】 選択肢 */
 .quiz_choices {
     border-right: 2px solid black;
+    white-space: nowrap; 
+    justify-content: flex-start;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
-/* 【No.5】 選択肢説明 */
-/* スタイルは .choiceNo 等と共有させています */
+.quiz_explanation {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+.answerRow:last-child > .choiceNo,
+.answerRow:last-child > .quiz_choices,
+.answerRow:last-child > .quiz_explanation {
+    border-bottom: none;
+}
 
 /*==========================
-  下部ボタン（3分割グリッド）
+  復習画面用 下部ボタンエリア
 ==========================*/
-.bottom {
+.review_bottom {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; 
+    grid-template-columns: 180px 1fr 180px; 
     height: 80px;
     align-items: center;
     border-top: 2px solid black;
 }
 
-/* 各ボタン共通スタイル */
-.quiz_move_beforebutton,
-.homeButton,
-.quiz_move_nextbutton {
-    width: 100%;
+.review_nav_button {
     height: 100%;
-    font-size: 24px;
+    font-size: 20px;
+    font-weight: bold;
     border: none;
     background: white;
     cursor: pointer;
@@ -153,21 +161,37 @@
     transition: background 0.2s;
 }
 
-.quiz_move_beforebutton:hover:not(:disabled),
-.homeButton:hover,
-.quiz_move_nextbutton:hover:not(:disabled) {
+.review_nav_button:first-child {
+    border-right: 2px solid black;
+}
+
+.review_nav_button:last-child {
+    border-left: 2px solid black;
+}
+
+.review_nav_button:hover:not(:disabled) {
     background: #f5f5f5;
 }
 
-/* 無効化（disabled）時のスタイル */
-.quiz_move_beforebutton:disabled,
-.quiz_move_nextbutton:disabled {
+.review_nav_button:disabled {
     color: #ccc;
     cursor: not-allowed;
+    background: #fafafa;
 }
 
-/* 区切り線 */
-.homeButton {
-    border-left: 2px solid black;
-    border-right: 2px solid black;
+.quiz_move_nextbutton {
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.quiz_move_nextbutton:hover {
+    background: #f5f5f5;
 }
