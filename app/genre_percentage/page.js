@@ -15,7 +15,7 @@ export default function GenreAccuracyPage() {
         <Link href="/">
           <button className={styles.tab}>戻る</button>
         </Link>
-        <Link href="/user">
+        <Link href="/userpage">
           <button className={styles.tab}>ユーザーページ</button>
         </Link>
         {/* 2つのクラスを当てる（スケッチに合わせて白背景に） */}
