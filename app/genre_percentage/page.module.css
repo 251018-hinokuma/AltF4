@@ -1,0 +1,70 @@
+/* app/genre-accuracy/page.module.css */
+
+/* 画面全体のコンテナ（背景色と余白） */
+.container {
+  min-height: 100vh;
+  background-color: #ffffff; /* 🌟白い背景に変更 */
+  color: #000000;            /* 🌟黒い文字に変更 */
+  padding: 60px 80px;         /* 画面全体の余白（スケッチに合わせて少し広め） */
+}
+
+/* --- ヘッダー（タブ） --- */
+.header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 60px; /* 表との間隔 */
+}
+
+/* 各タブの基本スタイル */
+.tab {
+  background-color: transparent;
+  color: #000000;            /* 🌟黒い文字に変更 */
+  border: 1px solid #000000; /* 🌟黒い枠線に変更 */
+  padding: 20px 0;
+  width: 180px;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  /* 隣り合う枠線を重ねるためのテクニック */
+  margin-left: -1px; 
+}
+
+/* アクティブなタブ（黒背景に白文字） */
+.tabActive {
+  background-color: #000000; /* 🌟黒い背景に変更 */
+  color: #ffffff;            /* 🌟白い文字に変更 */
+}
+
+/* --- メインコンテンツ（表） --- */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 60px; /* 上下の表の間隔 */
+}
+
+/* テーブル（表）全体のデザイン */
+.genreTable {
+  width: 100%;
+  border-collapse: collapse; /* セル同士の隙間をなくし、枠線を1本にする */
+  text-align: center;
+}
+
+/* 全てのセルに黒いボーダーをあてる */
+.genreTable th,
+.genreTable td {
+  border: 1px solid #000000; /* 🌟黒い枠線に変更 */
+  padding: 15px;
+  font-weight: normal;       /* thの太字を解除 */
+}
+
+/* ジャンル名が入る1行目のセル */
+.genreTitle {
+  font-size: 18px;
+  padding: 20px !important;
+}
+
+/* 正答率の値が入る最下行のセル */
+.genreTable td {
+  height: 90px;
+  vertical-align: middle;
+}
