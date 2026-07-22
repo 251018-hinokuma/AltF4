@@ -86,12 +86,16 @@ export default function StarStatusPage() {
       
       {/* トップナビゲーション（タブ） */}
       <div className={styles["star-tabs"]}>
+        <Link href="/">
         <button className={styles["star-tab-button"]}>
           戻る
         </button>
+        </Link>
+        <Link href="/userpage">
         <button className={styles["star-tab-button"]}>
           ユーザーページ
         </button>
+        </Link>
         <button className={`${styles["star-tab-button"]} ${styles["star-tab-button-active"]}`}>
           スター獲得状況
         </button>
