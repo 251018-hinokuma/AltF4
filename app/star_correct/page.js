@@ -1,6 +1,6 @@
 "use client";
-
-import React from 'react';
+import Link from 'next/link';
+import styles from "./page.module.css";
 
 // 星型のアイコン（SVG）をコンポーネント化
 const StarIcon = ({ className }) => (
@@ -25,17 +25,17 @@ const StageCard = ({ title }) => {
   const starTypes = ['クリア', '全問正解', 'スピード'];
 
   return (
-    <div className="star-stage-card">
+    <div className={styles["star-stage-card"]}>
       {/* ステージ名 */}
-      <div className="star-stage-title">
+      <div className={styles["star-stage-title"]}>
         {title}
       </div>
       {/* 獲得スター一覧 */}
-      <div className="star-star-list">
+      <div className={styles["star-star-list"]}>
         {starTypes.map((label) => (
-          <div key={label} className="star-star-item">
-            <StarIcon className="star-icon-small" />
-            <span className="star-star-label">{label}</span>
+          <div key={label} className={styles["star-star-item"]}>
+            <StarIcon className={styles["star-icon-small"]} />
+            <span className={styles["star-star-label"]}>{label}</span>
           </div>
         ))}
       </div>
@@ -50,25 +50,25 @@ const GenreSection = ({ genreName, currentStars, totalStars }) => {
   const stages = ['ステージ１', 'ステージ２', 'ステージ３', 'ステージ４', 'ステージ５', 'ボス'];
 
   return (
-    <div className="star-genre-section">
+    <div className={styles["star-genre-section"]}>
       {/* ジャンルヘッダー部分 */}
-      <div className="star-genre-header">
+      <div className={styles["star-genre-header"]}>
         {/* ジャンル名 (中央配置) */}
-        <div className="star-genre-title">
+        <div className={styles["star-genre-title"]}>
           {genreName}
         </div>
         {/* 大きな星アイコン */}
-        <div className="star-genre-big-star">
-          <StarIcon className="star-icon-large" />
+        <div className={styles["star-genre-big-star"]}>
+          <StarIcon className={styles["star-icon-large"]} />
         </div>
         {/* 獲得数 */}
-        <div className="star-genre-score">
+        <div className={styles["star-genre-score"]}>
           {currentStars}個/{totalStars}個
         </div>
       </div>
 
       {/* ステージのグリッド (6列) */}
-      <div className="star-stage-grid">
+      <div className={styles["star-stage-grid"]}>
         {stages.map((stage) => (
           <StageCard key={stage} title={stage} />
         ))}
@@ -82,17 +82,17 @@ const GenreSection = ({ genreName, currentStars, totalStars }) => {
 // ---------------------------------------------------
 export default function StarStatusPage() {
   return (
-    <div className="star-container">
+    <div className={styles["star-container"]}>
       
       {/* トップナビゲーション（タブ） */}
-      <div className="star-tabs">
-        <button className="star-tab-button">
+      <div className={styles["star-tabs"]}>
+        <button className={styles["star-tab-button"]}>
           戻る
         </button>
-        <button className="star-tab-button">
+        <button className={styles["star-tab-button"]}>
           ユーザーページ
         </button>
-        <button className="star-tab-button star-tab-button-active">
+        <button className={`${styles["star-tab-button"]} ${styles["star-tab-button-active"]}`}>
           スター獲得状況
         </button>
       </div>
