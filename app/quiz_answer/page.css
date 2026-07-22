@@ -3,10 +3,9 @@
     width: 900px;
     margin: 30px auto;
     border: 2px solid black;
-    box-sizing: border-box; /* 境界線を含めたサイズ計算にする */
+    box-sizing: border-box; 
 }
 
-/* すべての子要素に box-sizing を適用 */
 .container *, .container *::before, .container *::after {
     box-sizing: border-box;
 }
@@ -43,7 +42,8 @@
     white-space: nowrap;
 }
 
-.starButton {
+/* 物理名称へ変更（旧 .starButton） */
+.markingbutton {
     border: none;
     background: white;
     font-size: 36px;
@@ -53,84 +53,99 @@
     line-height: 1;
 }
 
-.starButton:hover {
+.markingbutton:hover {
     transform: scale(1.15);
 }
 
-.starButton:active {
+.markingbutton:active {
     transform: scale(0.95);
 }
 
 
 /*==========================
-  正解表示
+  【No.2】 判定結果
 ==========================*/
-
-.result {
-    flex: 1; /* 残りのスペースを埋める（中央に配置される） */
+/* 物理名称へ変更（旧 .result） */
+.quiz_result {
+    flex: 1; /* 残りのスペースを埋める */
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 22px;
     font-weight: bold;
-    border-right: 2px solid black; /* 右側の境界線 */
+    border-right: 2px solid black; 
 }
 
 
 /*==========================
-  HP
+  【No.3】 問題番号 (新規追加)
 ==========================*/
-
-.hp {
+.quiz_now {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 110px; /* 画像の比率に合わせた幅 */
+    width: 120px;
     height: 100%;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: bold;
-    border-right: 2px solid black; /* 右側の境界線 */
+    border-right: 2px solid black;
 }
 
 
 /*==========================
-  経過時間
+  【No.4】 HP
 ==========================*/
+/* 物理名称へ変更（旧 .hp） */
+.quiz_HP {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 110px;
+    height: 100%;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black;
+}
 
-.timerArea {
+
+/*==========================
+  【No.5】 経過時間
+==========================*/
+/* 物理名称へ変更（旧 .timerArea） */
+.quiz_Time {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 200px; /* 画像の「経過時間」エリアの幅 */
+    width: 200px; 
     height: 100%;
 }
 
 .timerTitle {
     display: flex;
-    justify-content: center; /* 中央寄せ */
+    justify-content: center;
     align-items: center;
     height: 35px;
-    border-bottom: 2px solid black; /* 下の境界線 */
+    border-bottom: 2px solid black; 
     font-weight: bold;
     font-size: 16px;
 }
 
 .timer {
     display: flex;
-    justify-content: center; /* 中央寄せ */
+    justify-content: center;
     align-items: center;
     flex: 1;
     font-size: 24px;
-    letter-spacing: 2px; /* 数字に少し隙間を持たせる */
+    letter-spacing: 2px;
 }
 
 
 /*==========================
-  問題文
+  【No.6】 問題文
 ==========================*/
-
-.question {
+/* 物理名称へ変更（旧 .question） */
+.quiz_text {
     height: 180px;
     border-bottom: 2px solid black;
     display: flex;
@@ -143,41 +158,72 @@
 
 
 /*==========================
-  選択肢一覧
+  選択肢一覧 (★テーブル全体の幅を統一する仕組み)
 ==========================*/
 
 .answerArea {
     width: 100%;
+    
+    /* ★【超重要】テーブル全体で1つのGridを定義します。
+       2列目（選択文）を max-content にすることで、
+       4つの行すべての選択肢の中で「最も長いテキスト」に合わせて自動で一直線に幅を揃えます。 */
+    display: grid;
+    grid-template-columns: 70px max-content 1fr;
+    border-bottom: 2px solid black; /* 下線のボーダーを追加 */
 }
 
 .answerRow {
-    display: grid;
-    /* 画像の「1」「選択文」「説明」の比率（70px, 90px, 残り） */
-    grid-template-columns: 70px 90px 1fr; 
-     border-bottom: 2px solid black;
+    /* ★【超重要】行の枠（div）自体をGridコンテナから「透過（contents）」させ、
+       中の「番号」「選択文」「説明」を直接 .answerArea のGridの子要素として参加させます。
+       これにより、すべての行の列位置がミリ単位でピタッと一致します。 */
+    display: contents; 
 }
 
-.answerRow:not(:last-child) {
-    border-bottom: 2px solid black;
-}
-
+/* 各セル（番号、選択肢、説明）の共通設定 */
 .choiceNo,
-.choiceText,
-.explanation {
+.quiz_choices,
+.quiz_explanation {
     min-height: 68px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 22px;
     padding: 10px;
+    
+    /* 各セルの下側にボーダーを配置 */
+    border-bottom: 2px solid black; 
 }
 
 .choiceNo {
     border-right: 2px solid black;
 }
 
-.choiceText {
+/* 【No.7】物理名称へ変更（旧 .choiceText） */
+.quiz_choices {
     border-right: 2px solid black;
+    
+    /* 選択文を改行させずに横にまっすぐ伸ばす */
+    white-space: nowrap; 
+    justify-content: flex-start; /* 左寄せにして視認性を向上 */
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* 【No.8】物理名称へ変更（旧 .explanation） */
+.quiz_explanation {
+    /* 説明（解説）文は長文になるため、右側の余りスペースで綺麗に自動折り返しさせます */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    justify-content: flex-start; /* 左寄せ */
+    padding-left: 20px;
+}
+
+/* ★最後の行（4行目）のセルだけ下線のボーダーを消す設定 */
+.answerRow:last-child > .choiceNo,
+.answerRow:last-child > .quiz_choices,
+.answerRow:last-child > .quiz_explanation {
+    border-bottom: none;
 }
 
 
@@ -187,32 +233,31 @@
 
 .bottom {
     display: grid;
-    /* 3つのエリアに分割（左右均等、中央はボタンサイズ200px） */
     grid-template-columns: 1fr 200px 1fr; 
     height: 80px;
     align-items: center;
 }
 
-/* 左側のエリアに右境界線を追加 */
 .bottom::before {
     content: "";
     height: 100%;
     border-right: 2px solid black;
 }
 
-/* 右側のエリアに左境界線を追加 */
 .bottom::after {
     content: "";
     height: 100%;
     border-left: 2px solid black;
+
 }
 
-.nextButton {
-    grid-column: 2; /* 中央の列にボタンを配置 */
+/* 【No.9】物理名称へ変更（旧 .nextButton） */
+.quiz_move_nextbutton {
+    grid-column: 2; 
     width: 100%;
     height: 100%;
     font-size: 24px;
-    border: none; /* 外枠と干渉するため元々のボタン枠線は除去 */
+    border: none;
     background: white;
     cursor: pointer;
     display: flex;
@@ -220,6 +265,6 @@
     align-items: center;
 }
 
-.nextButton:hover {
+.quiz_move_nextbutton:hover {
     background: #f5f5f5;
 }

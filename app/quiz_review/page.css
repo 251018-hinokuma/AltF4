@@ -1,0 +1,173 @@
+/* 全体コンテナ */
+.container {
+    width: 900px;
+    margin: 30px auto;
+    border: 2px solid black;
+    box-sizing: border-box; 
+}
+
+.container *, .container *::before, .container *::after {
+    box-sizing: border-box;
+}
+
+/*==========================
+  ヘッダー
+==========================*/
+.header {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    border-bottom: 2px solid black;
+}
+
+/* マーキング */
+.markArea {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 250px; /* 画像の比率に合わせて調整 */
+    height: 100%;
+    border-right: 2px solid black;
+}
+
+.markText {
+    font-size: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.markingbutton {
+    border: none;
+    background: white;
+    font-size: 36px;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.markingbutton:hover {
+    transform: scale(1.15);
+}
+
+.markingbutton:active {
+    transform: scale(0.95);
+}
+
+/* 【No.2】 判定結果 */
+.quiz_result {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px; /* 画像の比率に合わせて調整 */
+    height: 100%;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black; 
+}
+
+/* ヘッダー右側の空白エリア */
+.headerBlank {
+    flex: 1;
+    height: 100%;
+}
+
+/*==========================
+  【No.3】 問題文
+==========================*/
+.quiz_text {
+    height: 180px;
+    border-bottom: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    text-align: center;
+    padding: 20px;
+}
+
+/*==========================
+  選択肢一覧
+==========================*/
+.answerArea {
+    width: 100%;
+}
+
+.answerRow {
+    display: grid;
+    grid-template-columns: 70px 120px 1fr; /* 選択文の幅を少し広めに設定 */
+}
+
+.answerRow:not(:last-child) {
+    border-bottom: 2px solid black;
+}
+
+.choiceNo,
+.quiz_choices,
+.quiz_explanation {
+    min-height: 68px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    padding: 10px;
+}
+
+.choiceNo {
+    border-right: 2px solid black;
+}
+
+/* 【No.4】 選択肢 */
+.quiz_choices {
+    border-right: 2px solid black;
+}
+
+/* 【No.5】 選択肢説明 */
+/* スタイルは .choiceNo 等と共有させています */
+
+/*==========================
+  下部ボタン（3分割グリッド）
+==========================*/
+.bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    height: 80px;
+    align-items: center;
+    border-top: 2px solid black;
+}
+
+/* 各ボタン共通スタイル */
+.quiz_move_beforebutton,
+.homeButton,
+.quiz_move_nextbutton {
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.quiz_move_beforebutton:hover:not(:disabled),
+.homeButton:hover,
+.quiz_move_nextbutton:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+/* 無効化（disabled）時のスタイル */
+.quiz_move_beforebutton:disabled,
+.quiz_move_nextbutton:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 区切り線 */
+.homeButton {
+    border-left: 2px solid black;
+    border-right: 2px solid black;
+}
