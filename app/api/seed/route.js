@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../lib/dbConnect";
 import { Quiz } from "../../utils/schemaModels"; // スキーマモデルのパスに合わせて調整してください
+import {Genre} from "../../utils/schemaModels";
 
 export async function GET() {
   await dbConnect();
@@ -17,8 +18,23 @@ export async function GET() {
     { quizId: 9, genreId: 1, stageId: 1, quizText: "DOMでIDを指定して要素を取得するメソッドは？", choices: ["getElementById()", "querySelector()", "getElementsByClassName()", "querySelectorAll()"], answer: 0, explanation: ["IDで取得する専用メソッドです。", "CSSセレクタで取得します。", "クラス名で取得します。", "CSSセレクタで全て取得します。"] },
     { quizId: 10, genreId: 1, stageId: 1, quizText: "JSのデータ型で「値がない」ことを明示的に示すのは？", choices: ["undefined", "NaN", "null", "false"], answer: 2, explanation: ["未定義（代入されていない）状態です。", "Not a Number（数値ではない）です。", "nullは「値がない」ことを明示的に代入するものです。", "真偽値の「偽」です。"] },
   ];
+  const initialGenres = [
+    { genreId: 1, genreName: "プログラミング" },
+    { genreId: 2, genreName: "ビジネスマナー" },
+    { genreId: 3, genreName: "情報セキュリティ・モラル" },
+    { genreId: 4, genreName: "ITリテラシー・オフィス" },
+    { genreId: 5, genreName: "コミュニケーション・仕事術" },
+  ];
 
   try {
+    for (const genre of initialGenres) {
+    // 既存データがあれば更新、無ければ新規挿入（upsert）
+    await Genre.updateOne(
+      { genreId: genre.genreId },
+      { $set: genre },
+      { upsert: true }
+    );
+  }
     // 既存のデータを一度クリアして新しく入れ直す（重複エラー防止）
     await Quiz.deleteMany({ genreId: 1, stageId: 1 });
     await Quiz.insertMany(initialQuizzes);

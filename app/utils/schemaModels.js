@@ -75,6 +75,22 @@ const stageSchema = new Schema({
   hardHp: { type: Number, required: true }
 }, { timestamps: true });
 
+const GenreSchema = new mongoose.Schema(
+  {
+    genreId: {
+      type: Number,
+      required: true,
+      unique: true, // genreId の重複を防ぐ
+    },
+    genreName: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // =========================================
 // モデルのエクスポート
@@ -83,3 +99,4 @@ const stageSchema = new Schema({
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export const Quiz = mongoose.models.Quiz || mongoose.model("Quiz", quizSchema);
 export const Stage = mongoose.models.Stage || mongoose.model("Stage", stageSchema);
+export const Genre = mongoose.models.Genre || mongoose.model("Genre", GenreSchema);
