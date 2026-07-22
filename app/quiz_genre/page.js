@@ -1,43 +1,35 @@
+import Link from "next/link";
 import "./style.css";
 
 export default function QuizGenre() {
   return (
     <div className="page">
-
       <div className="top">
-        <button className="menu">戻る</button>
+        <Link href="/" className="menu">
+          戻る
+        </Link>
+
         <div className="title">クイズ</div>
         <div className="title">ジャンル選択</div>
       </div>
 
       <div className="content">
-
-        <div className="genreBox">
-          <div className="genreName">
-            ジャンル１
-          </div>
-
+        <Link href="/quiz_stage" className="genreBox">
+          <div className="genreName">ジャンル1</div>
           <div className="starArea">
-            ☆
-            <br />
-            ○個/○個
+            <div>☆</div>
+            <div>0個/0個</div>
           </div>
-        </div>
+        </Link>
 
-        <div className="genreBox">
-          <div className="genreName">
-            ジャンル２
-          </div>
-
+        <Link href="/quiz_stage" className="genreBox">
+          <div className="genreName">ジャンル2</div>
           <div className="starArea">
-            ☆
-            <br />
-            ○個/○個
+            <div>☆</div>
+            <div>0個/0個</div>
           </div>
-        </div>
-
+        </Link>
       </div>
-
     </div>
   );
 }
