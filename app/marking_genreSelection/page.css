@@ -1,0 +1,115 @@
+/* =========================================
+   全体コンテナ（幅800px統一）
+   ========================================= */
+.container {
+  max-width: 800px;
+  width: 90%;
+  margin: 40px auto;
+  box-sizing: border-box;
+}
+
+/* メイン外枠カード */
+.mainCard {
+  border: 2px solid #333333;
+  background-color: #ffffff;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* =========================================
+   左上ヘッダー（戻る | マーキング | ジャンル選択）
+   ========================================= */
+.headerArea {
+  display: inline-flex;
+  border-right: 2px solid #333333;
+  border-bottom: 2px solid #333333;
+  align-self: flex-start; /* 左上に寄せる */
+  box-sizing: border-box;
+}
+
+.headerCell {
+  padding: 12px 24px;
+  border-right: 2px solid #333333;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.headerCell:last-child {
+  border-right: none;
+}
+
+/* 戻るボタン */
+.backButton {
+  cursor: pointer;
+  border: none;
+  border-right: 2px solid #333333;
+  transition: background-color 0.15s ease;
+}
+
+.backButton:hover {
+  background-color: #f5f5f5;
+}
+
+/* =========================================
+   コンテンツエリア＆ジャンルボタン群
+   ========================================= */
+.contentArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 右側に配置（ラフ再現） */
+  padding: 40px 80px 40px 40px;
+  box-sizing: border-box;
+}
+
+/* ジャンル一覧コンテナ */
+.genreListContainer {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  border: 2px solid #333333;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+/* ジャンル選択ボタン */
+.genreSelectButton {
+  width: 100%;
+  padding: 20px 16px;
+  background-color: #ffffff;
+  border: none;
+  border-bottom: 2px solid #333333;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333333;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.genreSelectButton:last-child {
+  border-bottom: none;
+}
+
+.genreSelectButton:hover {
+  background-color: #f5f5f5;
+}
+
+/* 読み込み・空状態 */
+.loadingText,
+.emptyText {
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #666666;
+}
