@@ -70,7 +70,11 @@ export default function QuizAnswer() {
   // 下部ボタン（次の問題 / 結果へ）クリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      router.push("/quiz_result");
+      // 元々の処理（result画面へ遷移）
+      // router.push("/quiz_result");
+
+      // 一時的な確認用処理（review画面へ遷移）
+      router.push("/quiz_review");
     } else {
       nextQuestion();
       router.push("/quiz_question");
