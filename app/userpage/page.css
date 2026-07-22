@@ -163,9 +163,117 @@
 
 }
 
-.info h3{
+.userNameArea{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
 
     margin-bottom:20px;
+
+    height:45px;
+
+}
+
+.userNameField{
+
+    height:45px;
+
+    box-sizing:border-box;
+
+    margin:0;
+
+    padding:0;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+h3.userNameField{
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+h3.userNameField:hover{
+
+    color:#ffe55d;
+
+}
+
+.editNameButton{
+
+    width:45px;
+
+    height:45px;
+
+    box-sizing:border-box;
+
+    padding:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    background:transparent;
+
+    border:2px solid white;
+
+    border-radius:8px;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.editNameButton:hover{
+
+    color:#ffe55d;
+
+    border-color:#ffe55d;
+
+    background:rgba(255,255,255,.1);
+
+    transform:scale(1.05);
+
+}
+
+input.userNameField{
+
+    padding:0 10px;
+
+    color:white;
+
+    background:rgba(0,0,0,.5);
+
+    border:2px solid white;
+
+    border-radius:5px;
+
+    outline:none;
+
+}
+
+input.userNameField:focus{
+
+    border-color:#ffe55d;
 
 }
 
