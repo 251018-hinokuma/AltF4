@@ -14,7 +14,7 @@ export default function QuizGenre() {
       </div>
 
       <div className="content">
-        <Link href="/quiz_stage" className="genreBox">
+        <Link href="/quiz_stageSelection?genreId=1" className="genreBox">
           <div className="genreName">ジャンル1</div>
           <div className="starArea">
             <div>☆</div>
@@ -22,7 +22,7 @@ export default function QuizGenre() {
           </div>
         </Link>
 
-        <Link href="/quiz_stage" className="genreBox">
+        <Link href="/quiz_stageSelection?genreId=2" className="genreBox">
           <div className="genreName">ジャンル2</div>
           <div className="starArea">
             <div>☆</div>

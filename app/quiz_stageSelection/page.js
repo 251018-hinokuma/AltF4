@@ -5,7 +5,7 @@ export default function QuizStage() {
   return (
     <div className="page">
       <div className="top">
-        <Link href="/quiz_genre">
+        <Link href="/quiz_genreSelection">
           <button className="menu">戻る</button>
         </Link>
 
