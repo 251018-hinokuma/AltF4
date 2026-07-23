@@ -27,11 +27,11 @@ export default function ResultPage() {
 
   // 各ボタンのクリック処理
   const handleReview = () => {
-    router.push('/review'); // 問題を復習する画面への遷移（仮）
+    router.push('/quiz_review'); // 問題を復習する画面への遷移（仮）
   };
 
   const handleSelectStage = () => {
-    router.push('/stage-selection'); // ステージ選択画面への遷移（仮）
+    router.push('/quiz_stageSelection'); // ステージ選択画面への遷移（仮）
   };
 
   return (
