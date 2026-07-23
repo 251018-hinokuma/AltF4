@@ -8,35 +8,35 @@ import styles from './page.module.css';
 export default function ResultPage() {
   const router = useRouter();
 
-  // 画面に表示するデータ（〇や時間が書かれている部分）
+  // Mock data representing the stage results
   const [gameResult, setGameResult] = useState({
-    stageName: 'ステージ〇',
+    stageName: 'Stage 1',
     currentHp: 3,
     maxHp: 5,
-    elapsedTime: '00:00',
-    totalQuestions: 5,
-    correctAnswers: 3,
-    // 星の獲得状況（true: 獲得, false: 未獲得）
+    elapsedTime: '02:45',
+    totalQuestions: 10,
+    correctAnswers: 8,
+    // Star achievements (true: unlocked, false: locked)
     stars: {
-      clear: true,          // クリア
-      allCorrect: false,    // 全問正解
-      speedClear: true,     // 時間内スピードクリア
+      clear: true,          // Cleared the stage
+      allCorrect: false,    // Perfect score
+      speedClear: true,     // Beat the time limit
     },
-    targetSpeedTime: '00:00', // スピードクリアの目標時間
+    targetSpeedTime: '03:00', // Target time for speed run
   });
 
-  // 各ボタンのクリック処理
+  // Button click handlers
   const handleReview = () => {
-    router.push('/review'); // 問題を復習する画面への遷移（仮）
+    router.push('/review');
   };
 
   const handleSelectStage = () => {
-    router.push('/stage-selection'); // ステージ選択画面への遷移（仮）
+    router.push('/stage-selection');
   };
 
   return (
     <div className={styles.resultContainer}>
-      {/* 上部ステータスバー */}
+      {/* Top Status Bar */}
       <header className={styles.resultHeader}>
         <div className={styles.headerSpacer}></div>
         <div className={`${styles.headerBox} ${styles.stageName}`}>{gameResult.stageName}</div>
@@ -44,51 +44,51 @@ export default function ResultPage() {
           HP {gameResult.currentHp} / {gameResult.maxHp}
         </div>
         <div className={styles.timeBox}>
-          <div className={styles.timeTitle}>経過時間</div>
+          <div className={styles.timeTitle}>Elapsed Time</div>
           <div className={styles.timeValue}>{gameResult.elapsedTime}</div>
         </div>
       </header>
 
-      {/* メイン結果エリア */}
+      {/* Main Results Content */}
       <main className={styles.resultMain}>
-        {/* 星評価エリア */}
+        {/* Stars Container */}
         <div className={styles.starsContainer}>
-          {/* 星1: クリア */}
+          {/* Star 1: Clear */}
           <div className={`${styles.starItem} ${gameResult.stars.clear ? styles.achieved : ''}`}>
             <span className={styles.starIcon}>★</span>
-            <span className={styles.starLabel}>クリア</span>
+            <span className={styles.starLabel}>Cleared</span>
           </div>
 
-          {/* 星2: 全問正解 */}
+          {/* Star 2: All Correct */}
           <div className={`${styles.starItem} ${gameResult.stars.allCorrect ? styles.achieved : ''}`}>
             <span className={styles.starIcon}>★</span>
-            <span className={styles.starLabel}>全問正解</span>
+            <span className={styles.starLabel}>All Correct</span>
           </div>
 
-          {/* 星3: スピード */}
+          {/* Star 3: Speed */}
           <div className={`${styles.starItem} ${gameResult.stars.speedClear ? styles.achieved : ''}`}>
             <span className={styles.starIcon}>★</span>
             <span className={styles.starLabel}>
-              {gameResult.targetSpeedTime}以内<br />スピード
+              Under {gameResult.targetSpeedTime}<br />Speed
             </span>
           </div>
         </div>
 
-        {/* 正解数表示エリア */}
+        {/* Score Box */}
         <div className={styles.scoreBox}>
-          {gameResult.totalQuestions}問中{gameResult.correctAnswers}問正解
+          {gameResult.correctAnswers} / {gameResult.totalQuestions} Correct
         </div>
 
-        {/* 問題を復習するボタン */}
+        {/* Review Button */}
         <button className={styles.reviewButton} onClick={handleReview}>
-          問題を復習する
+          Review Questions
         </button>
       </main>
 
-      {/* 下部ナビゲーション */}
+      {/* Footer Navigation */}
       <footer className={styles.resultFooter}>
         <button className={styles.stageSelectButton} onClick={handleSelectStage}>
-          ステージ選択へ
+          To Stage Select
         </button>
       </footer>
     </div>
