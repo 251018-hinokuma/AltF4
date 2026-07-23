@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 export default function QuizReview() {
   const router = useRouter();
@@ -89,7 +89,7 @@ export default function QuizReview() {
 
   if (!currentQuiz || quizzes.length === 0) {
     return (
-      <main className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
         <h2>復習する問題がありません</h2>
       </main>
     );
@@ -103,16 +103,16 @@ export default function QuizReview() {
   }[answerStatus];
 
   return (
-    <main className="container">
+    <main className={styles.container}>
       {/*============================*/}
       {/* ヘッダー */}
       {/*============================*/}
-      <div className="header">
+      <div className={styles.header}>
         {/* マーキングボタン */}
-        <div className="markArea">
-          <span className="markText">マーキング</span>
+        <div className={styles.markArea}>
+          <span className={styles.markText}>マーキング</span>
           <button 
-            className="markingbutton" 
+            className={styles.markingbutton} 
             onClick={() => quizId && toggleMarking(quizId)}
           >
             {isMarked ? "★" : "☆"}
@@ -121,7 +121,7 @@ export default function QuizReview() {
 
         {/* 判定結果（正解 / 不正解 / 未回答） */}
         <div 
-          className="quiz_result" 
+          className={styles.quiz_result} 
           style={{ 
             backgroundColor: statusStyle.bg,
             color: statusStyle.color
@@ -131,7 +131,7 @@ export default function QuizReview() {
         </div>
 
         {/* 問題番号 */}
-        <div className="quiz_now">
+        <div className={styles.quiz_now}>
           {reviewIndex + 1}問 / {quizzes.length}問
         </div>
       </div>
@@ -139,14 +139,14 @@ export default function QuizReview() {
       {/*============================*/}
       {/* 問題文 */}
       {/*============================*/}
-      <div className="quiz_text">
+      <div className={styles.quiz_text}>
         {currentQuiz.quizText || currentQuiz.question}
       </div>
 
       {/*============================*/}
       {/* 選択肢一覧 */}
       {/*============================*/}
-      <div className="answerArea">
+      <div className={styles.answerArea}>
         {currentQuiz.choices.map((choiceText, index) => {
           // 正解の選択肢かどうかを判定
           const isRealAnswer = 
@@ -174,14 +174,14 @@ export default function QuizReview() {
           }
 
           return (
-            <div key={index} className="answerRow">
-              <div className="choiceNo" style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={styles.answerRow}>
+              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
                 {index + 1}
               </div>
-              <div className="quiz_choices" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
                 {choiceText}
               </div>
-              <div className="quiz_explanation" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
                 {explanationText}
               </div>
             </div>
@@ -192,21 +192,21 @@ export default function QuizReview() {
       {/*============================*/}
       {/* 下部ボタン */}
       {/*============================*/}
-      <div className="review_bottom">
+      <div className={styles.review_bottom}>
         <button 
-          className="review_nav_button" 
+          className={styles.review_nav_button} 
           onClick={() => setReviewIndex((prev) => Math.max(0, prev - 1))}
           disabled={reviewIndex === 0}
         >
           前の問題
         </button>
 
-        <button className="quiz_move_nextbutton" onClick={handleGoToStageSelection}>
+        <button className={styles.quiz_move_nextbutton} onClick={handleGoToStageSelection}>
           ステージ選択へ
         </button>
 
         <button 
-          className="review_nav_button" 
+          className={styles.review_nav_button} 
           onClick={() => setReviewIndex((prev) => Math.min(quizzes.length - 1, prev + 1))}
           disabled={reviewIndex === quizzes.length - 1}
         >

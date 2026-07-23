@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 function MarkingQuizSelectionContent() {
   const router = useRouter();
@@ -151,25 +151,25 @@ function MarkingQuizSelectionContent() {
   };
 
   return (
-    <main className="container">
-      <div className="mainCard">
+    <main className={styles.container}>
+      <div className={styles.mainCard}>
         {/* 左上ヘッダー */}
-        <div className="headerArea">
-          <button className="headerCell backButton" onClick={handleBack}>
+        <div className={styles.headerArea}>
+          <button className={styles.headerCell} onClick={handleBack}>
             戻る
           </button>
-          <div className="headerCell headerTitle">マーキング</div>
-          <div className="headerCell genreTitle">{genreDisplayName}</div>
-          <div className="headerCell headerSubTitle">問題選択</div>
+          <div className={styles.headerCell + " " + styles.headerTitle}>マーキング</div>
+          <div className={styles.headerCell + " " + styles.genreTitle}>{genreDisplayName}</div>
+          <div className={styles.headerCell + " " + styles.headerSubTitle}>問題選択</div>
         </div>
 
         {/* メインコンテンツ */}
-        <div className="contentArea">
-          <div className="quizListContainer">
+        <div className={styles.contentArea}>
+          <div className={styles.quizListContainer}>
             {isLoading ? (
-              <div className="loadingText">読み込み中...</div>
+              <div className={styles.loadingText}>読み込み中...</div>
             ) : markedQuizzes.length === 0 ? (
-              <div className="emptyText">マーキングされた問題はありません</div>
+              <div className={styles.emptyText}>マーキングされた問題はありません</div>
             ) : (
               markedQuizzes.map((quiz, index) => {
                 const quizId = Number(quiz.quizId ?? quiz.quiz_id ?? quiz.id);
@@ -178,7 +178,7 @@ function MarkingQuizSelectionContent() {
                 return (
                   <button
                     key={quizId}
-                    className="quizSelectButton"
+                    className={styles.quizSelectButton}
                     onClick={() => handleQuizSelect(quizId)}
                     title={quizText}
                   >
@@ -196,7 +196,7 @@ function MarkingQuizSelectionContent() {
 
 export default function MarkingQuizSelection() {
   return (
-    <Suspense fallback={<div className="container">読み込み中...</div>}>
+    <Suspense fallback={<div className={styles.container}>読み込み中...</div>}>
       <MarkingQuizSelectionContent />
     </Suspense>
   );
