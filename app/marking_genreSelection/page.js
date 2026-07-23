@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext"; // パスは環境に合わせて調整してください
-import "./page.css";
+import styles from "./page.module.css";
 
 export default function MarkingGenreSelection() {
   const router = useRouter();
@@ -51,31 +51,31 @@ export default function MarkingGenreSelection() {
   };
 
   return (
-    <main className="container">
-      <div className="mainCard">
+    <main className={styles.container}>
+      <div className={styles.mainCard}>
         {/* 左上ヘッダーエリア */}
-        <div className="headerArea">
+        <div className={styles.headerArea}>
           <button 
-            className="headerCell backButton" 
+            className={styles.headerCell} 
             onClick={handleBack}
           >
             戻る
           </button>
-          <div className="headerCell headerTitle">
+          <div className={styles.headerCell}>
             マーキング
           </div>
-          <div className="headerCell headerSubTitle">
+          <div className={styles.headerCell}>
             ジャンル選択
           </div>
         </div>
 
         {/* メインコンテンツ（ジャンル一覧選択エリア） */}
-        <div className="contentArea">
-          <div className="genreListContainer">
+        <div className={styles.contentArea}>
+          <div className={styles.genreListContainer}>
             {isLoading ? (
-              <div className="loadingText">読み込み中...</div>
+              <div className={styles.loadingText}>読み込み中...</div>
             ) : genres.length === 0 ? (
-              <div className="emptyText">ジャンルが見つかりません</div>
+              <div className={styles.emptyText}>ジャンルが見つかりません</div>
             ) : (
               genres.map((genre) => {
                 const genreId = genre.genreId ?? genre.genre_id ?? genre.id;
@@ -84,7 +84,7 @@ export default function MarkingGenreSelection() {
                 return (
                   <button
                     key={genreId}
-                    className="genreSelectButton"
+                    className={styles.genreSelectButton}
                     onClick={() => handleGenreSelect(genreId)}
                   >
                     {genreName}

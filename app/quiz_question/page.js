@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 export default function QuizQuestion() {
   const router = useRouter();
@@ -116,42 +116,42 @@ export default function QuizQuestion() {
   //=========================================
   if (!currentQuizData) {
     return (
-      <main className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
         <h2>問題を読み込み中...</h2>
       </main>
     );
   }
 
   return (
-    <main className="container">
+    <main className={styles.container}>
 
       {/*============================*/}
       {/* ヘッダー */}
       {/*============================*/}
-      <div className="header">
+      <div className={styles.header}>
 
         {/* マーキングボタンの代わりの空白エリア（レイアウト調整用） */}
-        <div className="blankArea" style={{ width: "180px", borderRight: "2px solid black", height: "100%" }}></div>
+        <div className={styles.blankArea} style={{ width: "180px", borderRight: "2px solid black", height: "100%" }}></div>
 
         {/* 判定結果の代わりの空白エリア（レイアウト調整用） */}
-        <div className="blankArea" style={{ flex: 1, borderRight: "2px solid black", height: "100%" }}></div>
+        <div className={styles.blankArea} style={{ flex: 1, borderRight: "2px solid black", height: "100%" }}></div>
 
         {/* 【No.3】問題番号 */}
-        <div className="quiz_now">
+        <div className={styles.quiz_now}>
           {game.currentQuestion}問 / {game.totalQuestion || game.quizzes.length}問
         </div>
 
         {/* 【No.4】HP */}
-        <div className="quiz_HP">
+        <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
           HP {game.hp}
         </div>
 
         {/* 【No.5】経過時間 */}
-        <div className="quiz_Time">
-          <div className="timerTitle">
+        <div className={styles.quiz_Time}>
+          <div className={styles.timerTitle}>
             経過時間
           </div>
-          <div className="timer">
+          <div className={styles.timer}>
             {formattedTime}
           </div>
         </div>
@@ -161,26 +161,26 @@ export default function QuizQuestion() {
       {/*============================*/}
       {/* 【No.6】問題文 */}
       {/*============================*/}
-      <div className="quiz_text">
+      <div className={styles.quiz_text}>
         {currentQuizData.quizText}
       </div>
 
       {/*============================*/}
       {/* 選択肢 */}
       {/*============================*/}
-      <div className="choiceArea">
+      <div className={styles.choiceArea}>
         {choices.map((choice, index) => (
           <button
             key={index}
-            className="choiceButton"
+            className={styles.choiceButton}
             onClick={() => choiceClick(choice)}
           >
-            <div className="choiceNumber">
+            <div className={styles.choiceNumber}>
               {index + 1}
             </div>
             
             {/* 【No.7】選択肢 */}
-            <div className="quiz_choices">
+            <div className={styles.quiz_choices}>
               {choice.text}
             </div>
           </button>
