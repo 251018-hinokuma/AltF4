@@ -1,0 +1,166 @@
+/* 全体のコンテナ（外枠の再現） */
+.achievement-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 20px auto;
+  border: 2px solid #333333;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  background-color: #ffffff;
+}
+
+/* ヘッダー・タブのレイアウト */
+.page-header {
+  display: flex;
+  border-bottom: 2px solid #333333;
+}
+
+.back-button, .tab {
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  background: none;
+  border: none;
+  border-right: 2px solid #333333;
+  box-sizing: border-box;
+}
+
+.back-button {
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #f0f0f0;
+}
+
+.tab {
+  background-color: #ffffff;
+  color: #333333;
+}
+
+/* アクティブなタブ（現在の画面）のスタイル */
+.tab.active-tab {
+  background-color: #f5f5f5;
+}
+
+/* メインコンテンツ領域 */
+.achievement-content {
+  padding: 40px 20px;
+}
+
+/* 横並びのグリッドレイアウト（ワイヤーフレームの4列を再現） */
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* 各トロフィーと達成状況のセット */
+.trophy-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* トロフィーの共通スタイル（正円形） */
+.trophy-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 2px solid #333333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 初期表示処理：false（未獲得）の場合は灰色 */
+.trophy-circle.locked {
+  background-color: #d3d3d3;
+  color: #777777;
+  border-color: #aaaaaa;
+}
+
+/* 初期表示処理：true（獲得済み）のそれぞれの色 */
+.trophy-circle.bronze {
+  background: linear-gradient(135deg, #cd7f32, #b87333);
+  color: #ffffff;
+}
+
+.trophy-circle.silver {
+  background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
+  color: #333333;
+}
+
+.trophy-circle.gold {
+  background: linear-gradient(135deg, #ffd700, #ffa500);
+  color: #333333;
+}
+
+.trophy-circle.rainbow {
+  background: linear-gradient(45deg, #ffadad, #ffd6a5, #fdffb6, #caffbf, #9bf6ff, #a0c4ff, #bdb2ff);
+  color: #333333;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* 達成状況の枠（四角形） */
+.status-box {
+  width: 150px;
+  height: 150px;
+  border: 2px solid #333333;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.status-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px dashed #333333;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.description-text {
+  margin: 5px 0;
+  font-size: 11px;
+  color: #555555;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.unlocked-text {
+  color: #2e7d32;
+}
+
+.locked-text {
+  color: #c62828;
+}
+
+/* レスポンシブ対応（画面幅が狭い場合は2列、または1列にする設定） */
+@map (max-width: 768px) {
+  .trophy-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px 10px;
+  }
+}
