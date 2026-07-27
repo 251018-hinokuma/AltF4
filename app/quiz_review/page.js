@@ -1,13 +1,17 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 export default function QuizReview() {
   const router = useRouter();
   const { game, toggleMarking } = useGame();
+
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
 
   // 復習画面で何問目を表示しているかのインデックス（0始まり）
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -16,11 +20,42 @@ export default function QuizReview() {
   const quizzes = game.quizzes || [];
   const currentQuiz = quizzes[reviewIndex] || null;
 
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
+
   // 問題IDの柔軟な取得（quizId または id）
   const quizId = currentQuiz ? (currentQuiz.quizId || currentQuiz.id) : null;
 
-  // ジャンルIDの取得
+  // ジャンルIDおよびステージ数の取得
   const genreId = currentQuiz?.genreId || game.genreId || 1;
+  const stageNum = currentQuiz?.stageId || game.stageId;
+
+  // Genreモデルの genreName からジャンル名を取得
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  const foundGenreObj = allGenres.find(
+    (g) => Number(g.genreId) === Number(genreId)
+  );
+  const genreName = foundGenreObj?.genreName || "";
 
   // マーキング状態の取得
   const isMarked = quizId ? game.user.markingQuizIds.includes(quizId) : false;
@@ -29,7 +64,7 @@ export default function QuizReview() {
   const userAnswer = quizId ? game.userAnswers?.[quizId] : undefined;
 
   //=========================================
-  // 【★重要】正誤判定ヘルパー関数（型・インデックス変換対応）
+  // 正誤判定ヘルパー関数（型・インデックス変換対応）
   //=========================================
   const checkIsCorrect = (quiz, userAns) => {
     if (!quiz || userAns === undefined || userAns === null || userAns === "") {
@@ -89,7 +124,7 @@ export default function QuizReview() {
 
   if (!currentQuiz || quizzes.length === 0) {
     return (
-      <main className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
         <h2>復習する問題がありません</h2>
       </main>
     );
@@ -103,16 +138,16 @@ export default function QuizReview() {
   }[answerStatus];
 
   return (
-    <main className="container">
+    <main className={styles.container}>
       {/*============================*/}
       {/* ヘッダー */}
       {/*============================*/}
-      <div className="header">
+      <div className={styles.header}>
         {/* マーキングボタン */}
-        <div className="markArea">
-          <span className="markText">マーキング</span>
+        <div className={styles.markArea}>
+          <span className={styles.markText}>マーキング</span>
           <button 
-            className="markingbutton" 
+            className={styles.markingbutton} 
             onClick={() => quizId && toggleMarking(quizId)}
           >
             {isMarked ? "★" : "☆"}
@@ -121,7 +156,7 @@ export default function QuizReview() {
 
         {/* 判定結果（正解 / 不正解 / 未回答） */}
         <div 
-          className="quiz_result" 
+          className={styles.quiz_result} 
           style={{ 
             backgroundColor: statusStyle.bg,
             color: statusStyle.color
@@ -130,23 +165,35 @@ export default function QuizReview() {
           {statusStyle.text}
         </div>
 
-        {/* 問題番号 */}
-        <div className="quiz_now">
-          {reviewIndex + 1}問 / {quizzes.length}問
+        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          {genreName && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+              {genreName}
+            </div>
+          )}
+          {stageNum && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
+              ステージ {stageNum}
+            </div>
+          )}
+          <div>
+            {reviewIndex + 1}問 / {quizzes.length}問
+          </div>
         </div>
       </div>
 
       {/*============================*/}
       {/* 問題文 */}
       {/*============================*/}
-      <div className="quiz_text">
+      <div className={styles.quiz_text}>
         {currentQuiz.quizText || currentQuiz.question}
       </div>
 
       {/*============================*/}
       {/* 選択肢一覧 */}
       {/*============================*/}
-      <div className="answerArea">
+      <div className={styles.answerArea}>
         {currentQuiz.choices.map((choiceText, index) => {
           // 正解の選択肢かどうかを判定
           const isRealAnswer = 
@@ -174,14 +221,14 @@ export default function QuizReview() {
           }
 
           return (
-            <div key={index} className="answerRow">
-              <div className="choiceNo" style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={styles.answerRow}>
+              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
                 {index + 1}
               </div>
-              <div className="quiz_choices" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
                 {choiceText}
               </div>
-              <div className="quiz_explanation" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
                 {explanationText}
               </div>
             </div>
@@ -192,21 +239,21 @@ export default function QuizReview() {
       {/*============================*/}
       {/* 下部ボタン */}
       {/*============================*/}
-      <div className="review_bottom">
+      <div className={styles.review_bottom}>
         <button 
-          className="review_nav_button" 
+          className={styles.review_nav_button} 
           onClick={() => setReviewIndex((prev) => Math.max(0, prev - 1))}
           disabled={reviewIndex === 0}
         >
           前の問題
         </button>
 
-        <button className="quiz_move_nextbutton" onClick={handleGoToStageSelection}>
+        <button className={styles.quiz_move_nextbutton} onClick={handleGoToStageSelection}>
           ステージ選択へ
         </button>
 
         <button 
-          className="review_nav_button" 
+          className={styles.review_nav_button} 
           onClick={() => setReviewIndex((prev) => Math.min(quizzes.length - 1, prev + 1))}
           disabled={reviewIndex === quizzes.length - 1}
         >

@@ -1,19 +1,45 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 export default function QuizAnswer() {
   const router = useRouter();
   const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion } = useGame();
+
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
 
   const currentQuiz = game.currentQuiz;
   
   // 正誤判定とマーキング状態の取得
   const isCorrect = currentQuiz ? game.selectedAnswer === currentQuiz.answer : false;
   const isMarked = currentQuiz ? game.user.markingQuizIds.includes(currentQuiz.quizId) : false;
+
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
 
   //=========================================
   // 【★超重要】二重実行防止用のフラグ（useRef）
@@ -61,20 +87,30 @@ export default function QuizAnswer() {
   // データ未ロード時のフォールバック表示
   if (!currentQuiz) {
     return (
-      <main className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
         <h2>データを読み込み中...</h2>
       </main>
     );
   }
 
+  // =========================================
+  // Genreモデルの genreName からジャンル名・ステージ数を取得
+  // =========================================
+  const targetGenreId = currentQuiz?.genreId;
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  
+  const foundGenreObj = allGenres.find(
+    (g) => Number(g.genreId) === Number(targetGenreId)
+  );
+
+  const genreName = foundGenreObj?.genreName || "";
+  const stageNum = currentQuiz?.stageId;
+
   // 下部ボタン（次の問題 / 結果へ）クリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      // 元々の処理（result画面へ遷移）
-      // router.push("/quiz_result");
-
-      // 一時的な確認用処理（review画面へ遷移）
-      router.push("/quiz_review");
+      router.push("/quiz_result");
+     // router.push("/quiz_review");
     } else {
       nextQuestion();
       router.push("/quiz_question");
@@ -82,16 +118,16 @@ export default function QuizAnswer() {
   };
 
   return (
-    <main className="container">
+    <main className={styles.container}>
       {/*============================*/}
       {/* ヘッダー */}
       {/*============================*/}
-      <div className="header">
+      <div className={styles.header}>
         {/* マーキングボタンと星 */}
-        <div className="markArea">
-          <span className="markText">マーキング</span>
-          <button 
-            className="markingbutton" 
+        <div className={styles.markArea}>
+          <span className={styles.markText}>マーキング</span>
+          <button
+            className={styles.markingbutton}
             onClick={() => toggleMarking(currentQuiz.quizId)}
           >
             {isMarked ? "★" : "☆"}
@@ -99,38 +135,50 @@ export default function QuizAnswer() {
         </div>
 
         {/* 【No.2】判定結果 */}
-        <div className="quiz_result" style={{ backgroundColor: isCorrect ? "#e8f5e9" : "#ffebee" }}>
+        <div className={styles.quiz_result} style={{ backgroundColor: isCorrect ? "#e8f5e9" : "#ffebee" }}>
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        {/* 【No.3】問題番号 */}
-        <div className="quiz_now">
-          {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length}問
+        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          {genreName && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+              {genreName}
+            </div>
+          )}
+          {stageNum && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
+              ステージ {stageNum}
+            </div>
+          )}
+          <div>
+            {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length}問
+          </div>
         </div>
 
         {/* 【No.4】HP */}
-        <div className="quiz_HP" style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
+        <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
           HP {game.hp}/5
         </div>
 
         {/* 【No.5】経過時間 */}
-        <div className="quiz_Time">
-          <div className="timerTitle">経過時間</div>
-          <div className="timer">{formattedTime}</div>
+        <div className={styles.quiz_Time}>
+          <div className={styles.timerTitle}>経過時間</div>
+          <div className={styles.timer}>{formattedTime}</div>
         </div>
       </div>
 
       {/*============================*/}
       {/* 【No.6】問題文 */}
       {/*============================*/}
-      <div className="quiz_text">
+      <div className={styles.quiz_text}>
         {currentQuiz.question}
       </div>
 
       {/*============================*/}
       {/* 選択肢一覧（テーブル） */}
       {/*============================*/}
-      <div className="answerArea">
+      <div className={styles.answerArea}>
         {currentQuiz.choices.map((choiceText, index) => {
           const isUserSelected = game.selectedAnswer === choiceText;
           const isRealAnswer = currentQuiz.answer === choiceText;
@@ -144,18 +192,18 @@ export default function QuizAnswer() {
           }
 
           // この選択肢に対応する解説テキストを抽出
-          const expObj = currentQuiz.explanations.find((e) => e.choice === choiceText);
+          const expObj = currentQuiz.explanations?.find((e) => e.choice === choiceText);
           const explanationText = expObj ? expObj.explanation : "";
 
           return (
-            <div key={index} className="answerRow">
-              <div className="choiceNo" style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={styles.answerRow}>
+              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
                 {index + 1}
               </div>
-              <div className="quiz_choices" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
                 {choiceText}
               </div>
-              <div className="quiz_explanation" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
                 {explanationText}
               </div>
             </div>
@@ -166,8 +214,8 @@ export default function QuizAnswer() {
       {/*============================*/}
       {/* 下部ボタンエリア */}
       {/*============================*/}
-      <div className="bottom">
-        <button className="quiz_move_nextbutton" onClick={handleNext}>
+      <div className={styles.bottom}>
+        <button className={styles.quiz_move_nextbutton} onClick={handleNext}>
           {isLastOrDead ? "結果へ" : "次の問題"}
         </button>
       </div>

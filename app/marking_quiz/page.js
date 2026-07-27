@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
-import "./page.css";
+import styles from "./page.module.css";
 
 function MarkingQuizContent() {
   const router = useRouter();
@@ -14,9 +14,35 @@ function MarkingQuizContent() {
   const targetGenreId = Number(searchParams.get("genreId")) || 1;
   const targetQuizId = searchParams.get("quizId") ? Number(searchParams.get("quizId")) : null;
 
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
+
   const [markedQuizzes, setMarkedQuizzes] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
 
   //=========================================
   // 【問題データの多角的自動取得 ＆ フィルタリング】
@@ -131,8 +157,9 @@ function MarkingQuizContent() {
   const currentQuiz = markedQuizzes[currentIndex] || null;
   const currentQuizId = currentQuiz ? Number(currentQuiz.quizId ?? currentQuiz.quiz_id ?? currentQuiz.id) : null;
 
-  // ジャンル名の取得（Contextのジャンル一覧または問題データから抽出）
-  const foundGenreObj = (game.genres || []).find((g) => Number(g.genreId ?? g.id) === targetGenreId);
+  // ジャンル名の取得（APIフェッチ結果、Contextのジャンル一覧、または問題データから抽出）
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  const foundGenreObj = allGenres.find((g) => Number(g.genreId ?? g.id) === targetGenreId);
   const genreDisplayName =
     foundGenreObj?.genreName ||
     foundGenreObj?.name ||
@@ -162,8 +189,8 @@ function MarkingQuizContent() {
 
   if (isLoading) {
     return (
-      <main className="container">
-        <div className="emptyArea">
+      <main className={styles.container}>
+        <div className={styles.emptyArea}>
           <h2>問題を読み込み中...</h2>
         </div>
       </main>
@@ -172,20 +199,20 @@ function MarkingQuizContent() {
 
   if (!currentQuiz || markedQuizzes.length === 0) {
     return (
-      <main className="container">
-        <div className="markingHeader">
-          <div className="headerCell markTextCell">
+      <main className={styles.container}>
+        <div className={styles.markingHeader}>
+          <div className={`${styles.headerCell} ${styles.markTextCell}`}>
             マーキング
           </div>
-          <div className="headerCell markBtnCell">☆</div>
-          <div className="headerCell headerSpacer"></div>
-          <div className="headerCell genreCell">
+          <div className={`${styles.headerCell} ${styles.markBtnCell}`}>☆</div>
+          <div className={`${styles.headerCell} ${styles.headerSpacer}`}></div>
+          <div className={`${styles.headerCell} ${styles.genreCell}`}>
             {genreDisplayName}
           </div>
         </div>
-        <div className="emptyArea">
+        <div className={styles.emptyArea}>
           <h2>{genreDisplayName} のマーキングされた問題はありません</h2>
-          <button className="homebutton" onClick={handleGoHome}>
+          <button className={styles.homebutton} onClick={handleGoHome}>
             ホームへ戻る
           </button>
         </div>
@@ -194,32 +221,32 @@ function MarkingQuizContent() {
   }
 
   return (
-    <main className="container">
+    <main className={styles.container}>
       {/* ヘッダー（枠線区切り） */}
-      <div className="markingHeader">
-        <div className="headerCell markTextCell">
+      <div className={styles.markingHeader}>
+        <div className={`${styles.headerCell} ${styles.markTextCell}`}>
           マーキング
         </div>
-        <button 
-          className="headerCell markBtnCell" 
+        <button
+          className={`${styles.headerCell} ${styles.markBtnCell}`}
           onClick={handleToggleMarking}
           title="マーキング切替"
         >
           {isMarked ? "★" : "☆"}
         </button>
-        <div className="headerCell headerSpacer"></div>
-        <div className="headerCell genreCell">
+        <div className={`${styles.headerCell} ${styles.headerSpacer}`}></div>
+        <div className={`${styles.headerCell} ${styles.genreCell}`}>
           {genreDisplayName}
         </div>
       </div>
 
       {/* 問題文 */}
-      <div className="quiz_text">
+      <div className={styles.quiz_text}>
         {currentQuiz.quizText || currentQuiz.question || currentQuiz.quiz_text}
       </div>
 
       {/* 選択肢一覧 */}
-      <div className="answerArea">
+      <div className={styles.answerArea}>
         {(currentQuiz.choices || []).map((choiceText, index) => {
           const isRealAnswer =
             currentQuiz.answer === choiceText ||
@@ -233,14 +260,14 @@ function MarkingQuizContent() {
           const rowBgColor = isRealAnswer ? "#e8f5e9" : "#ffffff";
 
           return (
-            <div key={index} className="answerRow">
-              <div className="choiceNo" style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={styles.answerRow}>
+              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
                 {index + 1}
               </div>
-              <div className="quiz_choices" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
                 {choiceText}
               </div>
-              <div className="quiz_explanation" style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
                 {explanationText}
               </div>
             </div>
@@ -249,21 +276,21 @@ function MarkingQuizContent() {
       </div>
 
       {/* 下部ボタン */}
-      <div className="bottomNav">
+      <div className={styles.bottomNav}>
         <button
-          className="quiz_move_beforebutton"
+          className={styles.quiz_move_beforebutton}   
           onClick={handleBefore}
           disabled={currentIndex === 0}
         >
           前の問題
         </button>
 
-        <button className="homebutton" onClick={handleGoHome}>
+        <button className={styles.homebutton} onClick={handleGoHome}>
           ホームへ
         </button>
 
         <button
-          className="quiz_move_nextbutton"
+          className={styles.quiz_move_nextbutton}
           onClick={handleNext}
           disabled={currentIndex === markedQuizzes.length - 1}
         >
@@ -276,7 +303,7 @@ function MarkingQuizContent() {
 
 export default function MarkingQuiz() {
   return (
-    <Suspense fallback={<div className="container">読み込み中...</div>}>
+    <Suspense fallback={<div className={styles.container}>読み込み中...</div>}>
       <MarkingQuizContent />
     </Suspense>
   );
