@@ -14,9 +14,35 @@ function MarkingQuizContent() {
   const targetGenreId = Number(searchParams.get("genreId")) || 1;
   const targetQuizId = searchParams.get("quizId") ? Number(searchParams.get("quizId")) : null;
 
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
+
   const [markedQuizzes, setMarkedQuizzes] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
 
   //=========================================
   // 【問題データの多角的自動取得 ＆ フィルタリング】
@@ -131,8 +157,9 @@ function MarkingQuizContent() {
   const currentQuiz = markedQuizzes[currentIndex] || null;
   const currentQuizId = currentQuiz ? Number(currentQuiz.quizId ?? currentQuiz.quiz_id ?? currentQuiz.id) : null;
 
-  // ジャンル名の取得（Contextのジャンル一覧または問題データから抽出）
-  const foundGenreObj = (game.genres || []).find((g) => Number(g.genreId ?? g.id) === targetGenreId);
+  // ジャンル名の取得（APIフェッチ結果、Contextのジャンル一覧、または問題データから抽出）
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  const foundGenreObj = allGenres.find((g) => Number(g.genreId ?? g.id) === targetGenreId);
   const genreDisplayName =
     foundGenreObj?.genreName ||
     foundGenreObj?.name ||
