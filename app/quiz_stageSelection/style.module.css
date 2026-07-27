@@ -1,0 +1,122 @@
+.page {
+  width: 1000px;
+  height: 650px;
+  margin: 30px auto;
+  border: 2px solid #000;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* --- ヘッダー領域 --- */
+.top {
+  display: flex;
+  height: 60px;
+  width: fit-content;
+}
+
+.menu,
+.title {
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: #000;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.menu {
+  width: 90px;
+}
+
+.title {
+  padding: 0 30px;
+}
+
+/* --- メインコンテンツ（右寄せ配置） --- */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 50px 80px;
+}
+
+.link {
+  text-decoration: none;
+  color: black;
+  /* 上下に並ぶカードの境界線を重ねる */
+  margin-top: -2px;
+}
+
+.link:first-child {
+  margin-top: 0;
+}
+
+/* --- ステージカード枠 --- */
+.stageBox {
+  width: 550px;
+  height: 110px;
+  border: 2px solid #000;
+  display: grid;
+  /* [ステージ名] [ノーマル] [ハード] [実績エリア] の比率 */
+  grid-template-columns: 2.2fr 50px 50px 2.2fr;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.stageBox:hover {
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+.stage,
+.mode,
+.result {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 2px solid #000;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
+.stage {
+  font-weight: normal;
+}
+
+/* 「ノーマル」「ハード」の縦書き設定 */
+.mode {
+  writing-mode: vertical-rl;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+
+/* 右端エリア */
+.result {
+  border-right: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+/* 星3つの並び */
+.starArea {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* 「クリア 全問正解 スピード」テキストの並び */
+.labelArea {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
