@@ -41,6 +41,10 @@
   color: #333333;
 }
 
+.border-left-none {
+  border-left: none;
+}
+
 /* アクティブなタブ（現在の画面）のスタイル */
 .tab.active-tab {
   background-color: #f5f5f5;
@@ -157,8 +161,8 @@
   color: #c62828;
 }
 
-/* レスポンシブ対応（画面幅が狭い場合は2列、または1列にする設定） */
-@map (max-width: 768px) {
+/* レスポンシブ対応（@media に修正） */
+@media (max-width: 768px) {
   .trophy-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 30px 10px;
