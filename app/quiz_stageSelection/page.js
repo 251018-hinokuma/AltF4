@@ -7,7 +7,7 @@ export default function QuizStageSelection() {
     <div className={styles.page}>
       {/* ヘッダー部分 */}
       <div className={styles.top}>
-        <Link href="/quiz_genre" className={styles.menu}>
+        <Link href="/quiz_genreSelection" className={styles.menu}>
           戻る
         </Link>
         <div className={styles.title}>クイズ</div>
