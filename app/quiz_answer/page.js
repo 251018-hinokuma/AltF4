@@ -74,7 +74,7 @@ export default function QuizAnswer() {
       // router.push("/quiz_result");
 
       // 一時的な確認用処理（review画面へ遷移）
-      router.push("/quiz_review");
+      router.push("/quiz_result");
     } else {
       nextQuestion();
       router.push("/quiz_question");
