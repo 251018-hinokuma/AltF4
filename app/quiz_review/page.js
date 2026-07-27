@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
@@ -9,6 +10,9 @@ export default function QuizReview() {
   const router = useRouter();
   const { game, toggleMarking } = useGame();
 
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
+
   // 復習画面で何問目を表示しているかのインデックス（0始まり）
   const [reviewIndex, setReviewIndex] = useState(0);
 
@@ -16,11 +20,42 @@ export default function QuizReview() {
   const quizzes = game.quizzes || [];
   const currentQuiz = quizzes[reviewIndex] || null;
 
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
+
   // 問題IDの柔軟な取得（quizId または id）
   const quizId = currentQuiz ? (currentQuiz.quizId || currentQuiz.id) : null;
 
-  // ジャンルIDの取得
+  // ジャンルIDおよびステージ数の取得
   const genreId = currentQuiz?.genreId || game.genreId || 1;
+  const stageNum = currentQuiz?.stageId || game.stageId;
+
+  // Genreモデルの genreName からジャンル名を取得
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  const foundGenreObj = allGenres.find(
+    (g) => Number(g.genreId) === Number(genreId)
+  );
+  const genreName = foundGenreObj?.genreName || "";
 
   // マーキング状態の取得
   const isMarked = quizId ? game.user.markingQuizIds.includes(quizId) : false;
@@ -29,7 +64,7 @@ export default function QuizReview() {
   const userAnswer = quizId ? game.userAnswers?.[quizId] : undefined;
 
   //=========================================
-  // 【★重要】正誤判定ヘルパー関数（型・インデックス変換対応）
+  // 正誤判定ヘルパー関数（型・インデックス変換対応）
   //=========================================
   const checkIsCorrect = (quiz, userAns) => {
     if (!quiz || userAns === undefined || userAns === null || userAns === "") {
@@ -130,9 +165,21 @@ export default function QuizReview() {
           {statusStyle.text}
         </div>
 
-        {/* 問題番号 */}
-        <div className={styles.quiz_now}>
-          {reviewIndex + 1}問 / {quizzes.length}問
+        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          {genreName && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+              {genreName}
+            </div>
+          )}
+          {stageNum && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
+              ステージ {stageNum}
+            </div>
+          )}
+          <div>
+            {reviewIndex + 1}問 / {quizzes.length}問
+          </div>
         </div>
       </div>
 

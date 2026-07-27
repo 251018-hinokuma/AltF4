@@ -19,6 +19,9 @@ export default function QuizQuestion() {
     setSelectedAnswer 
   } = useGame();
 
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
+
   // currentQuestion は 1 から始まるため、配列のインデックス（0〜9）に合わせる
   const quizIndex = game.currentQuestion > 0 ? game.currentQuestion - 1 : 0;
   
@@ -28,10 +31,32 @@ export default function QuizQuestion() {
   const [choices, setChoices] = useState([]);
 
   //=========================================
-  // 【★修正箇所】クイズの取得条件を調整 ＆ タイマー開始
+  // 【Genreモデルからジャンル一覧を取得】
   //=========================================
   useEffect(() => {
-    // すでにクイズデータ（quizzes）が取得されている場合は再取得しない（1問目にリセットされるのを防ぐ）
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
+
+  //=========================================
+  // クイズの取得条件を調整 ＆ タイマー開始
+  //=========================================
+  useEffect(() => {
     if (!game.quizzes || game.quizzes.length === 0) {
       fetchQuizzes(1, 1);
     }
@@ -122,6 +147,24 @@ export default function QuizQuestion() {
     );
   }
 
+  // 最大HPの決定（Contextから取得、無ければ初期値5）
+  const maxHp = game.maxHp || game.maxHP || 5;
+
+  // =========================================
+  // Genreモデルの genreName からジャンル名を取得
+  // =========================================
+  const targetGenreId = currentQuizData.genreId;
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  
+  // Genreモデル (genreId, genreName) から一致するものを探す
+  const foundGenreObj = allGenres.find(
+    (g) => Number(g.genreId) === Number(targetGenreId)
+  );
+
+  // Genreモデルの genreName を直接指定して取得
+  const genreName = foundGenreObj?.genreName || "";
+  const stageNum = currentQuizData.stageId;
+
   return (
     <main className={styles.container}>
 
@@ -136,14 +179,26 @@ export default function QuizQuestion() {
         {/* 判定結果の代わりの空白エリア（レイアウト調整用） */}
         <div className={styles.blankArea} style={{ flex: 1, borderRight: "2px solid black", height: "100%" }}></div>
 
-        {/* 【No.3】問題番号 */}
-        <div className={styles.quiz_now}>
-          {game.currentQuestion}問 / {game.totalQuestion || game.quizzes.length}問
+        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          {genreName && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+              {genreName}
+            </div>
+          )}
+          {stageNum && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
+              ステージ {stageNum}
+            </div>
+          )}
+          <div>
+            {game.currentQuestion}問 / {game.totalQuestion || game.quizzes.length}問
+          </div>
         </div>
 
         {/* 【No.4】HP */}
         <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
-          HP {game.hp}
+          HP {game.hp} / {maxHp}
         </div>
 
         {/* 【No.5】経過時間 */}
