@@ -1,0 +1,77 @@
+/* 全体コンテナ（全体を囲む外枠） */
+.page {
+  border: 2px solid #000;
+  width: 100%;
+  max-width: 800px;
+  min-height: 450px;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  background-color: #fff;
+}
+
+/* 上部ヘッダーエリア */
+.top {
+  display: flex;
+  border-bottom: 2px solid #000;
+  width: fit-content; /* 中身に合わせて横幅を調整 */
+}
+
+/* ヘッダー内の各ボタン・タイトル枠 */
+.menu,
+.title {
+  padding: 12px 24px;
+  border-right: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* メインコンテンツエリア（右側に寄せる設定） */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* 右寄席 */
+  padding: 40px 20px;
+}
+
+/* ジャンル選択ブロック（各リンク枠） */
+.genreBox {
+  display: flex;
+  border: 2px solid #000;
+  width: 320px;
+  color: #000;
+  text-decoration: none;
+  margin-bottom: -2px; /* 枠線の重複を防ぐ */
+}
+
+/* ジャンル名エリア（左側） */
+.genreName {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid #000;
+  padding: 20px 10px;
+  font-weight: bold;
+}
+
+/* 星と個数のエリア（右側） */
+.starArea {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* 星マークのサイズ調整 */
+.starArea div:first-child {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
