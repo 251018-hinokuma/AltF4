@@ -18,7 +18,7 @@ export default function QuizStageSelection() {
       {/* メインコンテンツ */}
       <div className={styles.content}>
         {/* ステージ１ */}
-        <Link href="/quiz_play?stageId=1" className={styles.link}>
+        <Link href="/quiz_question?stageId=1" className={styles.link}>
           <div className={styles.stageBox}>
             <div className={styles.stage}>ステージ１</div>
             <div className={styles.mode}>ノーマル</div>
@@ -39,7 +39,7 @@ export default function QuizStageSelection() {
         </Link>
 
         {/* ステージ２ */}
-        <Link href="/quiz_play?stageId=2" className={styles.link}>
+        <Link href="/quiz_question?stageId=2" className={styles.link}>
           <div className={styles.stageBox}>
             <div className={styles.stage}>ステージ２</div>
             <div className={styles.mode}>ノーマル</div>
