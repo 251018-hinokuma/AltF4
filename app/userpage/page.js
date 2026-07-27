@@ -167,29 +167,40 @@ export default function UserPage() {
                 {/*ユーザー情報*/}
                 <section className={styles.profile}>
                     
-                    {/* ユーザーアイコン */}
+                    {/* ユーザーアカウントアイコン */}
+                <div className={styles.userIcon}>
                     <svg
-                        width="120"
-                        height="120"
+                        className={styles.userIconSvg}
+                        viewBox="0 0 120 120"
+                        aria-label="ユーザーアカウント"
                     >
-                        <circle
-                            cx="60"
-                            cy="30"
-                            r="25"
-                            stroke="white"
-                            strokeWidth="3"
-                            fill="none"
-                        />
-                        <path
-                            d="
-                                M15 100
-                                C15 60,105 60,105 100
-                            "
-                            stroke="white"
-                            strokeWidth="3"
-                            fill="none"
-                        />
+                    {/* 外側の円 */}
+                    <circle
+                        cx="60"
+                        cy="60"
+                        r="55"
+                        className={styles.userIconFrame}
+                    />
+
+                    {/* 頭 */}
+                    <circle
+                        cx="60"
+                        cy="42"
+                        r="20"
+                        className={styles.userIconHead}
+                    />
+
+                    {/* 肩 */}
+                    <path
+                        d="
+                            M25 100
+                            C28 78, 42 68, 60 68
+                            C78 68, 92 78, 95 100
+                        "
+                        className={styles.userIconBody}
+                    />
                     </svg>
+                </div>
 
                     {/* ユーザー情報 */}
                     <div className={styles.info}>
