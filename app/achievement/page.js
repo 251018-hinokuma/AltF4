@@ -46,7 +46,11 @@ export default function AchievementPage() {
 
   // Back Button Click Handler
   const handleBack = () => {
+<<<<<<< HEAD
     router.push('/user-page');
+=======
+    router.push('/userpage');
+>>>>>>> sujit
   };
 
   return (
@@ -98,4 +102,8 @@ export default function AchievementPage() {
       </main>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> sujit
