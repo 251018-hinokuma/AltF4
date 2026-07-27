@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
 
 export default function QuizQuestion() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  //=========================================
+  // URLクエリパラメータから genreId と stageId の取得
+  //=========================================
+  const queryGenreId = searchParams.get("genreId");
+  const queryStageId = searchParams.get("stageId");
 
   //=========================================
   // GameContext
@@ -54,12 +61,20 @@ export default function QuizQuestion() {
   }, [game.genres]);
 
   //=========================================
-  // クイズの取得条件を調整 ＆ タイマー開始
+  // クイズの取得 ＆ タイマー開始
   //=========================================
   useEffect(() => {
-    if (!game.quizzes || game.quizzes.length === 0) {
-      fetchQuizzes(1, 1);
+    // 1. URLパラメータが明示的に指定されている場合はそのステージを取得
+    if (queryGenreId && queryStageId) {
+      fetchQuizzes(Number(queryGenreId), Number(queryStageId));
+    } 
+    // 2. パラメータがなく、かつ現在クイズがロードされていない場合のみデフォルト(1, 1)で取得
+    else if (!game.quizzes || game.quizzes.length === 0) {
+      const defaultGenre = game.genreId || 1;
+      const defaultStage = game.stageId || 1;
+      fetchQuizzes(Number(defaultGenre), Number(defaultStage));
     }
+    // ※ 既に game.quizzes が存在し、quiz_answer から遷移してきた場合は fetchQuizzes を呼ばない
 
     const timer = setInterval(() => {
       updateElapsedTime();
@@ -67,7 +82,7 @@ export default function QuizQuestion() {
 
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 最初のマウント時のみ実行
+  }, [queryGenreId, queryStageId]);
 
   //=========================================
   // mm:ssへ変換
@@ -151,19 +166,17 @@ export default function QuizQuestion() {
   const maxHp = game.maxHp || game.maxHP || 5;
 
   // =========================================
-  // Genreモデルの genreName からジャンル名を取得
+  // 現在の問題データ(currentQuizData)からジャンル名・ステージ数を取得
   // =========================================
-  const targetGenreId = currentQuizData.genreId;
+  const currentGenreId = currentQuizData.genreId;
+  const stageNum = currentQuizData.stageId;
+
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
-  
-  // Genreモデル (genreId, genreName) から一致するものを探す
   const foundGenreObj = allGenres.find(
-    (g) => Number(g.genreId) === Number(targetGenreId)
+    (g) => Number(g.genreId) === Number(currentGenreId)
   );
 
-  // Genreモデルの genreName を直接指定して取得
   const genreName = foundGenreObj?.genreName || "";
-  const stageNum = currentQuizData.stageId;
 
   return (
     <main className={styles.container}>

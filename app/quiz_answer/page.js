@@ -110,6 +110,7 @@ export default function QuizAnswer() {
   const handleNext = () => {
     if (isLastOrDead) {
       router.push("/quiz_result");
+     // router.push("/quiz_review");
     } else {
       nextQuestion();
       router.push("/quiz_question");
