@@ -1,53 +1,68 @@
-/* 全体コンテナ（全体を囲む外枠） */
 .page {
+  width: 1000px;         /* 固定幅を指定 */
+  height: 650px;
+  margin: 30px auto;     /* ★ auto を指定することで左右中央寄せになります */
   border: 2px solid #000;
-  width: 100%;
-  max-width: 800px;
-  min-height: 450px;
+  background: #fff;
   box-sizing: border-box;
-  font-family: sans-serif;
-  background-color: #fff;
 }
 
-/* 上部ヘッダーエリア */
+/* 上部ヘッダー */
 .top {
   display: flex;
-  border-bottom: 2px solid #000;
-  width: fit-content; /* 中身に合わせて横幅を調整 */
+  height: 60px;
+  width: fit-content;
 }
 
-/* ヘッダー内の各ボタン・タイトル枠 */
 .menu,
 .title {
-  padding: 12px 24px;
   border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  background: #fff;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
   color: #000;
   text-decoration: none;
-  font-weight: bold;
+  box-sizing: border-box;
 }
 
-/* メインコンテンツエリア（右側に寄せる設定） */
+.menu {
+  width: 90px;
+}
+
+.title {
+  padding: 0 30px;
+}
+
+/* 右側に寄せるジャンル選択エリア */
 .content {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* 右寄席 */
-  padding: 40px 20px;
+  align-items: flex-end; /* ジャンル枠自体は右寄せる設定 */
+  padding: 50px 80px;
 }
 
-/* ジャンル選択ブロック（各リンク枠） */
 .genreBox {
   display: flex;
   border: 2px solid #000;
   width: 320px;
   color: #000;
   text-decoration: none;
-  margin-bottom: -2px; /* 枠線の重複を防ぐ */
+  margin-top: -2px; /* 線の重複防止 */
+  background: #fff;
 }
 
-/* ジャンル名エリア（左側） */
+.genreBox:first-child {
+  margin-top: 0;
+}
+
+.genreBox:hover {
+  background: #f9f9f9;
+}
+
 .genreName {
   flex: 1;
   display: flex;
@@ -58,7 +73,6 @@
   font-weight: bold;
 }
 
-/* 星と個数のエリア（右側） */
 .starArea {
   width: 120px;
   display: flex;
@@ -69,9 +83,8 @@
   font-size: 14px;
 }
 
-/* 星マークのサイズ調整 */
 .starArea div:first-child {
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1;
   margin-bottom: 4px;
 }
