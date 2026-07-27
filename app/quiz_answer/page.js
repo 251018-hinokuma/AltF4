@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
@@ -9,11 +9,37 @@ export default function QuizAnswer() {
   const router = useRouter();
   const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion } = useGame();
 
+  // ジャンル一覧保持用ステート
+  const [genres, setGenres] = useState([]);
+
   const currentQuiz = game.currentQuiz;
   
   // 正誤判定とマーキング状態の取得
   const isCorrect = currentQuiz ? game.selectedAnswer === currentQuiz.answer : false;
   const isMarked = currentQuiz ? game.user.markingQuizIds.includes(currentQuiz.quizId) : false;
+
+  //=========================================
+  // 【Genreモデルからジャンル一覧を取得】
+  //=========================================
+  useEffect(() => {
+    async function loadGenres() {
+      if (game.genres && game.genres.length > 0) {
+        setGenres(game.genres);
+      } else {
+        try {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.genres || []);
+            setGenres(list);
+          }
+        } catch (e) {
+          console.error("Genreデータの取得に失敗しました:", e);
+        }
+      }
+    }
+    loadGenres();
+  }, [game.genres]);
 
   //=========================================
   // 【★超重要】二重実行防止用のフラグ（useRef）
@@ -61,20 +87,30 @@ export default function QuizAnswer() {
   // データ未ロード時のフォールバック表示
   if (!currentQuiz) {
     return (
-      <main className={styles.container}style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
         <h2>データを読み込み中...</h2>
       </main>
     );
   }
 
+  // =========================================
+  // Genreモデルの genreName からジャンル名・ステージ数を取得
+  // =========================================
+  const targetGenreId = currentQuiz?.genreId;
+  const allGenres = genres.length > 0 ? genres : (game.genres || []);
+  
+  const foundGenreObj = allGenres.find(
+    (g) => Number(g.genreId) === Number(targetGenreId)
+  );
+
+  const genreName = foundGenreObj?.genreName || "";
+  const stageNum = currentQuiz?.stageId;
+
   // 下部ボタン（次の問題 / 結果へ）クリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      // 元々の処理（result画面へ遷移）
-      // router.push("/quiz_result");
-
-      // 一時的な確認用処理（review画面へ遷移）
-      router.push("/quiz_review");
+      router.push("/quiz_result");
+     // router.push("/quiz_review");
     } else {
       nextQuestion();
       router.push("/quiz_question");
@@ -103,9 +139,21 @@ export default function QuizAnswer() {
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        {/* 【No.3】問題番号 */}
-        <div className={styles.quiz_now}>
-          {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length}問
+        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          {genreName && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+              {genreName}
+            </div>
+          )}
+          {stageNum && (
+            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
+              ステージ {stageNum}
+            </div>
+          )}
+          <div>
+            {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length}問
+          </div>
         </div>
 
         {/* 【No.4】HP */}
@@ -144,7 +192,7 @@ export default function QuizAnswer() {
           }
 
           // この選択肢に対応する解説テキストを抽出
-          const expObj = currentQuiz.explanations.find((e) => e.choice === choiceText);
+          const expObj = currentQuiz.explanations?.find((e) => e.choice === choiceText);
           const explanationText = expObj ? expObj.explanation : "";
 
           return (
