@@ -1,14 +1,17 @@
 "use client";
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import styles from "./page.module.css";
 
-// 星型のアイコン（SVG）をコンポーネント化
-const StarIcon = ({ className }) => (
+// ==========================================
+// 共通パーツ: 星アイコン
+// ==========================================
+const StarIcon = ({ className, isEarned = false }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+    fill={isEarned ? "#fbbf24" : "none"} 
+    stroke={isEarned ? "#fbbf24" : "currentColor"}
     strokeWidth="1.5" 
     strokeLinecap="round" 
     strokeLinejoin="round" 
@@ -18,24 +21,27 @@ const StarIcon = ({ className }) => (
   </svg>
 );
 
-// ---------------------------------------------------
-// 1. 各ステージのマスを表現するコンポーネント
-// ---------------------------------------------------
-const StageCard = ({ title }) => {
-  const starTypes = ['クリア', '全問正解', 'スピード'];
+// ==========================================
+// 【第3層: ステージの詳細情報】を受け取るコンポーネント
+// ==========================================
+const StageCard = ({ title, stageData }) => {
+  // データが渡ってこなかった場合（未プレイ時）の初期値
+  const data = stageData || { clear: false, perfect: false, speed: false };
+
+  const starTypes = [
+    { label: 'クリア', isEarned: data.clear },
+    { label: '全問正解', isEarned: data.perfect },
+    { label: 'スピード', isEarned: data.speed }
+  ];
 
   return (
     <div className={styles["star-stage-card"]}>
-      {/* ステージ名 */}
-      <div className={styles["star-stage-title"]}>
-        {title}
-      </div>
-      {/* 獲得スター一覧 */}
+      <div className={styles["star-stage-title"]}>{title}</div>
       <div className={styles["star-star-list"]}>
-        {starTypes.map((label) => (
-          <div key={label} className={styles["star-star-item"]}>
-            <StarIcon className={styles["star-icon-small"]} />
-            <span className={styles["star-star-label"]}>{label}</span>
+        {starTypes.map((star) => (
+          <div key={star.label} className={styles["star-star-item"]}>
+            <StarIcon className={styles["star-icon-small"]} isEarned={star.isEarned} />
+            <span className={styles["star-star-label"]}>{star.label}</span>
           </div>
         ))}
       </div>
@@ -43,67 +49,94 @@ const StageCard = ({ title }) => {
   );
 };
 
-// ---------------------------------------------------
-// 2. ジャンルごとのまとまりを表現するコンポーネント
-// ---------------------------------------------------
-const GenreSection = ({ genreName, currentStars, totalStars }) => {
+// ==========================================
+// 【第2層: ステージ一覧】を受け取るコンポーネント
+// ==========================================
+const GenreSection = ({ genreName, genreData }) => {
   const stages = ['ステージ１', 'ステージ２', 'ステージ３', 'ステージ４', 'ステージ５', 'ボス'];
+  
+  // ジャンル内の獲得済みスター数を計算
+  let earnedStars = 0;
+  if (genreData) {
+    Object.values(genreData).forEach(stage => {
+      if (stage.clear) earnedStars++;
+      if (stage.perfect) earnedStars++;
+      if (stage.speed) earnedStars++;
+    });
+  }
+  const totalStars = stages.length * 3;
 
   return (
     <div className={styles["star-genre-section"]}>
-      {/* ジャンルヘッダー部分 */}
       <div className={styles["star-genre-header"]}>
-        {/* ジャンル名 (中央配置) */}
-        <div className={styles["star-genre-title"]}>
-          {genreName}
-        </div>
-        {/* 大きな星アイコン */}
+        <div className={styles["star-genre-title"]}>{genreName}</div>
         <div className={styles["star-genre-big-star"]}>
-          <StarIcon className={styles["star-icon-large"]} />
+          <StarIcon className={styles["star-icon-large"]} isEarned={earnedStars === totalStars} />
         </div>
-        {/* 獲得数 */}
         <div className={styles["star-genre-score"]}>
-          {currentStars}個/{totalStars}個
+          {earnedStars}個/{totalStars}個
         </div>
       </div>
-
-      {/* ステージのグリッド (6列) */}
       <div className={styles["star-stage-grid"]}>
         {stages.map((stage) => (
-          <StageCard key={stage} title={stage} />
+          <StageCard 
+            key={stage} 
+            title={stage} 
+            // 第3層（詳細情報）をStageCardに渡す
+            stageData={genreData ? genreData[stage] : null} 
+          />
         ))}
       </div>
     </div>
   );
 };
 
-// ---------------------------------------------------
-// 3. メインページ
-// ---------------------------------------------------
+// ==========================================
+// 【第1層: ジャンル一覧（全体データ）】を管理するページ
+// ==========================================
 export default function StarStatusPage() {
+  const [saveData, setSaveData] = useState({});
+
+  useEffect(() => {
+    // 画面表示時にブラウザの保存領域（localStorage）からデータを取得
+    const saved = localStorage.getItem("quizSaveData");
+    
+    if (saved) {
+      setSaveData(JSON.parse(saved));
+    } else {
+      // ※まだセーブデータがない場合のテスト用ダミーデータ
+      const dummyData = {
+        "ジャンル１": {
+          "ステージ１": { clear: true, perfect: false, speed: true },
+          "ステージ２": { clear: true, perfect: true, speed: false },
+        },
+        "ジャンル２": {
+          "ステージ１": { clear: true, perfect: false, speed: false }
+        }
+      };
+      setSaveData(dummyData);
+    }
+  }, []);
+
   return (
     <div className={styles["star-container"]}>
       
-      {/* トップナビゲーション（タブ） */}
       <div className={styles["star-tabs"]}>
+        {/* Linkコンポーネントを使って画面遷移を実装 */}
         <Link href="/">
-        <button className={styles["star-tab-button"]}>
-          戻る
-        </button>
+          <button className={styles["star-tab-button"]}>戻る</button>
         </Link>
-        <Link href="/userpage">
-        <button className={styles["star-tab-button"]}>
-          ユーザーページ
-        </button>
+        <Link href="/user">
+          <button className={styles["star-tab-button"]}>ユーザーページ</button>
         </Link>
         <button className={`${styles["star-tab-button"]} ${styles["star-tab-button-active"]}`}>
           スター獲得状況
         </button>
       </div>
 
-      {/* メインコンテンツ（ジャンルごとの一覧） */}
-      <GenreSection genreName="ジャンル１" currentStars="３０" totalStars="○" />
-      <GenreSection genreName="ジャンル２" currentStars="３０" totalStars="○" />
+      {/* 第2層（ステージ一覧）をGenreSectionに渡す */}
+      <GenreSection genreName="ジャンル１" genreData={saveData["ジャンル１"]} />
+      <GenreSection genreName="ジャンル２" genreData={saveData["ジャンル２"]} />
       
     </div>
   );
