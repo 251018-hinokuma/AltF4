@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
 
 export default function QuizAnswer() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion } = useGame();
 
   // ステート管理
@@ -14,10 +15,23 @@ export default function QuizAnswer() {
   const [stageInfo, setStageInfo] = useState(null); // ステージ情報保持用
 
   const currentQuiz = game.currentQuiz;
-  
+
+  //=========================================
+  // URLクエリパラメータ & Context からステージ・ジャンル取得
+  //=========================================
+  const queryGenreId = searchParams.get("genreId");
+  const queryStageId = searchParams.get("stageId");
+
+  const currentGenreId = Number(queryGenreId || game.genreId || currentQuiz?.genreId || 1);
+  const currentStageNum = Number(queryStageId || game.stageId || currentQuiz?.stageId || 1);
+
+  // 難易度 & ボスステージ判定
+  const isHardMode = game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
+  const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
+
   // 正誤判定とマーキング状態の取得
   const isCorrect = currentQuiz ? game.selectedAnswer === currentQuiz.answer : false;
-  const isMarked = currentQuiz ? game.user.markingQuizIds.includes(currentQuiz.quizId) : false;
+  const isMarked = currentQuiz ? game.user?.markingQuizIds?.includes(currentQuiz.quizId) : false;
 
   //=========================================
   // 【1. Genreモデルからジャンル一覧を取得】
@@ -43,18 +57,18 @@ export default function QuizAnswer() {
   }, [game.genres]);
 
   //=========================================
-  // 【2. Stage情報を取得（最大HP・制限時間の参照用）】
+  // 【2. Stage情報を取得（最大HP・制限時間・ボス判定用）】
   //=========================================
   useEffect(() => {
-    if (!currentQuiz?.genreId || !currentQuiz?.stageId) return;
+    if (!currentGenreId || !currentStageNum) return;
 
     async function loadStageInfo() {
       try {
-        const res = await fetch(`/api/stages?genreId=${currentQuiz.genreId}&stageId=${currentQuiz.stageId}`);
+        const res = await fetch(`/api/stages?genreId=${currentGenreId}&stageId=${currentStageNum}`);
         if (res.ok) {
           const data = await res.json();
           const stagesList = data.stages || [];
-          const currentStage = stagesList.find(s => s.stageId === Number(currentQuiz.stageId));
+          const currentStage = stagesList.find((s) => s.stageId === currentStageNum);
           if (currentStage) {
             setStageInfo(currentStage);
           }
@@ -64,7 +78,7 @@ export default function QuizAnswer() {
       }
     }
     loadStageInfo();
-  }, [currentQuiz?.genreId, currentQuiz?.stageId]);
+  }, [currentGenreId, currentStageNum]);
 
   //=========================================
   // 二重実行防止用のフラグ（useRef）
@@ -77,15 +91,13 @@ export default function QuizAnswer() {
     
     const quizId = currentQuiz.quizId;
 
-    // すでにこの問題の判定処理が終わっている場合はスキップ
     if (processedRef.current === quizId) {
       return;
     }
 
-    // 処理開始時にフラグを立てる（StrictMode等の二重実行を防止）
     processedRef.current = quizId;
 
-    if (!game.user.resultQuizIds.includes(quizId)) {
+    if (!game.user?.resultQuizIds?.includes(quizId)) {
       addResultQuiz(quizId);
       if (game.selectedAnswer !== currentQuiz.answer) {
         decreaseHp();
@@ -103,12 +115,15 @@ export default function QuizAnswer() {
 
   // 制限時間 mm:ss フォーマット
   const formattedSpeedLimit = useMemo(() => {
-    const limitSec = stageInfo?.normalSpeedLimit;
+    let limitSec = isHardMode
+      ? (stageInfo?.hardSpeedLimit || (isBossStage ? 250 : 100))
+      : (stageInfo?.normalSpeedLimit || (isBossStage ? 500 : 200));
+
     if (!limitSec) return null;
     const minute = String(Math.floor(limitSec / 60)).padStart(2, "0");
     const second = String(limitSec % 60).padStart(2, "0");
     return `${minute}:${second}`;
-  }, [stageInfo]);
+  }, [stageInfo, isBossStage, isHardMode]);
 
   // 最終問題、もしくはHPが0かどうかの判定
   const isLastOrDead = useMemo(() => {
@@ -127,28 +142,25 @@ export default function QuizAnswer() {
     );
   }
 
-  // 最大HPの決定（Stage情報から取得、無ければデフォルト5）
-  const maxHp = stageInfo?.normalHp || 5;
+  // 最大HPの決定
+  const maxHp = isHardMode
+    ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
+    : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
 
-  // ジャンル名・ステージ情報
-  const targetGenreId = currentQuiz?.genreId;
+  // ジャンル名取得
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
-  
   const foundGenreObj = allGenres.find(
-    (g) => Number(g.genreId ?? g.id) === Number(targetGenreId)
+    (g) => Number(g.genreId ?? g.id) === Number(currentGenreId)
   );
-
   const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
-  const stageNum = currentQuiz?.stageId;
 
-  // 下部ボタン（次の問題 / 結果へ）クリック処理
+  // 下部ボタンクリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      //router.push("/quiz_result");
-      router.push("/quiz_review");
+      router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}`);
     } else {
       nextQuestion();
-      router.push("/quiz_question");
+      router.push(`/quiz_question?genreId=${currentGenreId}&stageId=${currentStageNum}`);
     }
   };
 
@@ -158,7 +170,7 @@ export default function QuizAnswer() {
       {/* ヘッダー */}
       {/*============================*/}
       <div className={styles.header}>
-        {/* マーキングボタンと星 */}
+        {/* マーキングボタン */}
         <div className={styles.markArea}>
           <span className={styles.markText}>マーキング</span>
           <button
@@ -174,16 +186,16 @@ export default function QuizAnswer() {
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        {/* ジャンル名・ステージ数・問題番号（縦並び） */}
+        {/* ジャンル名・ステージ数・問題番号 */}
         <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           {genreName && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
               {genreName}
             </div>
           )}
-          {stageNum && (
-            <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
-              {stageInfo?.isBoss ? "ボスステージ" : `ステージ ${stageNum}`}
+          {currentStageNum && (
+            <div style={{ fontSize: "0.8rem", fontWeight: "bold", opacity: 0.85, marginBottom: "2px", color: isBossStage ? "#d63031" : "inherit" }}>
+              {isBossStage ? "ボスステージ" : `ステージ ${currentStageNum}`}
             </div>
           )}
           <div>
@@ -191,7 +203,7 @@ export default function QuizAnswer() {
           </div>
         </div>
 
-        {/* HP (動的に最大HPを表示) */}
+        {/* HP */}
         <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
           HP {game.hp} / {maxHp}
         </div>
@@ -218,22 +230,20 @@ export default function QuizAnswer() {
       </div>
 
       {/*============================*/}
-      {/* 選択肢一覧（テーブル） */}
+      {/* 選択肢一覧 */}
       {/*============================*/}
       <div className={styles.answerArea}>
-        {currentQuiz.choices.map((choiceText, index) => {
+        {currentQuiz.choices?.map((choiceText, index) => {
           const isUserSelected = game.selectedAnswer === choiceText;
           const isRealAnswer = currentQuiz.answer === choiceText;
           
-          // 背景色の指定
           let rowBgColor = "#fff";
           if (isRealAnswer) {
-            rowBgColor = "#e8f5e9"; // 正解行（緑）
+            rowBgColor = "#e8f5e9";
           } else if (isUserSelected) {
-            rowBgColor = "#ffebee"; // 間違えて選んだ行（赤）
+            rowBgColor = "#ffebee";
           }
 
-          // この選択肢に対応する解説テキストを抽出
           const expObj = currentQuiz.explanations?.find((e) => e.choice === choiceText);
           const explanationText = expObj ? expObj.explanation : "";
 
