@@ -9,8 +9,9 @@ export default function QuizAnswer() {
   const router = useRouter();
   const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion } = useGame();
 
-  // ジャンル一覧保持用ステート
+  // ステート管理
   const [genres, setGenres] = useState([]);
+  const [stageInfo, setStageInfo] = useState(null); // ステージ情報保持用
 
   const currentQuiz = game.currentQuiz;
   
@@ -19,7 +20,7 @@ export default function QuizAnswer() {
   const isMarked = currentQuiz ? game.user.markingQuizIds.includes(currentQuiz.quizId) : false;
 
   //=========================================
-  // 【Genreモデルからジャンル一覧を取得】
+  // 【1. Genreモデルからジャンル一覧を取得】
   //=========================================
   useEffect(() => {
     async function loadGenres() {
@@ -42,7 +43,31 @@ export default function QuizAnswer() {
   }, [game.genres]);
 
   //=========================================
-  // 【★超重要】二重実行防止用のフラグ（useRef）
+  // 【2. Stage情報を取得（最大HP・制限時間の参照用）】
+  //=========================================
+  useEffect(() => {
+    if (!currentQuiz?.genreId || !currentQuiz?.stageId) return;
+
+    async function loadStageInfo() {
+      try {
+        const res = await fetch(`/api/stages?genreId=${currentQuiz.genreId}&stageId=${currentQuiz.stageId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const stagesList = data.stages || [];
+          const currentStage = stagesList.find(s => s.stageId === Number(currentQuiz.stageId));
+          if (currentStage) {
+            setStageInfo(currentStage);
+          }
+        }
+      } catch (e) {
+        console.error("Stageデータの取得に失敗しました:", e);
+      }
+    }
+    loadStageInfo();
+  }, [currentQuiz?.genreId, currentQuiz?.stageId]);
+
+  //=========================================
+  // 二重実行防止用のフラグ（useRef）
   //=========================================
   const processedRef = useRef(null);
 
@@ -52,12 +77,12 @@ export default function QuizAnswer() {
     
     const quizId = currentQuiz.quizId;
 
-    // すでにこの問題の判定処理が終わっている場合は、絶対に処理を通さない
+    // すでにこの問題の判定処理が終わっている場合はスキップ
     if (processedRef.current === quizId) {
       return;
     }
 
-    // 処理開始時にフラグを立てる（StrictModeの二重実行を瞬時にブロックします）
+    // 処理開始時にフラグを立てる（StrictMode等の二重実行を防止）
     processedRef.current = quizId;
 
     if (!game.user.resultQuizIds.includes(quizId)) {
@@ -76,6 +101,15 @@ export default function QuizAnswer() {
     return `${minute}:${second}`;
   }, [game.elapsedTime]);
 
+  // 制限時間 mm:ss フォーマット
+  const formattedSpeedLimit = useMemo(() => {
+    const limitSec = stageInfo?.normalSpeedLimit;
+    if (!limitSec) return null;
+    const minute = String(Math.floor(limitSec / 60)).padStart(2, "0");
+    const second = String(limitSec % 60).padStart(2, "0");
+    return `${minute}:${second}`;
+  }, [stageInfo]);
+
   // 最終問題、もしくはHPが0かどうかの判定
   const isLastOrDead = useMemo(() => {
     const isLast = game.currentQuestion >= (game.totalQuestion || game.quizzes?.length || 10);
@@ -93,24 +127,25 @@ export default function QuizAnswer() {
     );
   }
 
-  // =========================================
-  // Genreモデルの genreName からジャンル名・ステージ数を取得
-  // =========================================
+  // 最大HPの決定（Stage情報から取得、無ければデフォルト5）
+  const maxHp = stageInfo?.normalHp || 5;
+
+  // ジャンル名・ステージ情報
   const targetGenreId = currentQuiz?.genreId;
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
   
   const foundGenreObj = allGenres.find(
-    (g) => Number(g.genreId) === Number(targetGenreId)
+    (g) => Number(g.genreId ?? g.id) === Number(targetGenreId)
   );
 
-  const genreName = foundGenreObj?.genreName || "";
+  const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
   const stageNum = currentQuiz?.stageId;
 
   // 下部ボタン（次の問題 / 結果へ）クリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      router.push("/quiz_result");
-     // router.push("/quiz_review");
+      //router.push("/quiz_result");
+      router.push("/quiz_review");
     } else {
       nextQuestion();
       router.push("/quiz_question");
@@ -134,12 +169,12 @@ export default function QuizAnswer() {
           </button>
         </div>
 
-        {/* 【No.2】判定結果 */}
+        {/* 判定結果 */}
         <div className={styles.quiz_result} style={{ backgroundColor: isCorrect ? "#e8f5e9" : "#ffebee" }}>
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        {/* 【No.3】ジャンル名・ステージ数・問題番号（縦並び） */}
+        {/* ジャンル名・ステージ数・問題番号（縦並び） */}
         <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           {genreName && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
@@ -148,7 +183,7 @@ export default function QuizAnswer() {
           )}
           {stageNum && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85, marginBottom: "2px" }}>
-              ステージ {stageNum}
+              {stageInfo?.isBoss ? "ボスステージ" : `ステージ ${stageNum}`}
             </div>
           )}
           <div>
@@ -156,20 +191,27 @@ export default function QuizAnswer() {
           </div>
         </div>
 
-        {/* 【No.4】HP */}
+        {/* HP (動的に最大HPを表示) */}
         <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
-          HP {game.hp}/5
+          HP {game.hp} / {maxHp}
         </div>
 
-        {/* 【No.5】経過時間 */}
+        {/* 経過時間 / 制限時間 */}
         <div className={styles.quiz_Time}>
           <div className={styles.timerTitle}>経過時間</div>
-          <div className={styles.timer}>{formattedTime}</div>
+          <div className={styles.timer}>
+            {formattedTime}
+            {formattedSpeedLimit && (
+              <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "4px" }}>
+                / {formattedSpeedLimit}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/*============================*/}
-      {/* 【No.6】問題文 */}
+      {/* 問題文 */}
       {/*============================*/}
       <div className={styles.quiz_text}>
         {currentQuiz.question}

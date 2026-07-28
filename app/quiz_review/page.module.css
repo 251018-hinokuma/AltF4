@@ -87,12 +87,13 @@
 }
 
 /*==========================
-  選択肢一覧（横幅自動調整テーブル）
+  選択肢一覧（★テーブル全体の幅バランスを調整）
 ==========================*/
 .answerArea {
     width: 100%;
     display: grid;
-    grid-template-columns: 70px max-content 1fr;
+    /* ★【修正】2列目（選択肢）を max-content から 410px に変更し、解説欄（1fr）に十分な幅を確保 */
+    grid-template-columns: 70px 410px 1fr;
 }
 
 .answerRow {
@@ -106,8 +107,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 22px;
-    padding: 10px;
+    font-size: 20px; /* 文字サイズを20pxに調整 */
+    padding: 10px 15px;
     border-bottom: 2px solid black; 
 }
 
@@ -117,10 +118,12 @@
 
 .quiz_choices {
     border-right: 2px solid black;
-    white-space: nowrap; 
+    /* ★長文の選択肢でも解説側を圧迫しないよう自動折り返しを許可 */
+    white-space: normal; 
+    word-break: break-word;
     justify-content: flex-start;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .quiz_explanation {
@@ -128,7 +131,7 @@
     word-break: break-word;
     overflow-wrap: anywhere;
     justify-content: flex-start;
-    padding-left: 20px;
+    padding-left: 15px;
 }
 
 .answerRow:last-child > .choiceNo,

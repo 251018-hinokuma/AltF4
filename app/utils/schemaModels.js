@@ -68,14 +68,22 @@ const quizSchema = new Schema({
 const stageSchema = new Schema({
   stageId: { type: Number, required: true },
   genreId: { type: Number, required: true },
-  // timeは秒数（int）として管理すると扱いやすいためNumber型にしています
-  normalSpeedLimit: { type: Number, required: true }, 
-  hardSpeedLimit: { type: Number, required: true },
-  normalHp: { type: Number, required: true },
-  hardHp: { type: Number, required: true }
+  normalSpeedLimit: { type: Number, required: true }, // 秒数 (通常: 200, ボス: 500)
+  hardSpeedLimit: { type: Number, required: true },   // 秒数 (通常: 100, ボス: 250)
+  normalHp: { type: Number, required: true },          // HP (通常: 5, ボス: 10)
+  hardHp: { type: Number, required: true },            // HP (通常: 3, ボス: 7)
+  total: { type: Number, required: true },             // 問題数 (通常: 10, ボス: 25)
+  isBoss: { type: Boolean, default: false }            // ボスステージフラグ (通常: false, ボス: true)
 }, { timestamps: true });
 
-const GenreSchema = new mongoose.Schema(
+// 同じジャンル内で stageId が重複しないように複合インデックスを設定
+stageSchema.index({ genreId: 1, stageId: 1 }, { unique: true });
+
+
+// =========================================
+// 4. GenreModel
+// =========================================
+const GenreSchema = new Schema(
   {
     genreId: {
       type: Number,
