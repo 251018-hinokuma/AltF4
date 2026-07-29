@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 // コンテキストの作成
 const GameContext = createContext();
@@ -16,6 +16,8 @@ export const GameProvider = ({ children }) => {
     },
     genres: [],           // ジャンル一覧データ
     quizzes: [],          // DBから取得しシャッフルされた問題リスト
+    genreId: null,        // 現在のジャンルID
+    stageId: null,        // 現在のステージID
     currentQuestion: 1,   // 現在の問題番号
     totalQuestion: 0,     // 全問題数
     hp: 5,                // 現在のHP
@@ -23,6 +25,7 @@ export const GameProvider = ({ children }) => {
     currentQuiz: null,    // 解答画面へ渡すクイズ情報
     selectedAnswer: "",   // プレイヤーが選択した回答
     userAnswers: {},      // 問題ごとの解答選択肢リスト
+    isFinished: false,    // ゲーム終了フラグ
   });
 
   //=========================================
@@ -67,7 +70,7 @@ export const GameProvider = ({ children }) => {
   //=========================================
   // ジャンル一覧をAPIから取得する処理
   //=========================================
-  const fetchGenres = async () => {
+  const fetchGenres = useCallback(async () => {
     try {
       const response = await fetch("/api/genres");
       const data = await response.json();
@@ -82,47 +85,39 @@ export const GameProvider = ({ children }) => {
       console.error("ジャンル一覧の取得に失敗しました:", error);
       return [];
     }
-  };
+  }, []);
 
   //=========================================
-  // 1. 問題をAPIから取得してシャッフルする処理（ゲーム用）
+  // 1. 問題をAPIから取得してシャッフルする処理（ゲーム開始・リセット時）
   //=========================================
-  const fetchQuizzes = async (genreId, stageId, initialHp = 5, isBoss = false) => {
+  const fetchQuizzes = useCallback(async (genreId, stageId, initialHp = 5, isBoss = false) => {
     try {
-      // ★ stageId が 6 の場合、または isBoss が true の場合はボスステージとして扱う
       const isBossStage = isBoss || Number(stageId) === 6;
-
-      let endpoint = "";
-
-      if (isBossStage) {
-        // ★ ボスステージの場合: stageIdを指定せず、該当ジャンルの全問題を取得
-        endpoint = `/api/quizzes?genreId=${genreId}`;
-      } else {
-        // ★ 通常ステージの場合: 指定されたステージの問題のみ取得
-        endpoint = `/api/quizzes?genreId=${genreId}&stageId=${stageId}`;
-      }
+      let endpoint = isBossStage
+        ? `/api/quizzes?genreId=${genreId}`
+        : `/api/quizzes?genreId=${genreId}&stageId=${stageId}`;
 
       const response = await fetch(endpoint);
       const data = await response.json();
       
       const rawList = Array.isArray(data) ? data : (data.quizzes || data.data || []);
-      
-      // 全体をシャッフル
       let randomizedQuizzes = shuffleQuizzes(rawList);
       
-      // ★ ボスステージの場合はシャッフル後のリストから先頭25問をランダム抽出
       if (isBossStage) {
         randomizedQuizzes = randomizedQuizzes.slice(0, 25);
       }
 
       setGame((prev) => ({ 
         ...prev, 
+        genreId: Number(genreId),
+        stageId: Number(stageId),
         quizzes: randomizedQuizzes,
-        totalQuestion: randomizedQuizzes.length, // ボスステージなら最大25問
-        currentQuestion: 1,
-        elapsedTime: 0,
-        hp: initialHp, // 指定された初期HP
+        totalQuestion: randomizedQuizzes.length,
+        currentQuestion: 1,  // ★ 必ず1問目にリセット
+        elapsedTime: 0,      // ★ タイムリセット
+        hp: initialHp,       // ★ HPリセット
         userAnswers: {},
+        isFinished: false,   // ★ ゲーム進行中に設定
         user: {
           ...prev.user,
           resultQuizIds: [],
@@ -131,12 +126,12 @@ export const GameProvider = ({ children }) => {
     } catch (error) {
       console.error("問題の取得に失敗しました:", error);
     }
-  };
+  }, []);
 
   //=========================================
   // ジャンル全体の全問題をAPIから取得する処理（マーキング画面用）
   //=========================================
-  const fetchQuizzesByGenre = async (genreId) => {
+  const fetchQuizzesByGenre = useCallback(async (genreId) => {
     try {
       const response = await fetch(`/api/quizzes?genreId=${genreId}`);
       const data = await response.json();
@@ -151,39 +146,39 @@ export const GameProvider = ({ children }) => {
       console.error("ジャンル別問題の取得に失敗しました:", error);
       return [];
     }
-  };
+  }, []);
 
   //=========================================
   // 2. タイマーの更新処理
   //=========================================
-  const updateElapsedTime = () => {
+  const updateElapsedTime = useCallback(() => {
     setGame((prev) => ({
       ...prev,
       elapsedTime: prev.elapsedTime + 1,
     }));
-  };
+  }, []);
 
   //=========================================
   // 3. 解答画面へ情報を渡す処理
   //=========================================
-  const setCurrentQuiz = (quizData, choices) => {
+  const setCurrentQuiz = useCallback((quizData, choices) => {
     setGame((prev) => ({
       ...prev,
       currentQuiz: { ...quizData, choices },
     }));
-  };
+  }, []);
 
-  const setSelectedAnswer = (answer) => {
+  const setSelectedAnswer = useCallback((answer) => {
     setGame((prev) => ({
       ...prev,
       selectedAnswer: answer,
     }));
-  };
+  }, []);
 
   //=========================================
   // 4. マーキングの切り替え
   //=========================================
-  const toggleMarking = (quizId) => {
+  const toggleMarking = useCallback((quizId) => {
     const targetId = Number(quizId);
     if (isNaN(targetId)) return;
 
@@ -209,26 +204,37 @@ export const GameProvider = ({ children }) => {
         },
       };
     });
-  };
+  }, []);
 
   //=========================================
-  // 5. HP減少・次の問題へ・結果保存処理
+  // 5. HP操作 & ゲーム終了制御
   //=========================================
-  const decreaseHp = () => {
+  const setHp = useCallback((newHp) => {
+    setGame((prev) => {
+      const targetHp = Math.max(0, newHp);
+      if (prev.hp === targetHp) return prev;
+      return {
+        ...prev,
+        hp: targetHp,
+      };
+    });
+  }, []);
+
+  const decreaseHp = useCallback(() => {
     setGame((prev) => ({
       ...prev,
       hp: Math.max(0, prev.hp - 1),
     }));
-  };
+  }, []);
 
-  const nextQuestion = () => {
+  const nextQuestion = useCallback(() => {
     setGame((prev) => ({
       ...prev,
       currentQuestion: prev.currentQuestion + 1,
     }));
-  };
+  }, []);
 
-  const addResultQuiz = (quizId, selectedAnswer) => {
+  const addResultQuiz = useCallback((quizId, selectedAnswer) => {
     const targetId = Number(quizId);
     if (isNaN(targetId)) return;
 
@@ -249,25 +255,37 @@ export const GameProvider = ({ children }) => {
         },
       };
     });
-  };
+  }, []);
 
-  // ゲーム状態のリセット処理
-  const resetGame = () => {
+  // ゲーム終了（ゲームオーバー・全クリア）フラグの設定
+  const finishGame = useCallback(() => {
     setGame((prev) => ({
       ...prev,
+      isFinished: true,
+    }));
+  }, []);
+
+  // ゲーム状態の全リセット処理
+  const resetGame = useCallback((defaultHp = 5) => {
+    setGame((prev) => ({
+      ...prev,
+      quizzes: [],
+      genreId: null,
+      stageId: null,
       currentQuestion: 1,
       totalQuestion: 0,
-      hp: 5,
+      hp: defaultHp,
       elapsedTime: 0,
       currentQuiz: null,
       selectedAnswer: "",
       userAnswers: {},
+      isFinished: true,
       user: {
         ...prev.user,
         resultQuizIds: [],
       },
     }));
-  };
+  }, []);
 
   return (
     <GameContext.Provider
@@ -280,9 +298,11 @@ export const GameProvider = ({ children }) => {
         setCurrentQuiz,
         setSelectedAnswer,
         toggleMarking,
+        setHp,
         decreaseHp,
         nextQuestion,
         addResultQuiz,
+        finishGame,
         resetGame,
       }}
     >

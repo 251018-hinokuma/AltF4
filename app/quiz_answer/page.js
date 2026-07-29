@@ -8,21 +8,19 @@ import styles from "./page.module.css";
 export default function QuizAnswer() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion } = useGame();
+  const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion, finishGame } = useGame();
 
   // ステート管理
   const [genres, setGenres] = useState([]);
-  const [stageInfo, setStageInfo] = useState(null); // ステージ情報保持用
+  const [stageInfo, setStageInfo] = useState(null);
 
   const currentQuiz = game.currentQuiz;
 
   //=========================================
-  // URLクエリパラメータ & Context からステージ・ジャンル・難易度取得
+  // URLクエリパラメータ & Context
   //=========================================
   const queryGenreId = searchParams.get("genreId");
   const queryStageId = searchParams.get("stageId");
-  
-  // 大文字・小文字どちらのパラメータ名 (Difficulty / difficulty) にも対応
   const queryDifficulty = searchParams.get("difficulty") || searchParams.get("Difficulty");
 
   const currentGenreId = Number(queryGenreId || game.genreId || currentQuiz?.genreId || 1);
@@ -35,6 +33,11 @@ export default function QuizAnswer() {
 
   // ボスステージ判定
   const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
+
+  // 最大HPの決定
+  const maxHp = isHardMode
+    ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
+    : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
 
   // 正誤判定とマーキング状態の取得
   const isCorrect = currentQuiz ? game.selectedAnswer === currentQuiz.answer : false;
@@ -64,7 +67,7 @@ export default function QuizAnswer() {
   }, [game.genres]);
 
   //=========================================
-  // 【2. Stage情報を取得（最大HP・制限時間・ボス判定用）】
+  // 【2. Stage情報を取得】
   //=========================================
   useEffect(() => {
     if (!currentGenreId || !currentStageNum) return;
@@ -92,15 +95,11 @@ export default function QuizAnswer() {
   //=========================================
   const processedRef = useRef(null);
 
-  // HP減少と結果（履歴）追加を1回だけ安全に行う
   useEffect(() => {
     if (!currentQuiz) return;
     
     const quizId = currentQuiz.quizId;
-
-    if (processedRef.current === quizId) {
-      return;
-    }
+    if (processedRef.current === quizId) return;
 
     processedRef.current = quizId;
 
@@ -132,9 +131,10 @@ export default function QuizAnswer() {
     return `${minute}:${second}`;
   }, [stageInfo, isBossStage, isHardMode]);
 
-  // 最終問題、もしくはHPが0かどうかの判定
+  // 最終問題、もしくはHPが0かの判定
   const isLastOrDead = useMemo(() => {
-    const isLast = game.currentQuestion >= (game.totalQuestion || game.quizzes?.length || 10);
+    const total = game.totalQuestion || (game.quizzes ? game.quizzes.length : 0);
+    const isLast = total > 0 && game.currentQuestion >= total;
     const isDead = game.hp <= 0;
     
     return isLast || isDead;
@@ -149,10 +149,8 @@ export default function QuizAnswer() {
     );
   }
 
-  // 最大HPの決定（1: normalHp, 2: hardHp）
-  const maxHp = isHardMode
-    ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
-    : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
+  // 表示用のHP算出
+  const displayHp = (game.currentQuestion <= 1 && game.hp <= 0) ? maxHp : game.hp;
 
   // ジャンル名取得
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
@@ -161,9 +159,13 @@ export default function QuizAnswer() {
   );
   const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
 
-  // 下部ボタンクリック処理（difficulty もパラメータに含めて遷移）
+  // 下部ボタンクリック処理
   const handleNext = () => {
     if (isLastOrDead) {
+      // ★ ゲームオーバーまたは全問終了時に finishGame() でフラグを立てる
+      if (typeof finishGame === "function") {
+        finishGame();
+      }
       router.push(`/quiz_result?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
     } else {
       nextQuestion();
@@ -173,11 +175,8 @@ export default function QuizAnswer() {
 
   return (
     <main className={styles.container}>
-      {/*============================*/}
       {/* ヘッダー */}
-      {/*============================*/}
       <div className={styles.header}>
-        {/* マーキングボタン */}
         <div className={styles.markArea}>
           <span className={styles.markText}>マーキング</span>
           <button
@@ -188,12 +187,10 @@ export default function QuizAnswer() {
           </button>
         </div>
 
-        {/* 判定結果 */}
         <div className={styles.quiz_result} style={{ backgroundColor: isCorrect ? "#e8f5e9" : "#ffebee" }}>
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        {/* ジャンル名・ステージ数・問題番号 */}
         <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           {genreName && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
@@ -206,11 +203,10 @@ export default function QuizAnswer() {
             </div>
           )}
           <div>
-            {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length}問
+            {game.currentQuestion}問 / {game.totalQuestion || game.quizzes?.length || "-"}問
           </div>
         </div>
 
-        {/* 難易度 & HP (外側ラッパーに styles.quiz_HP を適用してボーダーを上下まで連結) */}
         <div 
           className={styles.quiz_HP} 
           style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
@@ -223,12 +219,11 @@ export default function QuizAnswer() {
           }}>
             {difficultyLabel}
           </div>
-          <div style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
-            HP {game.hp} / {maxHp}
+          <div style={{ color: displayHp <= 1 ? "#ff4757" : "#000" }}>
+            HP {displayHp} / {maxHp}
           </div>
         </div>
 
-        {/* 経過時間 / 制限時間 */}
         <div className={styles.quiz_Time}>
           <div className={styles.timerTitle}>経過時間</div>
           <div className={styles.timer}>
@@ -242,16 +237,12 @@ export default function QuizAnswer() {
         </div>
       </div>
 
-      {/*============================*/}
       {/* 問題文 */}
-      {/*============================*/}
       <div className={styles.quiz_text}>
         {currentQuiz.question}
       </div>
 
-      {/*============================*/}
       {/* 選択肢一覧 */}
-      {/*============================*/}
       <div className={styles.answerArea}>
         {currentQuiz.choices?.map((choiceText, index) => {
           const isUserSelected = game.selectedAnswer === choiceText;
@@ -283,9 +274,7 @@ export default function QuizAnswer() {
         })}
       </div>
 
-      {/*============================*/}
       {/* 下部ボタンエリア */}
-      {/*============================*/}
       <div className={styles.bottom}>
         <button className={styles.quiz_move_nextbutton} onClick={handleNext}>
           {isLastOrDead ? "結果へ" : "次の問題"}
