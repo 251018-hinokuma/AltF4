@@ -1,143 +1,127 @@
 "use client";
+
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import styles from "./page.module.css";
+import styles from './page.module.css';
 
-// ==========================================
-// 共通パーツ: 星アイコン
-// ==========================================
-const StarIcon = ({ className, isEarned = false }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill={isEarned ? "#fbbf24" : "none"} 
-    stroke={isEarned ? "#fbbf24" : "currentColor"}
-    strokeWidth="1.5" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-// ==========================================
-// 【第3層: ステージの詳細情報】を受け取るコンポーネント
-// ==========================================
-const StageCard = ({ title, stageData }) => {
-  // データが渡ってこなかった場合（未プレイ時）の初期値
-  const data = stageData || { clear: false, perfect: false, speed: false };
-
-  const starTypes = [
-    { label: 'クリア', isEarned: data.clear },
-    { label: '全問正解', isEarned: data.perfect },
-    { label: 'スピード', isEarned: data.speed }
-  ];
-
-  return (
-    <div className={styles["star-stage-card"]}>
-      <div className={styles["star-stage-title"]}>{title}</div>
-      <div className={styles["star-star-list"]}>
-        {starTypes.map((star) => (
-          <div key={star.label} className={styles["star-star-item"]}>
-            <StarIcon className={styles["star-icon-small"]} isEarned={star.isEarned} />
-            <span className={styles["star-star-label"]}>{star.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 【第2層: ステージ一覧】を受け取るコンポーネント
-// ==========================================
-const GenreSection = ({ genreName, genreData }) => {
-  const stages = ['ステージ１', 'ステージ２', 'ステージ３', 'ステージ４', 'ステージ５', 'ボス'];
-  
-  // ジャンル内の獲得済みスター数を計算
-  let earnedStars = 0;
-  if (genreData) {
-    Object.values(genreData).forEach(stage => {
-      if (stage.clear) earnedStars++;
-      if (stage.perfect) earnedStars++;
-      if (stage.speed) earnedStars++;
-    });
-  }
-  const totalStars = stages.length * 3;
-
-  return (
-    <div className={styles["star-genre-section"]}>
-      <div className={styles["star-genre-header"]}>
-        <div className={styles["star-genre-title"]}>{genreName}</div>
-        <div className={styles["star-genre-big-star"]}>
-          <StarIcon className={styles["star-icon-large"]} isEarned={earnedStars === totalStars} />
-        </div>
-        <div className={styles["star-genre-score"]}>
-          {earnedStars}個/{totalStars}個
-        </div>
-      </div>
-      <div className={styles["star-stage-grid"]}>
-        {stages.map((stage) => (
-          <StageCard 
-            key={stage} 
-            title={stage} 
-            // 第3層（詳細情報）をStageCardに渡す
-            stageData={genreData ? genreData[stage] : null} 
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// 【第1層: ジャンル一覧（全体データ）】を管理するページ
-// ==========================================
 export default function StarStatusPage() {
-  const [saveData, setSaveData] = useState({});
+  const stages = ['ステージ1', 'ステージ2', 'ステージ3', 'ステージ4', 'ステージ5', 'ボス'];
+
+  // 三重構造（配列）のデータ
+  const [starData, setStarData] = useState({});
 
   useEffect(() => {
-    // 画面表示時にブラウザの保存領域（localStorage）からデータを取得
     const saved = localStorage.getItem("quizSaveData");
-    
+
     if (saved) {
-      setSaveData(JSON.parse(saved));
+      setStarData(JSON.parse(saved));
     } else {
-      // ※まだセーブデータがない場合のテスト用ダミーデータ
+      // ダミーデータ
       const dummyData = {
-        "ジャンル１": {
-          "ステージ１": { clear: true, perfect: false, speed: true },
-          "ステージ２": { clear: true, perfect: true, speed: false },
-        },
-        "ジャンル２": {
-          "ステージ１": { clear: true, perfect: false, speed: false }
-        }
+        "ジャンル1": [
+          { clear: true, perfect: true, speed: false, correct: 5, total: 5 },
+          { clear: true, perfect: false, speed: true, correct: 3, total: 5 },
+          { clear: false, perfect: false, speed: false, correct: 0, total: 0 },
+        ],
+        "ジャンル2": [
+          { clear: true, perfect: true, speed: true, correct: 5, total: 5 }
+        ]
       };
-      setSaveData(dummyData);
+      setStarData(dummyData);
     }
   }, []);
 
+  const genres = [
+    { id: 1, name: "ジャンル1" },
+    { id: 2, name: "ジャンル2" },
+  ];
+
+  // ジャンル内の獲得星数を計算する関数
+  const calculateGenreStars = (genreArray) => {
+    let earned = 0;
+    const max = stages.length * 3; // 1ステージにつき最大3つの星
+    
+    genreArray.forEach(stage => {
+      if (stage.clear) earned++;
+      if (stage.perfect) earned++;
+      if (stage.speed) earned++;
+    });
+    
+    return { earned, max };
+  };
+
   return (
-    <div className={styles["star-container"]}>
-      
-      <div className={styles["star-tabs"]}>
-        {/* Linkコンポーネントを使って画面遷移を実装 */}
+    <div className={styles['star-container']}>
+      {/* タブナビゲーション */}
+      <nav className={styles['star-tabs']}>
         <Link href="/">
-          <button className={styles["star-tab-button"]}>戻る</button>
+          <button className={styles['star-tab-button']}>戻る</button>
         </Link>
-        <Link href="/user">
-          <button className={styles["star-tab-button"]}>ユーザーページ</button>
-        </Link>
-        <button className={`${styles["star-tab-button"]} ${styles["star-tab-button-active"]}`}>
+        <button className={`${styles['star-tab-button']} ${styles['star-tab-button-active']}`}>
           スター獲得状況
         </button>
-      </div>
+        <Link href="/genre-accuracy">
+          <button className={styles['star-tab-button']}>ジャンル別正答率</button>
+        </Link>
+      </nav>
 
-      {/* 第2層（ステージ一覧）をGenreSectionに渡す */}
-      <GenreSection genreName="ジャンル１" genreData={saveData["ジャンル１"]} />
-      <GenreSection genreName="ジャンル２" genreData={saveData["ジャンル２"]} />
-      
+      <main>
+        {genres.map((genre) => {
+          const genreArray = starData[genre.name] || [];
+          const starScore = calculateGenreStars(genreArray);
+
+          return (
+            <section key={genre.id} className={styles['star-genre-section']}>
+              {/* ジャンルヘッダー（タイトル、大きな星、スコア） */}
+              <header className={styles['star-genre-header']}>
+                <div className={styles['star-genre-title']}>{genre.name}</div>
+                <div className={styles['star-genre-big-star']}>
+                  <span style={{ fontSize: '2rem', color: starScore.earned === starScore.max ? '#fbbf24' : '#e5e7eb' }}>★</span>
+                </div>
+                <div className={styles['star-genre-score']}>
+                  {starScore.earned} / {starScore.max}
+                </div>
+              </header>
+
+              {/* ステージグリッド（6列） */}
+              <div className={styles['star-stage-grid']}>
+                {stages.map((stageName, index) => {
+                  const stageDetail = genreArray[index] || { clear: false, perfect: false, speed: false };
+                  const activeColor = '#fbbf24'; // 獲得時の色（ゴールド）
+                  const inactiveColor = '#e5e7eb'; // 未獲得時の色（薄いグレー）
+
+                  return (
+                    <div key={stageName} className={styles['star-stage-card']}>
+                      <div className={styles['star-stage-title']}>{stageName}</div>
+                      
+                      {/* 星とラベルのリスト */}
+                      <div className={styles['star-star-list']}>
+                        {/* 星1: クリア */}
+                        <div className={styles['star-star-item']}>
+                          <span className={styles['star-icon-small']} style={{ color: stageDetail.clear ? activeColor : inactiveColor, fontSize: '1.25rem' }}>★</span>
+                          <span className={styles['star-star-label']}>クリア</span>
+                        </div>
+                        
+                        {/* 星2: パーフェクト */}
+                        <div className={styles['star-star-item']}>
+                          <span className={styles['star-icon-small']} style={{ color: stageDetail.perfect ? activeColor : inactiveColor, fontSize: '1.25rem' }}>★</span>
+                          <span className={styles['star-star-label']}>全問正解</span>
+                        </div>
+                        
+                        {/* 星3: スピード */}
+                        <div className={styles['star-star-item']}>
+                          <span className={styles['star-icon-small']} style={{ color: stageDetail.speed ? activeColor : inactiveColor, fontSize: '1.25rem' }}>★</span>
+                          <span className={styles['star-star-label']}>スピード</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </main>
     </div>
   );
 }
