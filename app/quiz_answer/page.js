@@ -164,7 +164,7 @@ export default function QuizAnswer() {
   // 下部ボタンクリック処理（difficulty もパラメータに含めて遷移）
   const handleNext = () => {
     if (isLastOrDead) {
-      router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
+      router.push(`/quiz_result?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
     } else {
       nextQuestion();
       router.push(`/quiz_question?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
