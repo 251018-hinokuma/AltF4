@@ -83,35 +83,45 @@
   text-align: center;
   font-size: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out;
 }
 
-/* 初期表示処理：false（未獲得）の場合は灰色 */
-.trophy-circle.locked {
-  background-color: #d3d3d3;
-  color: #777777;
-  border-color: #aaaaaa;
+/* ホバー時のちょっとした演出（獲得済みのみ） */
+.trophy-circle:not(.locked):hover {
+  transform: scale(1.05);
 }
 
-/* 初期表示処理：true（獲得済み）のそれぞれの色 */
-.trophy-circle.bronze {
+/* トロフィーの各状態スタイル */
+.locked {
+  background-color: #d3d3d3 !important;
+  color: #777777 !important;
+  border-color: #aaaaaa !important;
+  box-shadow: none !important;
+}
+
+.bronze {
   background: linear-gradient(135deg, #cd7f32, #b87333);
   color: #ffffff;
+  animation: trophyPulse 2s infinite ease-in-out;
 }
 
-.trophy-circle.silver {
+.silver {
   background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
   color: #333333;
+  animation: trophyPulse 2s infinite ease-in-out;
 }
 
-.trophy-circle.gold {
+.gold {
   background: linear-gradient(135deg, #ffd700, #ffa500);
   color: #333333;
+  animation: trophyPulse 2s infinite ease-in-out;
 }
 
-.trophy-circle.rainbow {
+.rainbow {
   background: linear-gradient(45deg, #ffadad, #ffd6a5, #fdffb6, #caffbf, #9bf6ff, #a0c4ff, #bdb2ff);
   color: #333333;
   text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  animation: trophyPulse 2s infinite ease-in-out;
 }
 
 /* 達成状況の枠（四角形） */
@@ -161,10 +171,33 @@
   color: #c62828;
 }
 
-/* レスポンシブ対応（@media に修正） */
+/* 獲得時の輝き/パルスアニメーション設定 */
+@keyframes trophyPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 10px 15px rgba(255, 215, 0, 0);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+    transform: scale(1);
+  }
+}
+
+/* レスポンシブ対応（モバイル表示） */
 @media (max-width: 768px) {
   .trophy-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 30px 10px;
+  }
+  
+  .trophy-circle {
+    width: 120px;
+    height: 120px;
+    font-size: 13px;
+    margin-bottom: 15px;
   }
 }

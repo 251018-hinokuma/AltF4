@@ -1,22 +1,58 @@
 'use client';
 
-import React, { useState } from 'react';
-// Next.js standard router
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation'; 
+import { useGame } from '../context/GameContext'; 
 import styles from './page.module.css';
 
 export default function AchievementPage() {
   const router = useRouter();
+  const { game } = useGame();
 
-  // Mock User Achievement Data
-  const [userAchievement, setUserAchievement] = useState({
-    bronzeTrophy: true,   // Unlocked (Colored)
-    silverTrophy: false,  // Locked (Gray)
-    goldTrophy: true,     // Unlocked (Colored)
-    rainbowTrophy: false, // Locked (Gray)
-  });
+  // Calculate trophy states live using metrics matching your data model and leader rules
+  const userAchievement = useMemo(() => {
+    // Safety fallback if game or user data isn't loaded yet
+    if (!game || !game.user) {
+      return { bronzeTrophy: false, silverTrophy: false, goldTrophy: false, rainbowTrophy: false };
+    }
 
-  // Trophy Master Definition Data
+    const user = game.user;
+
+    // 1. Calculate historical clears from the nested stagesList structures
+    // Safely combine all stages cleared across all genres in the 3-layer structure
+    let totalClearedStages = 0;
+    let totalPerfectStages = 0;
+
+    const genres = ['genre1', 'genre2', 'genre3']; // Extend based on your game genres
+    genres.forEach((genreKey) => {
+      if (user.stagesList && Array.isArray(user.stagesList[genreKey])) {
+        user.stagesList[genreKey].forEach((stage) => {
+          if (stage.clear) totalClearedStages += 1;
+          if (stage.perfect) totalPerfectStages += 1;
+        });
+      }
+    });
+
+    // 2. Read runtime arrays from the current active quiz phase
+    const currentResultCount = user.resultQuizIds?.length || 0;
+    const currentMarkedCount = user.markingQuizIds?.length || 0;
+
+    // 3. Leader Conditions Mapping (Joken)
+    return {
+      // Bronze: Finished your very first question or cleared 1 stage
+      bronzeTrophy: currentResultCount >= 1 || totalClearedStages >= 1,   
+      
+      // Silver: Finished 10 total questions or cleared a milestone number of stages
+      silverTrophy: currentResultCount >= 10 || totalClearedStages >= 5,  
+      
+      // Gold: Bookmarked/marked 5 or more items during gameplay
+      goldTrophy: currentMarkedCount >= 5,   
+      
+      // Rainbow: Kept alive (HP > 0), answered at least 20 questions, or achieved perfect status
+      rainbowTrophy: (game.hp ?? 0) > 0 && (currentResultCount >= 20 || totalPerfectStages >= 3), 
+    };
+  }, [game]);
+
   const trophies = [
     {
       id: 'bronzeTrophy',
@@ -44,7 +80,6 @@ export default function AchievementPage() {
     },
   ];
 
-  // Back Button Click Handler
   const handleBack = () => {
 
     router.push('/userpage');
@@ -68,12 +103,10 @@ export default function AchievementPage() {
           {trophies.map((trophy) => {
             const isUnlocked = userAchievement[trophy.id];
 
-            // Safely combine dynamic styles for the trophy circles
             const trophyCircleClass = `${styles['trophy-circle']} ${
               isUnlocked ? styles[trophy.className] : styles.locked
             }`;
 
-            // Safely combine dynamic styles for the badges
             const statusBadgeClass = `${styles['status-badge']} ${
               isUnlocked ? styles['unlocked-text'] : styles['locked-text']
             }`;
@@ -101,4 +134,7 @@ export default function AchievementPage() {
     </div>
   );
 
+
 }
+
+
