@@ -125,6 +125,16 @@
 
 }
 
+/* カーソルを合わせたとき */
+
+.back:hover{
+
+    color:#ffe55d;
+
+    transform:translateX(10px);
+
+}
+
 /* プロフィール */
 
 .profile{
