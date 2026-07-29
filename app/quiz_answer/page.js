@@ -17,16 +17,23 @@ export default function QuizAnswer() {
   const currentQuiz = game.currentQuiz;
 
   //=========================================
-  // URLクエリパラメータ & Context からステージ・ジャンル取得
+  // URLクエリパラメータ & Context からステージ・ジャンル・難易度取得
   //=========================================
   const queryGenreId = searchParams.get("genreId");
   const queryStageId = searchParams.get("stageId");
+  
+  // 大文字・小文字どちらのパラメータ名 (Difficulty / difficulty) にも対応
+  const queryDifficulty = searchParams.get("difficulty") || searchParams.get("Difficulty");
 
   const currentGenreId = Number(queryGenreId || game.genreId || currentQuiz?.genreId || 1);
   const currentStageNum = Number(queryStageId || game.stageId || currentQuiz?.stageId || 1);
 
-  // 難易度 & ボスステージ判定
-  const isHardMode = game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
+  // 難易度判定 (1: Normal, 2: Hard)
+  const currentDifficulty = Number(queryDifficulty || game.difficulty || 1);
+  const isHardMode = currentDifficulty === 2 || game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
+  const difficultyLabel = isHardMode ? "ハード" : "ノーマル";
+
+  // ボスステージ判定
   const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
 
   // 正誤判定とマーキング状態の取得
@@ -142,7 +149,7 @@ export default function QuizAnswer() {
     );
   }
 
-  // 最大HPの決定
+  // 最大HPの決定（1: normalHp, 2: hardHp）
   const maxHp = isHardMode
     ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
     : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
@@ -154,13 +161,13 @@ export default function QuizAnswer() {
   );
   const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
 
-  // 下部ボタンクリック処理
+  // 下部ボタンクリック処理（difficulty もパラメータに含めて遷移）
   const handleNext = () => {
     if (isLastOrDead) {
-      router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}`);
+      router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
     } else {
       nextQuestion();
-      router.push(`/quiz_question?genreId=${currentGenreId}&stageId=${currentStageNum}`);
+      router.push(`/quiz_question?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
     }
   };
 
@@ -203,9 +210,22 @@ export default function QuizAnswer() {
           </div>
         </div>
 
-        {/* HP */}
-        <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
-          HP {game.hp} / {maxHp}
+        {/* 難易度 & HP (外側ラッパーに styles.quiz_HP を適用してボーダーを上下まで連結) */}
+        <div 
+          className={styles.quiz_HP} 
+          style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+        >
+          <div style={{ 
+            fontSize: "0.75rem", 
+            fontWeight: "bold", 
+            color: isHardMode ? "#d63031" : "#00b894",
+            marginBottom: "1px"
+          }}>
+            {difficultyLabel}
+          </div>
+          <div style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
+            HP {game.hp} / {maxHp}
+          </div>
         </div>
 
         {/* 経過時間 / 制限時間 */}

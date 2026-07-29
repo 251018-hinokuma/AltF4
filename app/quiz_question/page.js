@@ -14,13 +14,17 @@ export default function QuizQuestion() {
   //=========================================
   const queryGenreId = searchParams.get("genreId");
   const queryStageId = searchParams.get("stageId");
+  
+  // 大文字・小文字どちらのパラメータ名 (Difficulty / difficulty) にも対応
+  const queryDifficulty = searchParams.get("difficulty") || searchParams.get("Difficulty");
 
   const { 
     game, 
     fetchQuizzes,
     updateElapsedTime, 
     setCurrentQuiz, 
-    setSelectedAnswer 
+    setSelectedAnswer,
+    setHp // Context側でHPを更新できる関数があれば使用
   } = useGame();
 
   // ステート管理
@@ -37,9 +41,35 @@ export default function QuizQuestion() {
   const currentGenreId = Number(queryGenreId || game.genreId || currentQuizData?.genreId || 1);
   const currentStageNum = Number(queryStageId || game.stageId || currentQuizData?.stageId || 1);
 
-  // 難易度 & ボスステージ判定
-  const isHardMode = game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
+  // 難易度判定 (1: Normal, 2: Hard)
+  const currentDifficulty = Number(queryDifficulty || game.difficulty || 1);
+  const isHardMode = currentDifficulty === 2 || game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
+  const difficultyLabel = isHardMode ? "ハード" : "ノーマル";
+
+  // ボスステージ判定
   const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
+
+  // 最大HPの決定（1: normalHp, 2: hardHp）
+  const maxHp = isHardMode
+    ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
+    : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
+
+  // 1問題目の場合は初期HPを maxHp に揃える guard
+  const currentHp = (game.currentQuestion <= 1 && game.hp > maxHp) ? maxHp : Math.min(game.hp, maxHp);
+
+  //=========================================
+  // 【難易度に応じた初期HPの同期処理】
+  //=========================================
+  useEffect(() => {
+    // 第1問目の開始時に maxHp と現在HPが食い違っている場合、maxHp に初期化
+    if (game.currentQuestion <= 1 && stageInfo) {
+      if (typeof setHp === "function") {
+        setHp(maxHp);
+      } else {
+        game.hp = maxHp;
+      }
+    }
+  }, [stageInfo, maxHp, game.currentQuestion, setHp, game]);
 
   //=========================================
   // 【1. Genreモデルからジャンル一覧を取得】
@@ -92,7 +122,6 @@ export default function QuizQuestion() {
   // 初回クイズの取得 ＆ タイマー開始
   //=========================================
   useEffect(() => {
-    // まだクイズデータが存在しない場合のみ API 取得（途中進行時のリセットを防止）
     if (!game.quizzes || game.quizzes.length === 0) {
       fetchQuizzes(currentGenreId, currentStageNum);
     }
@@ -113,6 +142,20 @@ export default function QuizQuestion() {
     const second = String(game.elapsedTime % 60).padStart(2, "0");
     return `${minute}:${second}`;
   }, [game.elapsedTime]);
+
+  //=========================================
+  // 制限時間（スピードリミット）mm:ss フォーマット
+  //=========================================
+  const formattedSpeedLimit = useMemo(() => {
+    const limitSec = isHardMode
+      ? (stageInfo?.hardSpeedLimit || (isBossStage ? 250 : 100))
+      : (stageInfo?.normalSpeedLimit || (isBossStage ? 500 : 200));
+
+    if (!limitSec) return null;
+    const minute = String(Math.floor(limitSec / 60)).padStart(2, "0");
+    const second = String(limitSec % 60).padStart(2, "0");
+    return `${minute}:${second}`;
+  }, [stageInfo, isBossStage, isHardMode]);
 
   //=========================================
   // 選択肢のシャッフル処理
@@ -143,21 +186,21 @@ export default function QuizQuestion() {
   //=========================================
   // 回答ボタンクリック処理
   //=========================================
- const choiceClick = (choice) => {
-  if (!currentQuizData) return;
+  const choiceClick = (choice) => {
+    if (!currentQuizData) return;
 
-  // 現在プレイ中のステージ番号(currentStageNum)を渡すように変更
-  setCurrentQuiz({
-    quizId: currentQuizData.quizId,
-    genreId: currentGenreId,
-    stageId: currentStageNum, // ★ currentQuizData.stageId から修正
-    question: currentQuizData.quizText,
-    answer: currentQuizData.choices[currentQuizData.answer], 
-    explanations 
-  }, choices.map(c => c.text));
+    setCurrentQuiz({
+      quizId: currentQuizData.quizId,
+      genreId: currentGenreId,
+      stageId: currentStageNum,
+      question: currentQuizData.quizText,
+      answer: currentQuizData.choices[currentQuizData.answer], 
+      explanations 
+    }, choices.map(c => c.text));
 
-  setSelectedAnswer(choice.text);
-  router.push(`/quiz_answer?genreId=${currentGenreId}&stageId=${currentStageNum}`);
+    setSelectedAnswer(choice.text);
+    
+    router.push(`/quiz_answer?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
   };
 
   //=========================================
@@ -170,11 +213,6 @@ export default function QuizQuestion() {
       </main>
     );
   }
-
-  // 最大HPの決定（難易度・ボスステージ対応）
-  const maxHp = isHardMode
-    ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
-    : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
 
   // ジャンル名取得
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
@@ -192,10 +230,8 @@ export default function QuizQuestion() {
       {/*============================*/}
       <div className={styles.header}>
 
-        {/* マーキングボタンの代わりの空白エリア */}
+        {/* 空白エリア */}
         <div className={styles.blankArea} style={{ width: "180px", borderRight: "2px solid black", height: "100%" }}></div>
-
-        {/* 判定結果の代わりの空白エリア */}
         <div className={styles.blankArea} style={{ flex: 1, borderRight: "2px solid black", height: "100%" }}></div>
 
         {/* ジャンル名・ステージ数・問題番号 */}
@@ -215,18 +251,36 @@ export default function QuizQuestion() {
           </div>
         </div>
 
-        {/* HP (動的に最大HPを表示) */}
-        <div className={styles.quiz_HP} style={{ color: game.hp <= 1 ? "#ff4757" : "#000" }}>
-          HP {game.hp} / {maxHp}
+        {/* 難易度 & HP */}
+        <div 
+          className={styles.quiz_HP} 
+          style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+        >
+          <div style={{ 
+            fontSize: "0.75rem", 
+            fontWeight: "bold", 
+            color: isHardMode ? "#d63031" : "#00b894",
+            marginBottom: "1px"
+          }}>
+            {difficultyLabel}
+          </div>
+          <div style={{ color: currentHp <= 1 ? "#ff4757" : "#000" }}>
+            HP {currentHp} / {maxHp}
+          </div>
         </div>
 
-        {/* 経過時間 */}
+        {/* 経過時間 / 制限時間 */}
         <div className={styles.quiz_Time}>
           <div className={styles.timerTitle}>
             経過時間
           </div>
           <div className={styles.timer}>
             {formattedTime}
+            {formattedSpeedLimit && (
+              <span style={{ fontSize: "0.75rem", opacity: 0.7, marginLeft: "4px" }}>
+                / {formattedSpeedLimit}
+              </span>
+            )}
           </div>
         </div>
 
