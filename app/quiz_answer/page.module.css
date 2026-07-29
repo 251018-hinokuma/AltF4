@@ -158,24 +158,21 @@
 
 
 /*==========================
-  選択肢一覧 (★テーブル全体の幅を統一する仕組み)
+  選択肢一覧 (★テーブル全体の幅バランスを調整)
 ==========================*/
 
 .answerArea {
     width: 100%;
     
-    /* ★【超重要】テーブル全体で1つのGridを定義します。
-       2列目（選択文）を max-content にすることで、
-       4つの行すべての選択肢の中で「最も長いテキスト」に合わせて自動で一直線に幅を揃えます。 */
+    /* ★【修正箇所】
+       2列目（選択肢）を max-content から 410px に固定上限化し、
+       3列目（解説）に残り幅（約416px）がしっかり確保されるように変更しました。 */
     display: grid;
-    grid-template-columns: 70px max-content 1fr;
+    grid-template-columns: 70px 410px 1fr;
     border-bottom: 2px solid black; /* 下線のボーダーを追加 */
 }
 
 .answerRow {
-    /* ★【超重要】行の枠（div）自体をGridコンテナから「透過（contents）」させ、
-       中の「番号」「選択文」「説明」を直接 .answerArea のGridの子要素として参加させます。
-       これにより、すべての行の列位置がミリ単位でピタッと一致します。 */
     display: contents; 
 }
 
@@ -187,8 +184,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 22px;
-    padding: 10px;
+    font-size: 20px; /* 文字サイズを22pxから20pxにわずかに落として収まりを向上 */
+    padding: 10px 15px;
     
     /* 各セルの下側にボーダーを配置 */
     border-bottom: 2px solid black; 
@@ -202,21 +199,22 @@
 .quiz_choices {
     border-right: 2px solid black;
     
-    /* 選択文を改行させずに横にまっすぐ伸ばす */
-    white-space: nowrap; 
-    justify-content: flex-start; /* 左寄せにして視認性を向上 */
-    padding-left: 20px;
-    padding-right: 20px;
+    /* 超長文の選択肢が来た場合でも枠外にあふれないよう自動折り返しを許可 */
+    white-space: normal;
+    word-break: break-word;
+    justify-content: flex-start; /* 左寄せ */
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* 【No.8】物理名称へ変更（旧 .explanation） */
 .quiz_explanation {
-    /* 説明（解説）文は長文になるため、右側の余りスペースで綺麗に自動折り返しさせます */
+    /* 十分な幅（約400px超）が確保されるため綺麗に折り返されます */
     white-space: normal;
     word-break: break-word;
     overflow-wrap: anywhere;
     justify-content: flex-start; /* 左寄せ */
-    padding-left: 20px;
+    padding-left: 15px;
 }
 
 /* ★最後の行（4行目）のセルだけ下線のボーダーを消す設定 */
@@ -248,7 +246,6 @@
     content: "";
     height: 100%;
     border-left: 2px solid black;
-
 }
 
 /* 【No.9】物理名称へ変更（旧 .nextButton） */

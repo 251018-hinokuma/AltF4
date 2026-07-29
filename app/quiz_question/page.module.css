@@ -45,6 +45,9 @@
 /*==========================
   【No.4】 HP
 ==========================*/
+.difficulty_HP_Area{
+    border-right: 2px solid black;
+}
 .quiz_HP {
     display: flex;
     justify-content: center;
