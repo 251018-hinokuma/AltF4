@@ -1,0 +1,90 @@
+.page {
+  width: 1000px;         /* 固定幅を指定 */
+  height: 650px;
+  margin: 30px auto;     /* ★ auto を指定することで左右中央寄せになります */
+  border: 2px solid #000;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* 上部ヘッダー */
+.top {
+  display: flex;
+  height: 60px;
+  width: fit-content;
+}
+
+.menu,
+.title {
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.menu {
+  width: 90px;
+}
+
+.title {
+  padding: 0 30px;
+}
+
+/* 右側に寄せるジャンル選択エリア */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* ジャンル枠自体は右寄せる設定 */
+  padding: 50px 80px;
+}
+
+.genreBox {
+  display: flex;
+  border: 2px solid #000;
+  width: 320px;
+  color: #000;
+  text-decoration: none;
+  margin-top: -2px; /* 線の重複防止 */
+  background: #fff;
+}
+
+.genreBox:first-child {
+  margin-top: 0;
+}
+
+.genreBox:hover {
+  background: #f9f9f9;
+}
+
+.genreName {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid #000;
+  padding: 20px 10px;
+  font-weight: bold;
+}
+
+.starArea {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.starArea div:first-child {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
