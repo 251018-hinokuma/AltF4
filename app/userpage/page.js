@@ -213,10 +213,17 @@ export default function UserPage() {
                                     読み込み中...
                                 </h3>
                             ) : isEditing ? (
-                            <input className={styles.userNameField} type="text" value={editName}
-                                onChange={(e) =>
-                                    setEditName(e.target.value)
-                                } onKeyDown={handleKeyDown} autoFocus/>
+                                <div className={styles.userNameArea}>
+                                    {/* ユーザー名入力 */}
+                                    <input className={styles.userNameField} type="text" value={editName}
+                                        onChange={(e) =>
+                                            setEditName(e.target.value)
+                                        } onKeyDown={handleKeyDown} autoFocus/>
+                                    {/* 編集完了ボタン */}
+                                    <button type="button" className={styles.editNameButton} onClick={saveUserName}>
+                                        ✓
+                                    </button>
+                                </div>
                             ) : (
                                 <div className={styles.userNameArea}>
                                     <h3 className={styles.userNameField} onClick={() => setIsEditing(true)}>
