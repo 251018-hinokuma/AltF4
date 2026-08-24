@@ -1,0 +1,546 @@
+.container{
+
+    width:100%;
+    height:100vh;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+/* 背景 */
+
+.sky{
+
+    position:absolute;
+
+    inset:0;
+
+    background:linear-gradient(
+        to bottom,
+        #63b8ff,
+        #bfe8ff
+    );
+
+}
+
+.mountain{
+
+    position:absolute;
+
+    bottom:140px;
+
+    width:100%;
+
+    height:170px;
+
+    background:#6e7d63;
+
+    clip-path:polygon(
+        0 100%,
+        18% 35%,
+        40% 80%,
+        55% 20%,
+        72% 75%,
+        85% 30%,
+        100% 100%
+    );
+
+}
+
+.forest{
+
+    position:absolute;
+
+    bottom:100px;
+
+    width:100%;
+
+    height:90px;
+
+    background:#2c6b35;
+
+}
+
+.ground{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+
+    height:100px;
+
+    background:#775236;
+
+    border-top:10px solid #42b442;
+
+}
+.window{
+
+    position:absolute;
+
+    top:60px;
+    left: 200px;
+    right:200px;
+    bottom:60px;
+
+    background:rgba(0,0,0,.82);
+
+    border:4px solid white;
+
+    border-radius:20px;
+
+    padding:35px;
+
+    z-index:10;
+
+}
+
+/* 全体 */
+
+.screen{
+
+    position:relative;
+
+    z-index:2;
+
+    padding:30px;
+
+}
+
+/* 戻る */
+
+.back{
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:22px;
+
+    text-shadow:2px 2px black;
+
+}
+
+/* カーソルを合わせたとき */
+
+.back:hover{
+
+    color:#ffe55d;
+
+    transform:translateX(10px);
+
+}
+
+/* プロフィール */
+
+.profile{
+
+    margin-top:30px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:40px;
+
+}
+
+/* ========================================
+   ユーザーアカウントアイコン
+======================================== */
+
+.userIcon {
+    width: 140px;
+    height: 140px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.userIconSvg {
+    width: 150px;
+    height: 150px;
+}
+
+/* 外側の円 */
+
+.userIconFrame {
+    fill: rgba(255, 255, 255, 0.05);
+
+    stroke: white;
+    stroke-width: 3;
+}
+
+/* 頭 */
+
+.userIconHead {
+    fill: none;
+
+    stroke: white;
+    stroke-width: 3;
+}
+
+/* 肩 */
+
+.userIconBody {
+    fill: none;
+
+    stroke: white;
+    stroke-width: 3;
+
+    stroke-linecap: round;
+}
+
+/* 情報 */
+
+.info{
+
+    flex:1;
+
+    border:3px solid white;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    color:white;
+
+    background:rgba(0,0,0,.82);
+
+}
+
+.info h2{
+
+    margin-bottom:15px;
+
+}
+
+.userNameArea{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:20px;
+
+    height:45px;
+
+}
+
+.userNameField{
+
+    height:45px;
+
+    box-sizing:border-box;
+
+    margin:0;
+
+    padding:0;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+h3.userNameField{
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+h3.userNameField:hover{
+
+    color:#ffe55d;
+
+}
+
+.editNameButton{
+
+    width:45px;
+
+    height:45px;
+
+    box-sizing:border-box;
+
+    padding:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    background:transparent;
+
+    border:2px solid white;
+
+    border-radius:8px;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.editNameButton:hover{
+
+    color:#ffe55d;
+
+    border-color:#ffe55d;
+
+    background:rgba(255,255,255,.1);
+
+    transform:scale(1.05);
+
+}
+
+input.userNameField{
+
+    padding:0 10px;
+
+    color:white;
+
+    background:rgba(0,0,0,.5);
+
+    border:2px solid white;
+
+    border-radius:5px;
+
+    outline:none;
+
+}
+
+input.userNameField:focus{
+
+    border-color:#ffe55d;
+
+}
+
+.hpBar{
+
+    width:320px;
+
+    height:18px;
+
+    border:2px solid white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+.hp{
+
+    width:100%;
+
+    height:100%;
+
+    background:#ff2d2d;
+
+}
+
+/* メニュー */
+.menuBox{
+
+    margin-top:40px;
+
+    border:3px solid white;
+
+    border-radius:15px;
+
+    background:rgba(0,0,0,.82);
+
+    padding:30px;
+
+    
+
+}
+
+.menu{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:25px;
+
+}
+
+.menuItem{
+
+    color:white;
+
+    font-size:30px;
+
+    text-decoration:none;
+
+    width:max-content;
+
+    transition:.2s;
+
+}
+
+.menuItem:hover{
+
+    color:#ffe55d;
+
+    transform:translateX(10px);
+
+}
+
+/* ========================================
+   スマートフォン対応
+======================================== */
+
+@media (max-width: 600px) {
+
+    /* 全体 */
+    .container {
+        width: 100%;
+        height: 100dvh;
+        min-height: 100dvh;
+
+        overflow: hidden;
+    }
+
+    /* メインウィンドウ */
+    .window {
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+
+        width: auto;
+
+        padding: 20px;
+
+        border-width: 3px;
+
+        border-radius: 15px;
+
+        overflow-y: auto;
+
+        box-sizing: border-box;
+    }
+
+    /* 戻る */
+    .back {
+        font-size: 18px;
+    }
+
+    /* プロフィール */
+    .profile {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .userIcon {
+        width: 100px;
+        height: 100px;
+
+        margin: 0 auto;
+    }
+
+    .userIconSvg {
+        width: 90px;
+        height: 90px;
+    }
+
+    .info {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20px;
+    }
+
+    .userNameField {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .hpBar {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    /* ユーザー情報 */
+    .info {
+        width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 20px;
+    }
+
+    .info h2 {
+        font-size: 22px;
+
+        margin-bottom: 15px;
+    }
+
+    /* ユーザー名 */
+    .userNameField {
+        width: 100%;
+
+        max-width: 100%;
+
+        box-sizing: border-box;
+
+        font-size: 20px;
+    }
+
+    /* ユーザー名編集 */
+    input.userNameField {
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+    /* HP */
+    .hpBar {
+        width: 100%;
+
+        max-width: 320px;
+    }
+
+    /* メニュー */
+    .menuBox {
+        margin-top: 25px;
+
+        padding: 20px;
+    }
+
+    .menu {
+        gap: 20px;
+    }
+
+    .menuItem {
+        font-size: 20px;
+
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+}

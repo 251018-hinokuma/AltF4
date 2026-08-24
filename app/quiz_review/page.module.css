@@ -1,0 +1,200 @@
+/* 全体コンテナ */
+.container {
+    width: 900px;
+    margin: 30px auto;
+    border: 2px solid black;
+    box-sizing: border-box; 
+}
+
+.container *, .container *::before, .container *::after {
+    box-sizing: border-box;
+}
+
+/*==========================
+  ヘッダー
+==========================*/
+.header {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    border-bottom: 2px solid black;
+}
+
+.markArea {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 180px;
+    height: 100%;
+    border-right: 2px solid black;
+}
+
+.markText {
+    font-size: 20px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.markingbutton {
+    border: none;
+    background: white;
+    font-size: 36px;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.markingbutton:hover {
+    transform: scale(1.15);
+}
+
+.quiz_result {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    border-right: 2px solid black; 
+}
+
+.quiz_now {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 140px;
+    height: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    /* 右端のため右側の枠線はなし */
+}
+
+/*==========================
+  問題文
+==========================*/
+.quiz_text {
+    height: 180px;
+    border-bottom: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    text-align: center;
+    padding: 20px;
+}
+
+/*==========================
+  選択肢一覧（★テーブル全体の幅バランスを調整）
+==========================*/
+.answerArea {
+    width: 100%;
+    display: grid;
+    /* ★【修正】2列目（選択肢）を max-content から 410px に変更し、解説欄（1fr）に十分な幅を確保 */
+    grid-template-columns: 70px 410px 1fr;
+}
+
+.answerRow {
+    display: contents; 
+}
+
+.choiceNo,
+.quiz_choices,
+.quiz_explanation {
+    min-height: 68px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px; /* 文字サイズを20pxに調整 */
+    padding: 10px 15px;
+    border-bottom: 2px solid black; 
+}
+
+.choiceNo {
+    border-right: 2px solid black;
+}
+
+.quiz_choices {
+    border-right: 2px solid black;
+    /* ★長文の選択肢でも解説側を圧迫しないよう自動折り返しを許可 */
+    white-space: normal; 
+    word-break: break-word;
+    justify-content: flex-start;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.quiz_explanation {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    justify-content: flex-start;
+    padding-left: 15px;
+}
+
+.answerRow:last-child > .choiceNo,
+.answerRow:last-child > .quiz_choices,
+.answerRow:last-child > .quiz_explanation {
+    border-bottom: none;
+}
+
+/*==========================
+  復習画面用 下部ボタンエリア
+==========================*/
+.review_bottom {
+    display: grid;
+    grid-template-columns: 180px 1fr 180px; 
+    height: 80px;
+    align-items: center;
+    border-top: 2px solid black;
+}
+
+.review_nav_button {
+    height: 100%;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.review_nav_button:first-child {
+    border-right: 2px solid black;
+}
+
+.review_nav_button:last-child {
+    border-left: 2px solid black;
+}
+
+.review_nav_button:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+.review_nav_button:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background: #fafafa;
+}
+
+.quiz_move_nextbutton {
+    width: 100%;
+    height: 100%;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.quiz_move_nextbutton:hover {
+    background: #f5f5f5;
+}

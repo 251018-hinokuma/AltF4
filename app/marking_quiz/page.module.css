@@ -1,0 +1,195 @@
+/* =========================================
+   全体コンテナ（quiz_answerのサイズ感に統一）
+   ========================================= */
+.container {
+  width: 900px; /* ★quiz_answer画面と同じ 900px に統一 */
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   ヘッダーエリア
+   ========================================= */
+.markingHeader {
+  display: flex;
+  width: 100%;
+  border: 2px solid #333333;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-right: 2px solid #333333;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333333;
+  box-sizing: border-box;
+}
+
+.markTextCell {
+  white-space: nowrap;
+}
+
+.markBtnCell {
+  background: transparent;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  border-right: 2px solid #333333;
+  cursor: pointer;
+  font-size: 22px;
+  color: #333333;
+  padding: 0 20px;
+  transition: background-color 0.15s ease;
+}
+
+.markBtnCell:hover {
+  background-color: #f5f5f5;
+}
+
+.headerSpacer {
+  flex: 1;
+}
+
+.genreCell {
+  border-right: none;
+  white-space: nowrap;
+}
+
+/* =========================================
+   問題文エリア（ヘッダーと枠線を連結）
+   ========================================= */
+.quiz_text {
+  border: 2px solid #333333;
+  border-top: none; /* ヘッダーの底辺と重ねる */
+  padding: 48px 24px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================
+   選択肢＆解説テーブルエリア（★Gridレイアウトに修正）
+   ========================================= */
+.answerArea {
+  width: 100%;
+  /* ★番号:70px, 選択肢:410px, 解説:残り1fr(約416px) で配置バランスを他画面と統一 */
+  display: grid;
+  grid-template-columns: 70px 410px 1fr;
+  border-left: 2px solid #333333;
+  border-right: 2px solid #333333;
+  box-sizing: border-box;
+}
+
+.answerRow {
+  display: contents; /* Gridアイテムとして直下セルを透過配置 */
+}
+
+.choiceNo,
+.quiz_choices,
+.quiz_explanation {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 2px solid #333333;
+  box-sizing: border-box;
+}
+
+.choiceNo {
+  justify-content: center;
+  border-right: 2px solid #333333;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.quiz_choices {
+  border-right: 2px solid #333333;
+  font-weight: bold;
+  font-size: 15px;
+  /* 長文の選択肢でも解説を圧迫しないよう自動折り返しを許可 */
+  white-space: normal;
+  word-break: break-word;
+}
+
+.quiz_explanation {
+  font-size: 14px;
+  color: #333333;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+
+
+/* =========================================
+   下部ナビゲーションボタン
+   ========================================= */
+.bottomNav {
+  display: flex;
+  width: 100%;
+  border: 2px solid #333333;
+  border-top: none;
+  box-sizing: border-box;
+}
+
+.bottomNav button {
+  flex: 1;
+  padding: 14px 0;
+  background-color: #ffffff;
+  border: none;
+  border-right: 2px solid #333333;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.bottomNav button:last-child {
+  border-right: none;
+}
+
+.bottomNav button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+.bottomNav button:disabled {
+  color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   データなし・読み込み中エリア
+   ========================================= */
+.emptyArea {
+  border: 2px solid #333333;
+  border-top: none;
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.emptyArea h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.emptyArea .homebutton {
+  padding: 10px 24px;
+  border: 2px solid #333333;
+  background-color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+}

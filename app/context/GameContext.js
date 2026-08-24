@@ -1,352 +1,316 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
+// コンテキストの作成
 const GameContext = createContext();
 
-export function GameProvider({ children }) {
-
-  // -------------------------------
-  //ここを変更する
-  // ゲーム情報
-  // -------------------------------
+export const GameProvider = ({ children }) => {
+  //=========================================
+  // アプリケーション全体で共有する状態（State）
+  //=========================================
   const [game, setGame] = useState({
-
-    // プレイ中のジャンル
-    genreId: 1,
-
-    // プレイ中のステージ
-    stageId: 1,
-
-    // 現在の問題番号
-    currentQuestion: 1,
-
-    // 問題数
-    totalQuestion: 10,
-
-    // HP
-    hp: 5,
-
-    // 正答数
-    correctCount: 0,
-
-    // 経過時間（秒）
-    elapsedTime: 0,
-
-    // 現在表示している問題
-    currentQuiz: null,
-
-    // シャッフル後の選択肢
-    shuffledChoices: [],
-
-    // 押した答え
-    selectedAnswer: "",
-
-    //ここを変更する
-    // UserModel
     user: {
-
-      userId: 1,
-
-      userName: "プレイヤー",
-
-      stages: [],
-
-      markingQuizIds: [],
-
-      resultQuizIds: [],
-
-      achievements: []
-
-    }
-
+      markingQuizIds: [], // マーキングした問題のIDリスト（数値で統一）
+      resultQuizIds: [],  // 今回解いた問題のIDリスト（復習画面用）
+    },
+    genres: [],           // ジャンル一覧データ
+    quizzes: [],          // DBから取得しシャッフルされた問題リスト
+    genreId: null,        // 現在のジャンルID
+    stageId: null,        // 現在のステージID
+    currentQuestion: 1,   // 現在の問題番号
+    totalQuestion: 0,     // 全問題数
+    hp: 5,                // 現在のHP
+    elapsedTime: 0,       // 経過時間（秒）
+    currentQuiz: null,    // 解答画面へ渡すクイズ情報
+    selectedAnswer: "",   // プレイヤーが選択した回答
+    userAnswers: {},      // 問題ごとの解答選択肢リスト
+    isFinished: false,    // ゲーム終了フラグ
   });
 
-  // -------------------------------
-  // 経過時間更新
-  // -------------------------------
-  const updateElapsedTime = () => {
+  //=========================================
+  // 初回読み込み時に localStorage からマーキング情報を取得
+  //=========================================
+  useEffect(() => {
+    try {
+      const savedMarkings = localStorage.getItem("markingQuizIds");
+      if (savedMarkings) {
+        const parsed = JSON.parse(savedMarkings);
+        if (Array.isArray(parsed)) {
+          const normalized = parsed
+            .map((id) => Number(id))
+            .filter((id) => !isNaN(id));
 
-    setGame((prev) => ({
+          setGame((prev) => ({
+            ...prev,
+            user: {
+              ...prev.user,
+              markingQuizIds: normalized,
+            },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("マーキング情報の読み込みに失敗しました:", error);
+    }
+  }, []);
 
-      ...prev,
-
-      elapsedTime: prev.elapsedTime + 1
-
-    }));
-
+  //=========================================
+  // 配列をシャッフルする汎用関数
+  //=========================================
+  const shuffleQuizzes = (array) => {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
   };
 
-  // -------------------------------
-  // HP減少
-  // -------------------------------
-  const decreaseHp = () => {
+  //=========================================
+  // ジャンル一覧をAPIから取得する処理
+  //=========================================
+  const fetchGenres = useCallback(async () => {
+    try {
+      const response = await fetch("/api/genres");
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : (data.genres || []);
+      
+      setGame((prev) => ({
+        ...prev,
+        genres: list,
+      }));
+      return list;
+    } catch (error) {
+      console.error("ジャンル一覧の取得に失敗しました:", error);
+      return [];
+    }
+  }, []);
 
+  //=========================================
+  // 1. 問題をAPIから取得してシャッフルする処理（ゲーム開始・リセット時）
+  //=========================================
+  const fetchQuizzes = useCallback(async (genreId, stageId, initialHp = 5, isBoss = false) => {
+    try {
+      const isBossStage = isBoss || Number(stageId) === 6;
+      let endpoint = isBossStage
+        ? `/api/quizzes?genreId=${genreId}`
+        : `/api/quizzes?genreId=${genreId}&stageId=${stageId}`;
+
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      
+      const rawList = Array.isArray(data) ? data : (data.quizzes || data.data || []);
+      let randomizedQuizzes = shuffleQuizzes(rawList);
+      
+      if (isBossStage) {
+        randomizedQuizzes = randomizedQuizzes.slice(0, 25);
+      }
+
+      setGame((prev) => ({ 
+        ...prev, 
+        genreId: Number(genreId),
+        stageId: Number(stageId),
+        quizzes: randomizedQuizzes,
+        totalQuestion: randomizedQuizzes.length,
+        currentQuestion: 1,  // ★ 必ず1問目にリセット
+        elapsedTime: 0,      // ★ タイムリセット
+        hp: initialHp,       // ★ HPリセット
+        userAnswers: {},
+        isFinished: false,   // ★ ゲーム進行中に設定
+        user: {
+          ...prev.user,
+          resultQuizIds: [],
+        }
+      }));
+    } catch (error) {
+      console.error("問題の取得に失敗しました:", error);
+    }
+  }, []);
+
+  //=========================================
+  // ジャンル全体の全問題をAPIから取得する処理（マーキング画面用）
+  //=========================================
+  const fetchQuizzesByGenre = useCallback(async (genreId) => {
+    try {
+      const response = await fetch(`/api/quizzes?genreId=${genreId}`);
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : (data.quizzes || data.data || []);
+
+      setGame((prev) => ({
+        ...prev,
+        quizzes: list,
+      }));
+      return list;
+    } catch (error) {
+      console.error("ジャンル別問題の取得に失敗しました:", error);
+      return [];
+    }
+  }, []);
+
+  //=========================================
+  // 2. タイマーの更新処理
+  //=========================================
+  const updateElapsedTime = useCallback(() => {
     setGame((prev) => ({
-
       ...prev,
-
-      hp: prev.hp - 1
-
+      elapsedTime: prev.elapsedTime + 1,
     }));
+  }, []);
 
-  };
-
-  // -------------------------------
-  // HP設定
-  // -------------------------------
-  const setHp = (hp) => {
-
+  //=========================================
+  // 3. 解答画面へ情報を渡す処理
+  //=========================================
+  const setCurrentQuiz = useCallback((quizData, choices) => {
     setGame((prev) => ({
-
       ...prev,
-
-      hp
-
+      currentQuiz: { ...quizData, choices },
     }));
+  }, []);
 
-  };
-
-  // -------------------------------
-  // 正答数追加
-  // -------------------------------
-  const addCorrect = () => {
-
+  const setSelectedAnswer = useCallback((answer) => {
     setGame((prev) => ({
-
       ...prev,
-
-      correctCount: prev.correctCount + 1
-
+      selectedAnswer: answer,
     }));
+  }, []);
 
-  };
-
-  // -------------------------------
-  // 次の問題へ
-  // -------------------------------
-  const nextQuestion = () => {
-
-    setGame((prev) => ({
-
-      ...prev,
-
-      currentQuestion: prev.currentQuestion + 1
-
-    }));
-
-  };
-
-  // -------------------------------
-  // 現在の問題保存
-  // -------------------------------
-  const setCurrentQuiz = (quiz, shuffledChoices) => {
-
-    setGame((prev) => ({
-
-      ...prev,
-
-      currentQuiz: quiz,
-
-      shuffledChoices
-
-    }));
-
-  };
-
-  // -------------------------------
-  // 回答保存
-  // -------------------------------
-  const setSelectedAnswer = (answer) => {
-
-    setGame((prev) => ({
-
-      ...prev,
-
-      selectedAnswer: answer
-
-    }));
-
-  };
-
-  // -------------------------------
-  //ここを変更する
-  // マーキング追加・削除
-  // -------------------------------
-  const toggleMarking = (quizId) => {
+  //=========================================
+  // 4. マーキングの切り替え
+  //=========================================
+  const toggleMarking = useCallback((quizId) => {
+    const targetId = Number(quizId);
+    if (isNaN(targetId)) return;
 
     setGame((prev) => {
+      const currentMarked = prev.user?.markingQuizIds || [];
+      const isMarked = currentMarked.some((id) => Number(id) === targetId);
+      
+      const newMarkingIds = isMarked
+        ? currentMarked.filter((id) => Number(id) !== targetId)
+        : [...currentMarked, targetId];
 
-      const exists =
-        prev.user.markingQuizIds.includes(quizId);
+      try {
+        localStorage.setItem("markingQuizIds", JSON.stringify(newMarkingIds));
+      } catch (error) {
+        console.error("マーキング情報の保存に失敗しました:", error);
+      }
 
       return {
-
         ...prev,
-
         user: {
-
           ...prev.user,
-
-          markingQuizIds: exists
-            ? prev.user.markingQuizIds.filter(
-                (id) => id !== quizId
-              )
-            : [
-                ...prev.user.markingQuizIds,
-                quizId
-              ]
-
-        }
-
+          markingQuizIds: newMarkingIds,
+        },
       };
-
     });
+  }, []);
 
-  };
+  //=========================================
+  // 5. HP操作 & ゲーム終了制御
+  //=========================================
+  const setHp = useCallback((newHp) => {
+    setGame((prev) => {
+      const targetHp = Math.max(0, newHp);
+      if (prev.hp === targetHp) return prev;
+      return {
+        ...prev,
+        hp: targetHp,
+      };
+    });
+  }, []);
 
-  // -------------------------------
-  //ここを変更する
-  // 結果問題追加
-  // -------------------------------
-  const addResultQuiz = (quizId) => {
-
+  const decreaseHp = useCallback(() => {
     setGame((prev) => ({
-
       ...prev,
-
-      user: {
-
-        ...prev.user,
-
-        resultQuizIds: [
-
-          ...prev.user.resultQuizIds,
-
-          quizId
-
-        ]
-
-      }
-
+      hp: Math.max(0, prev.hp - 1),
     }));
+  }, []);
 
-  };
-
-  // -------------------------------
-  //ここを変更する
-  // ユーザー名変更
-  // -------------------------------
-  const setUserName = (name) => {
-
+  const nextQuestion = useCallback(() => {
     setGame((prev) => ({
-
       ...prev,
-
-      user: {
-
-        ...prev.user,
-
-        userName: name
-
-      }
-
+      currentQuestion: prev.currentQuestion + 1,
     }));
+  }, []);
 
-  };
+  const addResultQuiz = useCallback((quizId, selectedAnswer) => {
+    const targetId = Number(quizId);
+    if (isNaN(targetId)) return;
 
-  // -------------------------------
-  // ゲームリセット
-  // -------------------------------
-  const resetGame = () => {
+    setGame((prev) => {
+      const answerToSave = selectedAnswer !== undefined ? selectedAnswer : prev.selectedAnswer;
 
-    setGame({
+      return {
+        ...prev,
+        userAnswers: {
+          ...prev.userAnswers,
+          [targetId]: answerToSave,
+        },
+        user: {
+          ...prev.user,
+          resultQuizIds: prev.user.resultQuizIds.includes(targetId)
+            ? prev.user.resultQuizIds
+            : [...prev.user.resultQuizIds, targetId],
+        },
+      };
+    });
+  }, []);
 
-      genreId: 1,
+  // ゲーム終了（ゲームオーバー・全クリア）フラグの設定
+  const finishGame = useCallback(() => {
+    setGame((prev) => ({
+      ...prev,
+      isFinished: true,
+    }));
+  }, []);
 
-      stageId: 1,
-
+  // ゲーム状態の全リセット処理
+  const resetGame = useCallback((defaultHp = 5) => {
+    setGame((prev) => ({
+      ...prev,
+      quizzes: [],
+      genreId: null,
+      stageId: null,
       currentQuestion: 1,
-
-      totalQuestion: 10,
-
-      hp: 5,
-
-      correctCount: 0,
-
+      totalQuestion: 0,
+      hp: defaultHp,
       elapsedTime: 0,
-
       currentQuiz: null,
-
-      shuffledChoices: [],
-
       selectedAnswer: "",
-
-      //ここを変更する
+      userAnswers: {},
+      isFinished: true,
       user: {
-
-        userId: 1,
-
-        userName: "プレイヤー",
-
-        stages: [],
-
-        markingQuizIds: [],
-
+        ...prev.user,
         resultQuizIds: [],
-
-        achievements: []
-
-      }
-
-    });
-
-  };
+      },
+    }));
+  }, []);
 
   return (
-
     <GameContext.Provider
       value={{
-
         game,
-
-        setGame,
-
+        fetchGenres,
+        fetchQuizzes,
+        fetchQuizzesByGenre,
         updateElapsedTime,
-
-        decreaseHp,
-
-        setHp,
-
-        addCorrect,
-
-        nextQuestion,
-
         setCurrentQuiz,
-
         setSelectedAnswer,
-
         toggleMarking,
-
+        setHp,
+        decreaseHp,
+        nextQuestion,
         addResultQuiz,
-
-        setUserName,
-
-        resetGame
-
+        finishGame,
+        resetGame,
       }}
     >
-
       {children}
-
     </GameContext.Provider>
-
   );
+};
 
-}
-
-export function useGame() {
-
+export const useGame = () => {
   return useContext(GameContext);
-
-}
+};

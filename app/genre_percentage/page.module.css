@@ -1,0 +1,118 @@
+/* 画面全体のベース（王宮や羊皮紙を思わせる暖かみのあるアイボリー） */
+.container {
+  min-height: 100vh;
+  background: radial-gradient(circle at top center, #ffffff, #fdfbf7 60%, #f3ede4);
+  color: #3f312b; /* 文字色は深みのあるセピア・ブラウン系 */
+  padding: 3rem 2rem;
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+}
+
+/* ヘッダー（タブ部分） */
+.header {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid #e7e0d3;
+  padding-bottom: 0;
+}
+
+/* 通常のタブボタン（未選択） */
+.tab {
+  background: transparent;
+  color: #8c7b70;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px; /* 線の位置調整 */
+}
+
+.tab:hover {
+  color: #5c4d43;
+}
+
+/* 選択中のタブ（ロイヤルブルーとゴールドのアンダーライン） */
+.tabActive {
+  color: #1e3a8a; /* 知性と魔法を感じさせるロイヤルブルー */
+  border-bottom: 2px solid #d4af37; /* クラシックなゴールド */
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+/* コンテンツエリア */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* ジャンルごとのテーブル（ギルドの依頼書・成績証明書のようなカード） */
+.genreTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e7e0d3;
+  box-shadow: 0 8px 20px rgba(139, 115, 85, 0.08); /* 暖かみのある上品な影 */
+  overflow: hidden;
+  position: relative;
+}
+
+/* テーブル上部のゴールドライン装飾 */
+.genreTable::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #d4af37, #fdf5e6 50%, #d4af37);
+}
+
+/* ジャンルタイトル行 */
+.genreTitle {
+  background: #faf8f5;
+  color: #1e3a8a;
+  font-size: 1.2rem;
+  text-align: left;
+  padding: 1.25rem 1.5rem !important;
+  font-weight: bold;
+  border-bottom: 1px solid #e7e0d3 !important;
+  letter-spacing: 0.05em;
+}
+
+/* セルの共通設定 */
+.genreTable th,
+.genreTable td {
+  padding: 1.25rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #f0ebe1;
+}
+
+/* ジャンル全体の正答率セル（右上のヘッダー） */
+.genreTable tr:first-child th:last-child {
+  background: #faf8f5;
+  color: #8c7b70;
+  font-size: 1rem;
+  border-bottom: 1px solid #e7e0d3;
+  text-align: right;
+  padding-right: 1.5rem;
+}
+
+/* ステージ名の行 */
+.genreTable tr:nth-child(2) th {
+  background: #fdfbf7;
+  color: #786859;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* 実際の正答率（数値）の行 */
+.genreTable tr:nth-child(3) td {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #3f312b; /* 数値ははっきりと濃い色で表示 */
+  border-bottom: none;
+}

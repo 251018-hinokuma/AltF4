@@ -81,7 +81,9 @@ export default function AchievementPage() {
   ];
 
   const handleBack = () => {
+
     router.push('/userpage');
+
   };
 
   return (
@@ -131,4 +133,8 @@ export default function AchievementPage() {
       </main>
     </div>
   );
+
+
 }
+
+
