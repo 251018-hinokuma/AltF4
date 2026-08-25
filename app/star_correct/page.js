@@ -60,7 +60,7 @@ export default function StarStatusPage() {
         <button className={`${styles['star-tab-button']} ${styles['star-tab-button-active']}`}>
           スター獲得状況
         </button>
-        <Link href="/genre-accuracy">
+        <Link href="/genre_percentage">
           <button className={styles['star-tab-button']}>ジャンル別正答率</button>
         </Link>
       </nav>
