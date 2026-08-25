@@ -4,7 +4,7 @@ import { User } from "../../../utils/schemaModels";
 
 export async function POST(req) {
   try {
-    await connectDB();
+    await dbConnect();
     const body = await req.json();
 
     const { userId, genreId, stageId, clear, perfect, speed, correct, total } = body;
