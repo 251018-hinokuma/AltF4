@@ -7,7 +7,7 @@ import styles from "./style.module.css";
 export default function QuizGenre() {
   const [genres, setGenres] = useState([]);
 
-  // ジャンルごとのスター数
+  // ジャンルごとのスター数 ({ [genreId]: count })
   const [starCounts, setStarCounts] = useState({});
 
   // =========================================
@@ -25,12 +25,12 @@ export default function QuizGenre() {
   }, []);
 
   // =========================================
-  // UserModelからスター数を取得
+  // 各ジャンルのステージデータからスター数を計算して取得
   // =========================================
   useEffect(() => {
     if (genres.length === 0) return;
 
-    // ログイン機能がまだないのでテスト用
+    // テスト用ユーザーID
     const userId = 1;
 
     const getStars = async () => {
@@ -38,19 +38,30 @@ export default function QuizGenre() {
 
       for (const genre of genres) {
         try {
+          // ステージ情報を取得
           const response = await fetch(
-            `/api/user/stars?userId=${userId}&genreId=${genre.genreId}`
+            `/api/user/stages?userId=${userId}&genreId=${genre.genreId}`
           );
 
           const data = await response.json();
+          const stages = data.stages || [];
 
-          counts[genre.genreId] = data.starCount || 0;
+          // 各ステージの clear, perfect, speed (trueの数) を合算
+          let totalStars = 0;
+          if (Array.isArray(stages)) {
+            stages.forEach((stage) => {
+              if (stage.clear) totalStars++;
+              if (stage.perfect) totalStars++;
+              if (stage.speed) totalStars++;
+            });
+          }
+
+          counts[genre.genreId] = totalStars;
         } catch (error) {
           console.error(
             `ジャンル${genre.genreId}のスター取得エラー:`,
             error
           );
-
           counts[genre.genreId] = 0;
         }
       }
@@ -63,39 +74,28 @@ export default function QuizGenre() {
 
   return (
     <div className={styles.page}>
-
       {/* =========================================
           ヘッダー
       ========================================= */}
       <div className={styles.top}>
-
         <Link href="/" className={styles.menu}>
           戻る
         </Link>
 
-        <div className={styles.title}>
-          クイズ
-        </div>
+        <div className={styles.title}>クイズ</div>
 
-        <Link
-          href="/quiz_genreSelection"
-          className={styles.menu}
-        >
+        <Link href="/quiz_genreSelection" className={styles.menu}>
           ジャンル選択
         </Link>
-
       </div>
 
       {/* =========================================
           ジャンル一覧
       ========================================= */}
       <div className={styles.content}>
-
         {genres.map((genre) => {
-
-          // このジャンルのスター数
-          const starCount =
-            starCounts[genre.genreId] || 0;
+          // このジャンルの獲得スター数
+          const starCount = starCounts[genre.genreId] || 0;
 
           return (
             <Link
@@ -105,29 +105,19 @@ export default function QuizGenre() {
               )}`}
               className={styles.genreBox}
             >
-
               {/* ジャンル名 */}
               <div className={styles.genreName}>
                 {genre.genreName}
               </div>
 
-              {/* スター */}
+              {/* スター表示 */}
               <div className={styles.starArea}>
-
-                <div>
-                  {starCount > 0 ? "★" : "☆"}
-                </div>
-
-                <div>
-                  {starCount[genre.genreId] || 0}個/30個
-                </div>
-
+                <div>{starCount > 0 ? "★" : "☆"}</div>
+                <div>{starCount}個 / 30個</div>
               </div>
-
             </Link>
           );
         })}
-
       </div>
     </div>
   );

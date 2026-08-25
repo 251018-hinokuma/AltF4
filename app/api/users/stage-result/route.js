@@ -9,9 +9,12 @@ export async function POST(req) {
 
     const { userId, genreId, stageId, clear, perfect, speed, correct, total } = body;
 
-    if (!userId || !genreId || !stageId) {
+    if (userId === undefined || genreId === undefined || stageId === undefined) {
       return NextResponse.json({ error: "必要なパラメータが不足しています。" }, { status: 400 });
     }
+
+    const genreKey = `genre${genreId}`;
+    const stageIndex = Number(stageId) - 1; // 0ベースインデックスに変換
 
     // ユーザーの取得（存在しない場合はデフォルト作成）
     let user = await User.findOne({ userId });
@@ -21,10 +24,8 @@ export async function POST(req) {
         userName: "Guest",
         stages: new Map(),
       });
+      await user.save();
     }
-
-    const genreKey = `genre${genreId}`;
-    const stageIndex = Number(stageId) - 1; // 0ベースインデックスに変換
 
     // 該当ジャンルのステージ配列を取得・初期化
     let genreStages = user.stages.get(genreKey) || [];
@@ -50,9 +51,19 @@ export async function POST(req) {
       total: total || currentDetail.total || 10,
     };
 
-    // Mapに設定して保存
+    // user.save() ではなく updateOne を使用して VersionError (楽観的ロック競合) を回避
+    await User.updateOne(
+      { _id: user._id },
+      { 
+        $set: { 
+          [`stages.${genreKey}`]: genreStages,
+          updatedAt: new Date(),
+        } 
+      }
+    );
+
+    // 返却用にローカルの Map 構造を更新
     user.stages.set(genreKey, genreStages);
-    await user.save();
 
     return NextResponse.json({
       message: "ステージ結果およびスターの保存に成功しました。",

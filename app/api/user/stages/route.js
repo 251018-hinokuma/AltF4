@@ -29,14 +29,20 @@ export async function GET(request) {
       );
     }
 
-    const stages = user.stages.get(String(genreId)) || [];
+    // 保存時と同じ形式 "genre1", "genre2" にキーを合わせる
+    const genreKey = `genre${genreId}`;
+
+    // Map構造およびプレーンオブジェクトのどちらにも対応できる安全な取得
+    const stages = user.stages?.get 
+      ? (user.stages.get(genreKey) || []) 
+      : (user.stages?.[genreKey] || []);
 
     return NextResponse.json({
       stages
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("GET stages エラー:", error);
 
     return NextResponse.json(
       { error: error.message },
