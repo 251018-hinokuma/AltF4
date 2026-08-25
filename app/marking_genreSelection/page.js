@@ -10,6 +10,7 @@ export default function MarkingGenreSelection() {
   const { game } = useGame();
   const [genres, setGenres] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
 
   // =========================================
   // 初期表示処理：全てのジャンルを取得
