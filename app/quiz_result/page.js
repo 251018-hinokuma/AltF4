@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useGame } from '../context/GameContext'; 
 import styles from './page.module.css';
@@ -10,64 +10,178 @@ export default function ResultPage() {
   const searchParams = useSearchParams();
   const { game } = useGame(); 
 
-  // URLパラメータからコンテキストのフォールバック値を読込
+  //=========================================
+  // URLパラメータの取得 & 難易度・ステージ特定
+  //=========================================
   const queryGenreId = searchParams.get("genreId");
   const queryStageId = searchParams.get("stageId");
-  const queryDifficulty = searchParams.get("difficulty");
+  const queryDifficulty = searchParams.get("difficulty") || searchParams.get("Difficulty");
 
-  // --- デバッグ用オーバーライド状態 ---
-  const [mockHp, setMockHp] = useState(3);
-  const [mockTime, setMockTime] = useState(30);
-  const [mockCorrectCount, setMockCorrectCount] = useState(0);
+  const currentGenreId = Number(queryGenreId || game?.genreId || 1);
+  const currentStageNum = Number(queryStageId || game?.stageId || 1);
 
-  // 1. 【回答数・正解数の同期】 QuizAnswer 経由で記録されたデータの安全な参照
-  useEffect(() => {
-    if (game) {
-      setMockHp(game.hp ?? 3);
-      setMockTime(game.elapsedTime ?? 0);
+  // 難易度判定 (1: Normal, 2: Hard)
+  const parsedDiff = Number(queryDifficulty);
+  const currentDifficulty = !isNaN(parsedDiff) && parsedDiff > 0 ? parsedDiff : Number(game?.difficulty || 1);
+  const isHardMode = currentDifficulty === 2 || game?.difficulty === "hard" || game?.mode === "hard" || !!game?.isHard;
 
-      // QuizAnswerから追加された resultQuizIds または resultQuizIdsList を参照
-      const user = game.user || {};
-      const resultsArray = user.resultQuizIdsList || user.resultQuizIds || [];
+  const [stageInfo, setStageInfo] = useState(null);
+  const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
+
+  //=========================================
+  // 【QuizAnswer側のコード変更なしで正答数を安全計算】
+  //=========================================
+  const calculatedCorrectCount = useMemo(() => {
+    if (!game || !game.quizzes || game.quizzes.length === 0) return 0;
+
+    let count = 0;
+    const userAnswers = game.userAnswers || {};
+
+    game.quizzes.forEach((quiz) => {
+      // ユーザーが選択した回答テキストを取得 (キーの数値/文字列双方に対応)
+      let userSelected = userAnswers[quiz.quizId] ?? userAnswers[String(quiz.quizId)];
       
-      // 正解のみを管理する配列(correctQuizIds)があればそれを優先、なければ記録された結果数を参照
-      const correctArray = user.correctQuizIds || resultsArray;
-      setMockCorrectCount(Array.isArray(correctArray) ? correctArray.length : 0);
-    }
+      if ((userSelected === undefined || userSelected === null) && game.currentQuiz?.quizId === quiz.quizId) {
+        userSelected = game.selectedAnswer;
+      }
+
+      if (userSelected !== undefined && userSelected !== null && userSelected !== "") {
+        // QuizModel構造: answer はインデックス(Number)として保持
+        let correctAnswerText = "";
+        if (Array.isArray(quiz.choices) && typeof quiz.answer === "number") {
+          correctAnswerText = quiz.choices[quiz.answer];
+        } else {
+          correctAnswerText = quiz.answer;
+        }
+
+        if (String(userSelected).trim() === String(correctAnswerText).trim()) {
+          count += 1;
+        }
+      }
+    });
+
+    return count;
   }, [game]);
 
-  // 2. 経過時間フォーマット
-  const formattedTime = useMemo(() => {
-    const minute = String(Math.floor(mockTime / 60)).padStart(2, "0");
-    const second = String(mockTime % 60).padStart(2, "0");
-    return `${minute}:${second}`;
-  }, [mockTime]);
-
-  // 3. 総問題数の算出
+  // 総問題数
   const totalQuestionsCount = useMemo(() => {
     return game?.totalQuestion || (game?.quizzes ? game.quizzes.length : 10);
   }, [game]);
 
-  // 目標クリア時間（StageModel または デフォルト45秒）
-  const TARGET_SPEED_SECONDS = game?.currentStage?.normalSpeedLimittime || 45;
+  //=========================================
+  // 【デバッグ用ステート & Context同期】
+  //=========================================
+  const [mockHp, setMockHp] = useState(0);
+  const [mockTime, setMockTime] = useState(0);
+  const [mockCorrectCount, setMockCorrectCount] = useState(0);
 
-  // 4. 星獲得条件判定
+  useEffect(() => {
+    if (game) {
+      setMockHp(game.hp ?? 0);
+      setMockTime(game.elapsedTime ?? 0);
+      setMockCorrectCount(calculatedCorrectCount);
+    }
+  }, [game, calculatedCorrectCount]);
+
+  // Stage情報の取得 API
+  useEffect(() => {
+    if (!currentGenreId || !currentStageNum) return;
+
+    async function loadStageInfo() {
+      try {
+        const res = await fetch(`/api/stages?genreId=${currentGenreId}&stageId=${currentStageNum}`);
+        if (res.ok) {
+          const data = await res.json();
+          const stagesList = data.stages || [];
+          const currentStage = stagesList.find((s) => Number(s.stageId) === currentStageNum);
+          if (currentStage) {
+            setStageInfo(currentStage);
+          }
+        }
+      } catch (e) {
+        console.error("Stageデータの取得に失敗しました:", e);
+      }
+    }
+    loadStageInfo();
+  }, [currentGenreId, currentStageNum]);
+
+  // スピード目標秒数
+  const targetSpeedLimit = useMemo(() => {
+    if (isHardMode) {
+      return stageInfo?.hardSpeedLimit || (isBossStage ? 250 : 100);
+    }
+    return stageInfo?.normalSpeedLimit || (isBossStage ? 500 : 200);
+  }, [stageInfo, isHardMode, isBossStage]);
+
+  // mm:ss フォーマット
+  const formattedTime = useMemo(() => {
+    const minute = String(Math.floor(mockTime / 60)).padStart(2, "0");
+    const second = String(Math.floor(mockTime % 60)).padStart(2, "0");
+    return `${minute}:${second}`;
+  }, [mockTime]);
+
+  //=========================================
+  // 【スター判定処理】
+  //=========================================
   const starsStatus = useMemo(() => {
     if (!game) return { clear: false, allCorrect: false, speedClear: false };
 
     const currentRunClear = mockHp > 0;
     const currentRunPerfect = mockCorrectCount === totalQuestionsCount && totalQuestionsCount > 0;
-    const currentRunSpeed = mockHp > 0 && mockTime <= TARGET_SPEED_SECONDS;
+    const currentRunSpeed = mockHp > 0 && mockTime <= targetSpeedLimit;
 
     return {
       clear: currentRunClear,
       allCorrect: currentRunPerfect,
       speedClear: currentRunSpeed
     };
-  }, [game, mockHp, mockTime, mockCorrectCount, totalQuestionsCount, TARGET_SPEED_SECONDS]);
+  }, [game, mockHp, mockTime, mockCorrectCount, totalQuestionsCount, targetSpeedLimit]);
+
+  //=========================================
+  // 【★ UserModel へのスター獲得保存処理】
+  //=========================================
+  const lastSavedRef = useRef("");
+
+  useEffect(() => {
+    if (!currentGenreId || !currentStageNum) return;
+
+    // 現在のステータスキーを生成（重複保存防止）
+    const statusKey = `${currentGenreId}_${currentStageNum}_${starsStatus.clear}_${starsStatus.allCorrect}_${starsStatus.speedClear}_${mockCorrectCount}_${totalQuestionsCount}`;
+    if (lastSavedRef.current === statusKey) return;
+
+    async function saveStageResultToUser() {
+      try {
+        const userId = game?.user?.userId || 1; // ログインユーザーID（デフォルト: 1）
+
+        const res = await fetch("/api/users/stage-result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            genreId: currentGenreId,
+            stageId: currentStageNum,
+            clear: starsStatus.clear,
+            perfect: starsStatus.allCorrect,
+            speed: starsStatus.speedClear,
+            correct: mockCorrectCount,
+            total: totalQuestionsCount,
+          }),
+        });
+
+        if (res.ok) {
+          lastSavedRef.current = statusKey;
+          console.log("UserModel のステージ獲得スター情報を更新しました。");
+        }
+      } catch (e) {
+        console.error("UserModel の保存に失敗しました:", e);
+      }
+    }
+
+    saveStageResultToUser();
+  }, [currentGenreId, currentStageNum, starsStatus, mockCorrectCount, totalQuestionsCount, game?.user?.userId]);
 
   const handleReview = () => {
-    router.push(`/quiz_review?genreId=${queryGenreId || ''}&stageId=${queryStageId || ''}`);
+    router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
   };
 
   const handleSelectStage = () => {
@@ -116,18 +230,18 @@ export default function ResultPage() {
           </div>
           <div className={`${styles.starItem} ${starsStatus.speedClear ? styles.achieved : ''}`}>
             <span className={styles.starIcon}>★</span>
-            <span className={styles.starLabel}>{TARGET_SPEED_SECONDS}秒以内<br />スピード</span>
+            <span className={styles.starLabel}>{targetSpeedLimit}秒以内<br />スピード</span>
           </div>
         </div>
 
-        {/* 正答数表示 (QuizAnswerの実行結果を反映) */}
+        {/* 正答数表示 */}
         <div className={styles.scoreBox}>
           {totalQuestionsCount}問中{mockCorrectCount}問正解
         </div>
 
         {/* マーキング問題確認ボタン */}
         <button className={styles.reviewButton} onClick={handleReview}>
-          問題を復習する ({game.user?.markingQuizIdsList?.length || game.user?.markingQuizIds?.length || 0}問マーク中)
+          問題を復習する ({game.user?.markingQuizIds?.length || 0}問マーク中)
         </button>
       </main>
 
