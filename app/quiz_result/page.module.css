@@ -1,15 +1,62 @@
-/* Main Outer Frame Layout */
+/* =========================================
+   1. Full Screen Background Layer (Sky, Clouds, Mountains, Ground)
+   ========================================= */
+.pageBackground {
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 40px 15px;
+  box-sizing: border-box;
+
+  /* Layer order: Clouds -> Mountains -> Grass / Dirt ground */
+  background: 
+    /* Clouds (White Ellipses) */
+    radial-gradient(ellipse at 20% 18%, #ffffff 0%, #ffffff 60%, transparent 61%),
+    radial-gradient(ellipse at 25% 15%, #ffffff 0%, #ffffff 65%, transparent 66%),
+    radial-gradient(ellipse at 75% 22%, #ffffff 0%, #ffffff 60%, transparent 61%),
+    radial-gradient(ellipse at 80% 20%, #ffffff 0%, #ffffff 65%, transparent 66%),
+
+    /* Mountains (Conic Gradients) */
+    conic-gradient(from 135deg at 20% 70%, #5c6b38 0 90deg, transparent 0),
+    conic-gradient(from 135deg at 45% 65%, #5c6b38 0 90deg, transparent 0),
+    conic-gradient(from 135deg at 80% 68%, #5c6b38 0 90deg, transparent 0),
+
+    /* Ground (Sky -> Light Grass Rim -> Dark Grass -> Dirt) */
+    linear-gradient(
+      to bottom,
+      #6db2f2 0%,         /* Sky Blue */
+      #6db2f2 60%, 
+      #2ecc71 60%,       /* Light Grass Edge */
+      #2ecc71 61.5%, 
+      #27ae60 61.5%,     /* Main Grass Green */
+      #27ae60 72%, 
+      #795548 72%,       /* Dirt Brown */
+      #5d4037 100%
+    ) !important;
+
+  background-attachment: fixed !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* =========================================
+   2. Main Outer Frame Layout
+   ========================================= */
 .resultContainer {
   width: 100%;
   max-width: 800px;
-  margin: 20px auto;
-  border: 2px solid #333333;
+  margin: 0 auto;
+  border: 4px solid #3c2415;
+  border-radius: 12px;
   box-sizing: border-box;
   font-family: sans-serif;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Top Stats Bar Layout */
@@ -17,6 +64,8 @@
   display: flex;
   align-items: flex-start;
   width: 100%;
+  background-color: #f7f1e3;
+  border-bottom: 3px solid #3c2415;
 }
 
 .headerSpacer {
@@ -24,33 +73,36 @@
 }
 
 .headerBox {
-  border-left: 2px solid #333333;
-  border-bottom: 2px solid #333333;
-  padding: 10px 20px;
+  border-left: 3px solid #3c2415;
+  padding: 12px 20px;
   font-weight: bold;
   font-size: 16px;
-  background-color: #ffffff;
+  color: #333333;
+  background-color: #f7f1e3;
 }
 
 /* Two-tier Timer Box */
 .timeBox {
-  border-left: 2px solid #333333;
-  border-bottom: 2px solid #333333;
-  width: 180px;
+  border-left: 3px solid #3c2415;
+  width: 160px;
   text-align: center;
-  background-color: #ffffff;
+  background-color: #f7f1e3;
 }
 
 .timeTitle {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: bold;
   padding: 4px 0;
-  border-bottom: 2px solid #333333;
+  color: #333333;
+  border-bottom: 2px solid #3c2415;
+  background-color: #eccc68;
 }
 
 .timeValue {
   font-size: 18px;
   font-weight: bold;
-  padding: 8px 0;
+  padding: 6px 0;
+  color: #2f3542;
 }
 
 /* Core Content Center Alignment */
@@ -58,18 +110,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 20px;
+  padding: 35px 20px 25px;
 }
 
 /* Center Star Board Frame */
 .starsContainer {
-  border: 2px solid #333333;
+  border: 3px solid #3c2415;
+  border-radius: 8px 8px 0 0;
   width: 100%;
   max-width: 450px;
-  padding: 20px;
+  padding: 20px 15px;
   display: flex;
   justify-content: space-around;
   background-color: #ffffff;
+  box-sizing: border-box;
 }
 
 /* Individual Star Blocks */
@@ -78,75 +132,90 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  color: #cccccc; /* Default grayscale for locked status */
+  color: #d1ccc0; /* Locked grayscale state */
 }
 
-/* Active Achievement Color Map */
+/* Active Achievement Color */
 .starItem.achieved {
-  color: #ffb700;
+  color: #ffb142;
 }
 
 .starIcon {
-  font-size: 50px;
+  font-size: 48px;
   line-height: 1;
   margin-bottom: 8px;
-  -webkit-text-stroke: 2px #333333; 
+  -webkit-text-stroke: 2px #3c2415;
 }
 
 .starItem.achieved .starIcon {
-  color: #ffcc00;
-  text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  color: #ffda79;
 }
 
 .starLabel {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   color: #333333;
+  line-height: 1.3;
 }
 
-/* Score Box overlapping layout */
+/* Score Box layout */
 .scoreBox {
-  border: 2px solid #333333;
+  border: 3px solid #3c2415;
   border-top: none;
+  border-radius: 0 0 8px 8px;
   width: 100%;
-  max-width: 440px;
-  padding: 20px 0;
+  max-width: 450px;
+  padding: 16px 0;
   text-align: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
-  background-color: #ffffff;
+  color: #2f3542;
+  background-color: #f7f1e3;
   margin-bottom: 25px;
+  box-sizing: border-box;
 }
 
-/* Middle Review Action Action Button */
+/* Middle Review Action Button */
 .reviewButton {
-  border: 2px solid #333333;
-  background-color: #ffffff;
-  padding: 10px 30px;
+  border: 3px solid #2b180d;
+  border-radius: 8px;
+  background-color: #8b5a2b;
+  color: #ffffff;
+  padding: 12px 32px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
+  box-shadow: 0 4px 0 #2b180d;
+  transition: all 0.1s ease;
 }
 
 .reviewButton:hover {
-  background-color: #f5f5f5;
+  background-color: #a06832;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #2b180d;
 }
 
-/* Bottom Right Exit Layout Navigation */
+.reviewButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #2b180d;
+}
+
+/* Bottom Navigation Footer */
 .resultFooter {
   display: flex;
   justify-content: flex-end;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 .stageSelectButton {
-  border-top: 2px solid #333333;
-  border-left: 2px solid #333333;
+  border-top: 3px solid #3c2415;
+  border-left: 3px solid #3c2415;
   border-right: none;
   border-bottom: none;
-  background-color: #ffffff;
-  padding: 15px 35px;
+  border-radius: 8px 0 0 0;
+  background-color: #eccc68;
+  color: #2f3542;
+  padding: 14px 36px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -154,5 +223,5 @@
 }
 
 .stageSelectButton:hover {
-  background-color: #f5f5f5;
+  background-color: #ffda79;
 }
