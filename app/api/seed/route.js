@@ -2,8 +2,88 @@ import { NextResponse } from "next/server";
 import dbConnect from "../../../lib/dbConnect";
 import { Quiz, Genre, Stage } from "../../utils/schemaModels";
 
+// 実績の初期データ
+export const INITIAL_ACHIEVEMENTS = [
+  // =========================================
+  // 1. ジャンル別実績 (銅: ボスクリア / 銀: スターコンプリート)
+  // =========================================
+  // ジャンル1: プログラミング
+  {
+    name: "プログラミング ボスクリア",
+    isAchieved: false,
+    condition: "「プログラミング」のボスステージをクリアする",
+  },
+  {
+    name: "プログラミング スターコンプリート",
+    isAchieved: false,
+    condition: "「プログラミング」のスターをすべて取得する",
+  },
+
+  // ジャンル2: ビジネスマナー
+  {
+    name: "ビジネスマナー ボスクリア",
+    isAchieved: false,
+    condition: "「ビジネスマナー」のボスステージをクリアする",
+  },
+  {
+    name: "ビジネスマナー スターコンプリート",
+    isAchieved: false,
+    condition: "「ビジネスマナー」のスターをすべて取得する",
+  },
+
+  // ジャンル3: 情報セキュリティ・モラル
+  {
+    name: "情報セキュリティ・モラル ボスクリア",
+    isAchieved: false,
+    condition: "「情報セキュリティ・モラル」のボスステージをクリアする",
+  },
+  {
+    name: "情報セキュリティ・モラル スターコンプリート",
+    isAchieved: false,
+    condition: "「情報セキュリティ・モラル」のスターをすべて取得する",
+  },
+
+  // ジャンル4: ITリテラシー・オフィス
+  {
+    name: "ITリテラシー・オフィス ボスクリア",
+    isAchieved: false,
+    condition: "「ITリテラシー・オフィス」のボスステージをクリアする",
+  },
+  {
+    name: "ITリテラシー・オフィス スターコンプリート",
+    isAchieved: false,
+    condition: "「ITリテラシー・オフィス」のスターをすべて取得する",
+  },
+
+  // ジャンル5: コミュニケーション・仕事術
+  {
+    name: "コミュニケーション・仕事術 ボスクリア",
+    isAchieved: false,
+    condition: "「コミュニケーション・仕事術」のボスステージをクリアする",
+  },
+  {
+    name: "コミュニケーション・仕事術 スターコンプリート",
+    isAchieved: false,
+    condition: "「コミュニケーション・仕事術」のスターをすべて取得する",
+  },
+
+  // =========================================
+  // 2. 全体実績 (金: ラストステージクリア / 虹: 全スター獲得)
+  // =========================================
+  {
+    name: "全ジャンル制覇",
+    isAchieved: false,
+    condition: "ラストステージをクリアする",
+  },
+  {
+    name: "完全制覇",
+    isAchieved: false,
+    condition: "すべてのスターを取得する",
+  },
+];
 export async function GET() {
   await dbConnect();
+  
 
   const initialQuizzes = [
     // --- 【ジャンル1：プログラミング】stageId: 1 (quizId: 1 〜 10) ---
