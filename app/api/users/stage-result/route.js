@@ -42,13 +42,24 @@ export async function POST(req) {
     }
 
     // 既存情報と新規情報のマージ（過去に獲得したスターは true を維持）
+// 既存情報と新規情報のマージ（過去に獲得したスターは true を維持）
     const currentDetail = genreStages[stageIndex] || {};
+
+    // 1. まず「総問題数（total）」を決定（フロントから送られた最新の値を優先）
+    const newTotal = total || currentDetail.total || 10;
+
+    // 2. 「正解数（correct）」は、過去の最高記録と今回の記録の「高い方」を採用
+    let newCorrect = Math.max(currentDetail.correct || 0, correct || 0);
+
+    // 🌟 3. 【修正の要】問題数の変更などで、過去の正解数が最新の問題数を上回ってしまった場合は、問題数を上限（100%）に調整する
+    newCorrect = Math.min(newCorrect, newTotal);
+
     genreStages[stageIndex] = {
       clear: currentDetail.clear || !!clear,
       perfect: currentDetail.perfect || !!perfect,
       speed: currentDetail.speed || !!speed,
-      correct: Math.max(currentDetail.correct || 0, correct || 0),
-      total: total || currentDetail.total || 10,
+      correct: newCorrect,
+      total: newTotal,
     };
 
     // user.save() ではなく updateOne を使用して VersionError (楽観的ロック競合) を回避
