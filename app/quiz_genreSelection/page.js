@@ -186,7 +186,7 @@ export default function QuizGenre() {
               {/* スター表示 */}
               <div className={styles.starArea}>
                 <div>{starCount > 0 ? "★" : "☆"}</div>
-                <div>{starCount}個 / 30個</div>
+                <div>{starCount}個 / 18個</div>
               </div>
             </Link>
           );
