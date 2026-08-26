@@ -3,18 +3,62 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useGame } from "../context/GameContext"; // パスは環境に合わせて調整してください
 import styles from "./style.module.css";
 
 export default function QuizStageSelection() {
   const searchParams = useSearchParams();
+  const { game, fetchGenres } = useGame();
 
   const genreId = searchParams.get("genreId");
-  const genreName = searchParams.get("genreName");
+  const queryGenreName = searchParams.get("genreName");
 
   const [stages, setStages] = useState([]);
+  const [displayGenreName, setDisplayGenreName] = useState(queryGenreName || "");
 
   // ラストステージ（ジャンルID: 6）判定
   const isLastStage = Number(genreId) === 6;
+
+  // ==============================
+  // ジャンル名の自動取得処理（URLパラメータにない場合に補完）
+  // ==============================
+  useEffect(() => {
+    if (queryGenreName) {
+      setDisplayGenreName(queryGenreName);
+      return;
+    }
+    if (!genreId) return;
+
+    async function loadGenreName() {
+      try {
+        let genresList = game?.genres || [];
+        
+        // ContextにデータがなければContextのfetchGenresまたはAPIから取得
+        if (genresList.length === 0 && fetchGenres) {
+          genresList = await fetchGenres();
+        }
+        if (genresList.length === 0) {
+          const res = await fetch("/api/genres");
+          if (res.ok) {
+            const data = await res.json();
+            genresList = Array.isArray(data) ? data : (data.genres || []);
+          }
+        }
+
+        const found = genresList.find(
+          (g) => Number(g.genreId ?? g.genre_id ?? g.id) === Number(genreId)
+        );
+
+        if (found) {
+          setDisplayGenreName(found.genreName ?? found.genre_name ?? found.name ?? "");
+        }
+      } catch (error) {
+        console.error("ジャンル名の取得に失敗しました:", error);
+      }
+    }
+
+    loadGenreName();
+  }, [genreId, queryGenreName, game?.genres, fetchGenres]);
 
   // DBから最新のスター情報を取得
   useEffect(() => {
@@ -147,7 +191,7 @@ export default function QuizStageSelection() {
           戻る
         </Link>
         <div className={styles.title}>クイズ</div>
-        <div className={styles.title}>{genreName}</div>
+        <div className={styles.title}>{displayGenreName}</div>
         <div className={styles.title}>ステージ選択</div>
       </div>
 
