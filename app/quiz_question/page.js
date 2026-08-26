@@ -30,8 +30,13 @@ export default function QuizQuestion() {
   const [stageInfo, setStageInfo] = useState(null);
 
   // ジャンル・ステージID
-  const currentGenreId = Number(queryGenreId || game.genreId || 1);
+  // 【修正ポイント】queryGenreId が "0" の場合にデフォルト値(1)へ倒れないよう明示的に判定
+  const rawGenreId = queryGenreId ?? game.genreId;
+  const currentGenreId = rawGenreId !== undefined && rawGenreId !== null ? Number(rawGenreId) : 1;
   const currentStageNum = Number(queryStageId || game.stageId || 1);
+
+  // ラストステージ判定 (例: genreIdが0、または最終ステージ番号)
+  const isLastStage = currentGenreId === 0 || currentStageNum === 7;
 
   // 難易度判定 (1: Normal, 2: Hard)
   const currentDifficulty = Number(queryDifficulty || game.difficulty || 1);
@@ -50,7 +55,8 @@ export default function QuizQuestion() {
   // 【クイズ取得 ＆ ゲーム初期化・リセット判定】
   //=========================================
   useEffect(() => {
-    if (!currentGenreId || !currentStageNum) return;
+    // 【修正ポイント】currentGenreId === 0 (全ジャンル) のときに !currentGenreId で弾かれないよう判定変更
+    if (currentGenreId === undefined || currentGenreId === null || Number.isNaN(currentGenreId) || !currentStageNum) return;
 
     // 1. クイズデータが存在しない
     const isNoQuizzes = !game.quizzes || game.quizzes.length === 0;
@@ -58,8 +64,8 @@ export default function QuizQuestion() {
     const isGameOverOrFinished = game.hp <= 0 || game.isFinished;
     // 3. 別ジャンル・別ステージが選択された
     const isStageChanged =
-      (game.genreId && Number(game.genreId) !== currentGenreId) ||
-      (game.stageId && Number(game.stageId) !== currentStageNum);
+      (game.genreId !== undefined && Number(game.genreId) !== currentGenreId) ||
+      (game.stageId !== undefined && Number(game.stageId) !== currentStageNum);
 
     // 上記いずれかの場合はクイズを再読み込みして1問目からやり直す
     if (isNoQuizzes || isGameOverOrFinished || isStageChanged) {
@@ -115,7 +121,8 @@ export default function QuizQuestion() {
   // 【2. Stage情報を取得】
   //=========================================
   useEffect(() => {
-    if (!currentGenreId || !currentStageNum) return;
+    // 【修正ポイント】genreId = 0 でも通過するように判定を変更
+    if (currentGenreId === undefined || currentGenreId === null || Number.isNaN(currentGenreId) || !currentStageNum) return;
 
     async function loadStageInfo() {
       try {
@@ -223,12 +230,14 @@ export default function QuizQuestion() {
   // 表示用HP
   const displayHp = game.hp <= 0 ? maxHp : game.hp;
 
-  // ジャンル名取得
+  // 【修正ポイント】ジャンル名取得（ラストステージ時は「全ジャンル」と表示）
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
   const foundGenreObj = allGenres.find(
     (g) => Number(g.genreId ?? g.id) === Number(currentGenreId)
   );
-  const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
+  const genreName = isLastStage 
+    ? "全ジャンル" 
+    : (foundGenreObj?.genreName || foundGenreObj?.name || "");
 
   return (
     <main className={styles.container}>
@@ -245,7 +254,7 @@ export default function QuizQuestion() {
           )}
           {currentStageNum && (
             <div style={{ fontSize: "0.8rem", fontWeight: "bold", opacity: 0.85, marginBottom: "2px", color: isBossStage ? "#d63031" : "inherit" }}>
-              {isBossStage ? "ボスステージ" : `ステージ ${currentStageNum}`}
+              {isLastStage ? "ラストステージ" : (isBossStage ? "ボスステージ" : `ステージ ${currentStageNum}`)}
             </div>
           )}
           <div>
