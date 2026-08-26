@@ -5,6 +5,7 @@ import { Achievement } from "../../utils/schemaModels";
 export async function GET() {
   await dbConnect();
 
+  
   // --- 【実績（Achievement）の初期データ：ジャンル別分類】 ---
   const initialAchievements = [
     // --- 【ジャンル1：プログラミング】 ---
