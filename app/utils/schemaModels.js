@@ -13,13 +13,13 @@ const stageDetailSchema = new Schema({
   speed: { type: Boolean, default: false },
   correct: { type: Number, default: 0 },
   total: { type: Number, default: 0 }
-}, { _id: false }); // サブドキュメント自体のID生成を防ぐ
+}, { _id: false });
 
-// 実績詳細情報のサブスキーマ
-const achievementSchema = new Schema({
-  name: { type: String, required: true }, // 実績名（例: "初めてのクリア"）
-  isAchieved: { type: Boolean, default: false }, // 達成しているかどうか
-  condition: { type: String, required: true } // 達成方法（例: "ステージを1回クリアする"）
+// ユーザー保持用の実績達成状況サブスキーマ
+const userAchievementSchema = new Schema({
+  achievementId: { type: Number, required: true },
+  isAchieved: { type: Boolean, default: false },
+  achievedAt: { type: Date }
 }, { _id: false });
 
 const userSchema = new Schema({
@@ -27,7 +27,6 @@ const userSchema = new Schema({
   userName: { type: String, required: true },
   
   // ジャンルごとにステージ詳細情報の配列を持つ構造
-  // 例: { "genre1": [{ clear: true, ... }], "genre2": [] }
   stages: {
     type: Map,
     of: [stageDetailSchema],
@@ -40,9 +39,9 @@ const userSchema = new Schema({
   // 今回のクイズの結果のQuizIdの値が入る
   resultQuizIds: { type: [Number], default: [] },
   
-  // 実績リスト（実績名、達成フラグ、達成方法を持つオブジェクトの配列）
+  // ユーザーごとの実績達成リスト
   achievements: {
-    type: [achievementSchema],
+    type: [userAchievementSchema],
     default: []
   }
 }, { timestamps: true });
@@ -57,7 +56,7 @@ const quizSchema = new Schema({
   stageId: { type: Number, required: true },
   quizText: { type: String, required: true },
   choices: { type: [String], required: true },
-  answer: { type: Number, required: true }, // 正解のインデックスとして保存
+  answer: { type: Number, required: true }, // 正解のインデックス
   explanation: { type: [String], required: true }
 }, { timestamps: true });
 
@@ -73,10 +72,9 @@ const stageSchema = new Schema({
   normalHp: { type: Number, required: true },          // HP (通常: 5, ボス: 10)
   hardHp: { type: Number, required: true },            // HP (通常: 3, ボス: 7)
   total: { type: Number, required: true },             // 問題数 (通常: 10, ボス: 25)
-  isBoss: { type: Boolean, default: false }            // ボスステージフラグ (通常: false, ボス: true)
+  isBoss: { type: Boolean, default: false }            // ボスステージフラグ
 }, { timestamps: true });
 
-// 同じジャンル内で stageId が重複しないように複合インデックスを設定
 stageSchema.index({ genreId: 1, stageId: 1 }, { unique: true });
 
 
@@ -88,7 +86,7 @@ const GenreSchema = new Schema(
     genreId: {
       type: Number,
       required: true,
-      unique: true, // genreId の重複を防ぐ
+      unique: true,
     },
     genreName: {
       type: String,
@@ -100,11 +98,41 @@ const GenreSchema = new Schema(
   }
 );
 
+
+// =========================================
+// 5. AchievementModel (追加)
+// =========================================
+const achievementSchema = new Schema(
+  {
+    achievementId: {
+      type: Number,
+      required: true,
+      unique: true, // 実績ID（1: 銅, 2: 銀, 3: 金, 4: 虹 など）
+    },
+    name: {
+      type: String,
+      required: true, // 実績名（例: "銅トロフィー"）
+    },
+    className: {
+      type: String,
+      required: true, // スタイル定義用（"bronze", "silver", "gold", "rainbow"）
+    },
+    description: {
+      type: String,
+      required: true, // 達成条件の説明テキスト
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+
 // =========================================
 // モデルのエクスポート
-// (Next.js開発時におけるモデルの再コンパイルエラーを防ぐ記述)
 // =========================================
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export const Quiz = mongoose.models.Quiz || mongoose.model("Quiz", quizSchema);
 export const Stage = mongoose.models.Stage || mongoose.model("Stage", stageSchema);
 export const Genre = mongoose.models.Genre || mongoose.model("Genre", GenreSchema);
+export const Achievement = mongoose.models.Achievement || mongoose.model("Achievement", achievementSchema);
