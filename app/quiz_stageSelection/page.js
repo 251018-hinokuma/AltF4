@@ -13,6 +13,9 @@ export default function QuizStageSelection() {
 
   const [stages, setStages] = useState([]);
 
+  // ラストステージ（ジャンルID: 6）判定
+  const isLastStage = Number(genreId) === 6;
+
   // DBから最新のスター情報を取得
   useEffect(() => {
     if (!genreId) return;
@@ -84,7 +87,7 @@ export default function QuizStageSelection() {
   const stage5 = getStage(5);
   const stage6 = getStage(6);
 
-  // ステージ開放条件
+  // ステージ開放条件（通常ジャンル用）
   const stage1Open = true;
   const stage2Open = stage1.clear;
   const stage3Open = stage2.clear;
@@ -92,12 +95,18 @@ export default function QuizStageSelection() {
   const stage5Open = stage4.clear;
   const bossOpen = stage5.clear;
 
-  const StageBox = ({ stageId, stage, isBoss = false }) => {
+  // ステージ表示コンポーネント
+  const StageBox = ({ stageId, stage, isBoss = false, isLast = false }) => {
+    let titleText = `ステージ${stageId}`;
+    if (isLast) {
+      titleText = "🔥 ラストステージ";
+    } else if (isBoss) {
+      titleText = "ボスステージ";
+    }
+
     return (
       <div className={styles.stageBox}>
-        <div className={styles.stage}>
-          {isBoss ? "ボスステージ" : `ステージ${stageId}`}
-        </div>
+        <div className={styles.stage}>{titleText}</div>
 
         <Link
           href={`/quiz_question?genreId=${genreId}&stageId=${stageId}&difficulty=1`}
@@ -132,6 +141,7 @@ export default function QuizStageSelection() {
 
   return (
     <div className={styles.page}>
+      {/* ヘッダー */}
       <div className={styles.top}>
         <Link href="/quiz_genreSelection" className={styles.menu}>
           戻る
@@ -141,25 +151,43 @@ export default function QuizStageSelection() {
         <div className={styles.title}>ステージ選択</div>
       </div>
 
+      {/* テスト用ボタン */}
       <div style={{ padding: "20px" }}>
         <h3>【テスト用】ステージクリア操作</h3>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button onClick={() => clearStage(1)}>ステージ1をクリア</button>
-          <button onClick={() => clearStage(2)}>ステージ2をクリア</button>
-          <button onClick={() => clearStage(3)}>ステージ3をクリア</button>
-          <button onClick={() => clearStage(4)}>ステージ4をクリア</button>
-          <button onClick={() => clearStage(5)}>ステージ5をクリア</button>
+          {isLastStage ? (
+            <button onClick={() => clearStage(1)}>
+              ラストステージをクリア
+            </button>
+          ) : (
+            <>
+              <button onClick={() => clearStage(1)}>ステージ1をクリア</button>
+              <button onClick={() => clearStage(2)}>ステージ2をクリア</button>
+              <button onClick={() => clearStage(3)}>ステージ3をクリア</button>
+              <button onClick={() => clearStage(4)}>ステージ4をクリア</button>
+              <button onClick={() => clearStage(5)}>ステージ5をクリア</button>
+            </>
+          )}
           <button onClick={resetStages}>キャッシュクリア＆再読み込み</button>
         </div>
       </div>
 
+      {/* ステージ表示エリア */}
       <div className={styles.content}>
-        {stage1Open && <StageBox stageId={1} stage={stage1} />}
-        {stage2Open && <StageBox stageId={2} stage={stage2} />}
-        {stage3Open && <StageBox stageId={3} stage={stage3} />}
-        {stage4Open && <StageBox stageId={4} stage={stage4} />}
-        {stage5Open && <StageBox stageId={5} stage={stage5} />}
-        {bossOpen && <StageBox stageId={6} stage={stage6} isBoss={true} />}
+        {isLastStage ? (
+          // ラストステージ（genreId === 6）の表示：1個のみ
+          <StageBox stageId={1} stage={stage1} isLast={true} />
+        ) : (
+          // 通常ジャンルの表示：順次開放
+          <>
+            {stage1Open && <StageBox stageId={1} stage={stage1} />}
+            {stage2Open && <StageBox stageId={2} stage={stage2} />}
+            {stage3Open && <StageBox stageId={3} stage={stage3} />}
+            {stage4Open && <StageBox stageId={4} stage={stage4} />}
+            {stage5Open && <StageBox stageId={5} stage={stage5} />}
+            {bossOpen && <StageBox stageId={6} stage={stage6} isBoss={true} />}
+          </>
+        )}
       </div>
     </div>
   );

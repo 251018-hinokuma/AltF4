@@ -184,8 +184,9 @@ export default function ResultPage() {
     router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
   };
 
+  // ★ 変更箇所：ジャンルIDをクエリパラメータとして付与
   const handleSelectStage = () => {
-    router.push('/quiz_stageSelection'); 
+    router.push(`/quiz_stageSelection?genreId=${currentGenreId}`); 
   };
 
   if (!game) {
