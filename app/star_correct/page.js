@@ -11,7 +11,8 @@ export default function StarStatusPage() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const stages = ['ステージ1', 'ステージ2', 'ステージ3', 'ステージ4', 'ステージ5', 'ボス'];
+  // 通常ジャンルのステージ構成
+  const defaultStages = ['ステージ1', 'ステージ2', 'ステージ3', 'ステージ4', 'ステージ5', 'ボス'];
 
   useEffect(() => {
     async function loadData() {
@@ -41,13 +42,14 @@ export default function StarStatusPage() {
     loadData();
   }, [game?.user?.userId]);
 
-  // 星数計算関数
-  const calculateGenreStars = (genreArray) => {
+  // 星数計算関数（ステージ数に応じて最大値を動的計算）
+  const calculateGenreStars = (genreArray, currentStages) => {
     let earned = 0;
-    const max = stages.length * 3;
+    const max = currentStages.length * 3;
     
     if (Array.isArray(genreArray)) {
-      genreArray.forEach(stage => {
+      currentStages.forEach((_, index) => {
+        const stage = genreArray[index];
         if (stage?.clear) earned++;
         if (stage?.perfect) earned++;
         if (stage?.speed) earned++;
@@ -57,24 +59,20 @@ export default function StarStatusPage() {
     return { earned, max };
   };
 
-  // 🌟 DBから該当ジャンルのステージ配列を確実に拾い出す万能関数
+  // DBから該当ジャンルのステージ配列を取得する関数
   const getGenreStages = (stagesObj, genre, index) => {
     if (!stagesObj) return [];
 
-    // ID候補を取得（プロパティがない場合は配列インデックス+1を使用）
     const rawId = genre?.genreId || genre?.id || genre?._id || (index + 1);
-    
-    // 数字だけを抽出（例: "genre2" -> "2", 2 -> "2"）
     const num = String(rawId).replace(/[^0-9]/g, '') || String(index + 1);
 
-    // 試行するキーのパターン一覧
     const keysToTry = [
-      `genre${num}`,         // 'genre2'
-      num,                  // '2'
-      Number(num),          // 2
-      genre?.genreName,     // 'ビジネスマナー'
+      `genre${num}`,
+      num,
+      Number(num),
+      genre?.genreName,
       genre?.name,
-      String(rawId)         // そのままの文字列
+      String(rawId)
     ];
 
     for (const key of keysToTry) {
@@ -110,9 +108,12 @@ export default function StarStatusPage() {
         {genres.map((genre, genreIdx) => {
           const genreName = genre.genreName || genre.name || `ジャンル ${genreIdx + 1}`;
           
-          // 万能関数でDBから配列を取得
+          // 🌟 最後のジャンル（ラストステージ）か判定し、ステージ構成を「ボス」のみ（1つ）に変更
+          const isLastGenre = genreIdx === genres.length - 1 || genreName.includes('ラスト');
+          const currentStages = isLastGenre ? ['ボス'] : defaultStages;
+
           const genreArray = getGenreStages(userStagesObj, genre, genreIdx);
-          const starScore = calculateGenreStars(genreArray);
+          const starScore = calculateGenreStars(genreArray, currentStages);
 
           return (
             <section key={genreName + genreIdx} className={styles['star-genre-section']}>
@@ -127,10 +128,9 @@ export default function StarStatusPage() {
               </header>
 
               <div className={styles['star-stage-grid']}>
-                {stages.map((stageName, index) => {
+                {currentStages.map((stageName, index) => {
                   const stageId = index + 1;
                   
-                  // 配列のインデックス（0番目＝ステージ1）から直接取得
                   const stageDetail = 
                     genreArray[index] || 
                     genreArray.find(s => Number(s?.stageId) === stageId) || 
