@@ -10,24 +10,21 @@ export async function GET(request) {
   const genreId = searchParams.get("genreId");
   const stageId = searchParams.get("stageId");
 
-  // ★ genreId のみを必須チェックに変更（stageId は任意にする）
-  if (!genreId) {
-    return NextResponse.json(
-      { error: "genreIdが必要です。" },
-      { status: 400 }
-    );
-  }
-
   try {
-    // 検索条件オブジェクトを作成
-    const query = { genreId: Number(genreId) };
+    // 検索条件オブジェクトを動的に作成
+    const query = {};
 
-    // ★ stageId がパラメータにある場合のみ検索条件に追加する
+    // genreId が存在する場合のみ検索条件に追加
+    if (genreId) {
+      query.genreId = Number(genreId);
+    }
+
+    // stageId が存在する場合のみ検索条件に追加
     if (stageId) {
       query.stageId = Number(stageId);
     }
 
-    // データベースから一致する問題を検索
+    // データベースから一致する問題を検索（queryが空なら全件取得）
     const quizzes = await Quiz.find(query);
 
     return NextResponse.json({ quizzes }, { status: 200 });

@@ -10,27 +10,37 @@ export default function MarkingGenreSelection() {
   const { game } = useGame();
   const [genres, setGenres] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
 
   // =========================================
-  // 初期表示処理：全てのジャンルを取得
+  // 初期表示処理：ラストステージを除外したジャンルを取得
   // =========================================
   useEffect(() => {
     async function fetchGenres() {
       setIsLoading(true);
       try {
+        let rawList = [];
+
         // 1. Context にジャンル情報がある場合
         if (game?.genres && game.genres.length > 0) {
-          setGenres(game.genres);
+          rawList = game.genres;
         } else {
           // 2. API から取得する場合
           const res = await fetch("/api/genres");
           if (res.ok) {
             const data = await res.json();
-            const list = Array.isArray(data) ? data : (data.genres || []);
-            setGenres(list);
+            rawList = Array.isArray(data) ? data : (data.genres || []);
           }
         }
+
+        // ★ ラストステージ（genreId が 6 や 0、または名前に「ラスト」を含むジャンル）を除外
+        const filteredGenres = rawList.filter((genre) => {
+          const genreId = Number(genre.genreId ?? genre.genre_id ?? genre.id);
+          const genreName = genre.genreName ?? genre.genre_name ?? genre.name ?? "";
+          
+          return genreId !== 6 && genreId !== 0 && !genreName.includes("ラスト");
+        });
+
+        setGenres(filteredGenres);
       } catch (error) {
         console.error("ジャンル一覧の取得に失敗しました:", error);
       } finally {

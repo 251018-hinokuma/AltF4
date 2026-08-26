@@ -92,10 +92,19 @@ export const GameProvider = ({ children }) => {
   //=========================================
   const fetchQuizzes = useCallback(async (genreId, stageId, initialHp = 5, isBoss = false) => {
     try {
+      // ラストステージ（stageId が 7、または genreId が 6 / 0）の判定
+      const isLastStage = Number(stageId) === 7 || Number(genreId) === 6 || Number(genreId) === 0;
       const isBossStage = isBoss || Number(stageId) === 6;
-      let endpoint = isBossStage
-        ? `/api/quizzes?genreId=${genreId}`
-        : `/api/quizzes?genreId=${genreId}&stageId=${stageId}`;
+
+      // エンドポイントの切り替え
+      let endpoint;
+      if (isLastStage) {
+        endpoint = "/api/quizzes"; // パラメータなしで全ジャンルの全問題を取得
+      } else if (isBossStage) {
+        endpoint = `/api/quizzes?genreId=${genreId}`;
+      } else {
+        endpoint = `/api/quizzes?genreId=${genreId}&stageId=${stageId}`;
+      }
 
       const response = await fetch(endpoint);
       const data = await response.json();
@@ -103,8 +112,11 @@ export const GameProvider = ({ children }) => {
       const rawList = Array.isArray(data) ? data : (data.quizzes || data.data || []);
       let randomizedQuizzes = shuffleQuizzes(rawList);
       
-      if (isBossStage) {
-        randomizedQuizzes = randomizedQuizzes.slice(0, 25);
+      // 出題数の制御
+      if (isLastStage) {
+        randomizedQuizzes = randomizedQuizzes.slice(0, 50); // 全ジャンルの問題からランダムで50問抽出
+      } else if (isBossStage) {
+        randomizedQuizzes = randomizedQuizzes.slice(0, 25); // ボスステージは25問抽出
       }
 
       setGame((prev) => ({ 
@@ -133,7 +145,10 @@ export const GameProvider = ({ children }) => {
   //=========================================
   const fetchQuizzesByGenre = useCallback(async (genreId) => {
     try {
-      const response = await fetch(`/api/quizzes?genreId=${genreId}`);
+      const isLastStage = Number(genreId) === 6 || Number(genreId) === 0;
+      const endpoint = isLastStage ? "/api/quizzes" : `/api/quizzes?genreId=${genreId}`;
+
+      const response = await fetch(endpoint);
       const data = await response.json();
       const list = Array.isArray(data) ? data : (data.quizzes || data.data || []);
 
