@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { useGame } from '../context/GameContext'; 
 import styles from './page.module.css';
@@ -8,87 +8,111 @@ import styles from './page.module.css';
 export default function AchievementPage() {
   const router = useRouter();
   const { game } = useGame();
+  
+  const [stagesProgress, setStagesProgress] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate trophy states live using metrics matching your data model and leader rules
-  const userAchievement = useMemo(() => {
-    // Safety fallback if game or user data isn't loaded yet
-    if (!game || !game.user) {
-      return { bronzeTrophy: false, silverTrophy: false, goldTrophy: false, rainbowTrophy: false };
+  // DBから全ジャンル(1〜6)のステージ進行状況を取得
+  useEffect(() => {
+    async function loadAllStageData() {
+      setIsLoading(true);
+      const userId = game?.user?.userId || 1;
+      const genresList = [1, 2, 3, 4, 5, 6]; 
+      const progressMap = {};
+
+      try {
+        await Promise.all(
+          genresList.map(async (genreId) => {
+            const res = await fetch(`/api/user/stages?userId=${userId}&genreId=${genreId}`);
+            if (res.ok) {
+              const data = await res.json();
+              progressMap[genreId] = data.stages || [];
+            } else {
+              progressMap[genreId] = [];
+            }
+          })
+        );
+        setStagesProgress(progressMap);
+      } catch (error) {
+        console.error("実績データの取得に失敗しました:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    const user = game.user;
+    loadAllStageData();
+  }, [game?.user?.userId]);
 
-    // 1. Calculate historical clears from the nested stagesList structures
-    // Safely combine all stages cleared across all genres in the 3-layer structure
-    let totalClearedStages = 0;
-    let totalPerfectStages = 0;
+  // stageDetailSchemaのプロパティ (clear, perfect, speed) を使用した実績判定
+  const userAchievement = useMemo(() => {
+    const achievements = {};
 
-    const genres = ['genre1', 'genre2', 'genre3']; // Extend based on your game genres
-    genres.forEach((genreKey) => {
-      if (user.stagesList && Array.isArray(user.stagesList[genreKey])) {
-        user.stagesList[genreKey].forEach((stage) => {
-          if (stage.clear) totalClearedStages += 1;
-          if (stage.perfect) totalPerfectStages += 1;
-        });
-      }
+    // 通常ジャンル(1〜5)の銅・銀トロフィー判定
+    const genreMappings = [
+      { genreId: 1, bronzeId: 1, silverId: 2 },
+      { genreId: 2, bronzeId: 3, silverId: 4 },
+      { genreId: 3, bronzeId: 5, silverId: 6 },
+      { genreId: 4, bronzeId: 7, silverId: 8 },
+      { genreId: 5, bronzeId: 9, silverId: 10 },
+    ];
+
+    genreMappings.forEach(({ genreId, bronzeId, silverId }) => {
+      const stages = stagesProgress[genreId] || [];
+
+      // 銅トロフィー: 各ジャンルのボスステージ（インデックス5 / ステージ6）の clear が true
+      const bossStage = stages[5];
+      achievements[bronzeId] = Boolean(bossStage && bossStage.clear);
+
+      // 該当ジャンルの獲得スター総数を算出 (clear + perfect + speed)
+      const totalStars = stages.reduce((sum, stage) => {
+        return sum + (stage.clear ? 1 : 0) + (stage.perfect ? 1 : 0) + (stage.speed ? 1 : 0);
+      }, 0);
+
+      // 銀トロフィー: スター合計数が30より大きく(30以下は不可)、かつ全ステージで全スターを取得しているか
+      achievements[silverId] = 
+        totalStars > 30 && 
+        stages.length > 0 && 
+        stages.every((stage) => stage.clear && stage.perfect && stage.speed);
     });
 
-    // 2. Read runtime arrays from the current active quiz phase
-    const currentResultCount = user.resultQuizIds?.length || 0;
-    const currentMarkedCount = user.markingQuizIds?.length || 0;
+    // 11. 金トロフィー: ラストステージ (ジャンル6 / ステージ1) の clear が true
+    const lastStageList = stagesProgress[6] || [];
+    achievements[11] = Boolean(lastStageList.length > 0 && lastStageList[0]?.clear);
 
-    // 3. Leader Conditions Mapping (Joken)
-    return {
-      // Bronze: Finished your very first question or cleared 1 stage
-      bronzeTrophy: currentResultCount >= 1 || totalClearedStages >= 1,   
-      
-      // Silver: Finished 10 total questions or cleared a milestone number of stages
-      silverTrophy: currentResultCount >= 10 || totalClearedStages >= 5,  
-      
-      // Gold: Bookmarked/marked 5 or more items during gameplay
-      goldTrophy: currentMarkedCount >= 5,   
-      
-      // Rainbow: Kept alive (HP > 0), answered at least 20 questions, or achieved perfect status
-      rainbowTrophy: (game.hp ?? 0) > 0 && (currentResultCount >= 20 || totalPerfectStages >= 3), 
-    };
-  }, [game]);
+    // 12. 虹トロフィー: 全ジャンル(1〜6)の全ステージで clear, perfect, speed がすべて true
+    const allGenres = [1, 2, 3, 4, 5, 6];
+    achievements[12] = allGenres.every((genreId) => {
+      const stages = stagesProgress[genreId] || [];
+      if (stages.length === 0) return false;
+      return stages.every((stage) => stage.clear && stage.perfect && stage.speed);
+    });
 
+    return achievements;
+  }, [stagesProgress]);
+
+  // 実績マスターデータ一覧
   const trophies = [
-    {
-      id: 'bronzeTrophy',
-      name: '銅トロフィー',
-      className: 'bronze',
-      description: '初めてのタスクを完了する',
-    },
-    {
-      id: 'silverTrophy',
-      name: '銀トロフィー',
-      className: 'silver',
-      description: 'タスクを合計10回完了する',
-    },
-    {
-      id: 'goldTrophy',
-      name: '金トロフィー',
-      className: 'gold',
-      description: 'タスクを合計50回完了する',
-    },
-    {
-      id: 'rainbowTrophy',
-      name: '虹トロフィー',
-      className: 'rainbow',
-      description: 'すべてのイベントをクリアする',
-    },
+    { id: 1, name: 'プログラミング 銅', className: 'bronze', description: 'プログラミングのボスステージをクリアする' },
+    { id: 2, name: 'プログラミング 銀', className: 'silver', description: 'プログラミングのスターをすべて取得する' },
+    { id: 3, name: 'ビジネスマナー 銅', className: 'bronze', description: 'ビジネスマナーのボスステージをクリアする' },
+    { id: 4, name: 'ビジネスマナー 銀', className: 'silver', description: 'ビジネスマナーのスターをすべて取得する' },
+    { id: 5, name: 'セキュリティ 銅', className: 'bronze', description: '情報セキュリティ・モラルのボスステージをクリアする' },
+    { id: 6, name: 'セキュリティ 銀', className: 'silver', description: '情報セキュリティ・モラルのスターをすべて取得する' },
+    { id: 7, name: 'ITリテラシー 銅', className: 'bronze', description: 'ITリテラシー・オフィスのボスステージをクリアする' },
+    { id: 8, name: 'ITリテラシー 銀', className: 'silver', description: 'ITリテラシー・オフィスのスターをすべて取得する' },
+    { id: 9, name: '仕事術 銅', className: 'bronze', description: 'コミュニケーション・仕事術のボスステージをクリアする' },
+    { id: 10, name: '仕事術 銀', className: 'silver', description: 'コミュニケーション・仕事術のスターをすべて取得する' },
+    { id: 11, name: '金トロフィー', className: 'gold', description: 'ラストステージをクリアする' },
+    { id: 12, name: '虹トロフィー', className: 'rainbow', description: '全てのスターを取得する' },
   ];
 
   const handleBack = () => {
-
     router.push('/userpage');
-
   };
 
   return (
     <div className={styles['achievement-container']}>
-      {/* Header Tabs */}
+      {/* ヘッダー */}
       <header className={styles['page-header']}>
         <button className={styles['back-button']} onClick={handleBack}>
           戻る
@@ -97,44 +121,41 @@ export default function AchievementPage() {
         <div className={`${styles.tab} ${styles['active-tab']}`}>実績</div>
       </header>
 
-      {/* Main Grid Content */}
+      {/* メインコンテンツ */}
       <main className={styles['achievement-content']}>
-        <div className={styles['trophy-grid']}>
-          {trophies.map((trophy) => {
-            const isUnlocked = userAchievement[trophy.id];
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>実績情報を読み込み中...</div>
+        ) : (
+          <div className={styles['trophy-grid']}>
+            {trophies.map((trophy) => {
+              const isUnlocked = Boolean(userAchievement[trophy.id]);
 
-            const trophyCircleClass = `${styles['trophy-circle']} ${
-              isUnlocked ? styles[trophy.className] : styles.locked
-            }`;
+              const trophyCircleClass = `${styles['trophy-circle']} ${
+                isUnlocked ? styles[trophy.className] : styles.locked
+              }`;
 
-            const statusBadgeClass = `${styles['status-badge']} ${
-              isUnlocked ? styles['unlocked-text'] : styles['locked-text']
-            }`;
+              const statusBadgeClass = `${styles['status-badge']} ${
+                isUnlocked ? styles['unlocked-text'] : styles['locked-text']
+              }`;
 
-            return (
-              <div key={trophy.id} className={styles['trophy-card']}>
-                {/* Trophy Graphic Circle */}
-                <div className={trophyCircleClass}>
-                  {trophy.name}
+              return (
+                <div key={trophy.id} className={styles['trophy-card']}>
+                  <div className={trophyCircleClass}>
+                    {trophy.name}
+                  </div>
+                  <div className={styles['status-box']}>
+                    <p className={styles['status-title']}>達成状況</p>
+                    <p className={styles['description-text']}>{trophy.description}</p>
+                    <span className={statusBadgeClass}>
+                      {isUnlocked ? '【達成！】' : '【未達成】'}
+                    </span>
+                  </div>
                 </div>
-
-                {/* Achievement Description Square Box */}
-                <div className={styles['status-box']}>
-                  <p className={styles['status-title']}>達成状況</p>
-                  <p className={styles['description-text']}>{trophy.description}</p>
-                  <span className={statusBadgeClass}>
-                    {isUnlocked ? '【達成！】' : '【未達成】'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );
-
-
 }
-
-
