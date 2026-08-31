@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useGame } from '../context/GameContext'; 
 import styles from './page.module.css';
 
-export default function ResultPage() {
+function ResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { game } = useGame(); 
@@ -184,22 +184,25 @@ export default function ResultPage() {
     router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
   };
 
-  // ★ 変更箇所：ジャンルIDをクエリパラメータとして付与
   const handleSelectStage = () => {
     router.push(`/quiz_stageSelection?genreId=${currentGenreId}`); 
   };
 
   if (!game) {
-    return <div className={styles.resultContainer}>データを読み込み中...</div>;
+    return (
+      <div className={styles.loadingWrapper}>
+        <h2>データを読み込み中...</h2>
+      </div>
+    );
   }
 
   return (
-    <div className={styles.resultContainer}>
+    <div className={styles.mainCard}>
       
       {/* 🛠️ デバッグ・テスト用コントローラー 🛠️ */}
-      <div style={{ backgroundColor: '#f9f9f9', borderBottom: '3px dashed #333333', padding: '15px', fontSize: '13px', fontFamily: 'monospace' }}>
+      <div className={styles.testerContainer}>
         <strong style={{ color: '#d32f2f' }}>[RESULT TESTER] QuizAnswer から送られたデータを操作・検証:</strong>
-        <div style={{ display: 'flex', gap: '20px', marginTop: '10px', flexWrap: 'wrap' }}>
+        <div className={styles.testerInputs}>
           <label><strong>HP (hp):</strong> <input type="range" min="0" max="10" value={mockHp} onChange={(e) => setMockHp(Number(e.target.value))} /></label>
           <label><strong>Time (elapsedTime):</strong> <input type="range" min="0" max="300" value={mockTime} onChange={(e) => setMockTime(Number(e.target.value))} /></label>
           <label><strong>Correct Count (正解数):</strong> <input type="range" min="0" max={totalQuestionsCount} value={mockCorrectCount} onChange={(e) => setMockCorrectCount(Number(e.target.value))} /></label>
@@ -240,9 +243,9 @@ export default function ResultPage() {
           {totalQuestionsCount}問中{mockCorrectCount}問正解
         </div>
 
-        {/* マーキング問題確認ボタン */}
+        {/* マーキング問題確認ボタン（文字のみに変更） */}
         <button className={styles.reviewButton} onClick={handleReview}>
-          問題を復習する ({game.user?.markingQuizIds?.length || 0}問マーク中)
+          問題を復習する
         </button>
       </main>
 
@@ -253,5 +256,27 @@ export default function ResultPage() {
         </button>
       </footer>
     </div>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <main className={styles.container}>
+      {/* 背景要素 */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      <Suspense fallback={
+        <div className={styles.loadingWrapper}>
+          <h2>データを読み込み中...</h2>
+        </div>
+      }>
+        <ResultContent />
+      </Suspense>
+    </main>
   );
 }

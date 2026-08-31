@@ -157,7 +157,7 @@ function MarkingQuizContent() {
   const currentQuiz = markedQuizzes[currentIndex] || null;
   const currentQuizId = currentQuiz ? Number(currentQuiz.quizId ?? currentQuiz.quiz_id ?? currentQuiz.id) : null;
 
-  // ジャンル名の取得（APIフェッチ結果、Contextのジャンル一覧、または問題データから抽出）
+  // ジャンル名の取得
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
   const foundGenreObj = allGenres.find((g) => Number(g.genreId ?? g.id) === targetGenreId);
   const genreDisplayName =
@@ -189,17 +189,15 @@ function MarkingQuizContent() {
 
   if (isLoading) {
     return (
-      <main className={styles.container}>
-        <div className={styles.emptyArea}>
-          <h2>問題を読み込み中...</h2>
-        </div>
-      </main>
+      <div className={styles.loadingWrapper}>
+        <h2>問題を読み込み中...</h2>
+      </div>
     );
   }
 
   if (!currentQuiz || markedQuizzes.length === 0) {
     return (
-      <main className={styles.container}>
+      <div className={styles.mainCard}>
         <div className={styles.markingHeader}>
           <div className={`${styles.headerCell} ${styles.markTextCell}`}>
             マーキング
@@ -216,12 +214,12 @@ function MarkingQuizContent() {
             ホームへ戻る
           </button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className={styles.container}>
+    <div className={styles.mainCard}>
       {/* ヘッダー（枠線区切り） */}
       <div className={styles.markingHeader}>
         <div className={`${styles.headerCell} ${styles.markTextCell}`}>
@@ -257,17 +255,17 @@ function MarkingQuizContent() {
             ? currentQuiz.explanation[index]
             : (currentQuiz.explanations?.find((e) => e.choice === choiceText)?.explanation || "");
 
-          const rowBgColor = isRealAnswer ? "#e8f5e9" : "#ffffff";
+          const rowClass = isRealAnswer ? styles.rowCorrect : styles.rowDefault;
 
           return (
-            <div key={index} className={styles.answerRow}>
-              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={`${styles.answerRow} ${rowClass}`}>
+              <div className={styles.choiceNo}>
                 {index + 1}
               </div>
-              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices}>
                 {choiceText}
               </div>
-              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation}>
                 {explanationText}
               </div>
             </div>
@@ -297,14 +295,28 @@ function MarkingQuizContent() {
           次の問題
         </button>
       </div>
-    </main>
+    </div>
   );
 }
 
 export default function MarkingQuiz() {
   return (
-    <Suspense fallback={<div className={styles.container}>読み込み中...</div>}>
-      <MarkingQuizContent />
-    </Suspense>
+    <main className={styles.container}>
+      {/* 背景要素 */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      <Suspense fallback={
+        <div className={styles.loadingWrapper}>
+          <h2>読み込み中...</h2>
+        </div>
+      }>
+        <MarkingQuizContent />
+      </Suspense>
+    </main>
   );
 }

@@ -152,41 +152,74 @@ function MarkingQuizSelectionContent() {
 
   return (
     <main className={styles.container}>
+      {/* 背景オブジェクト */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      {/* メインカード */}
       <div className={styles.mainCard}>
-        {/* 左上ヘッダー */}
+        {/* 左上ヘッダー（枝から葉が生えて繋がったデザイン） */}
         <div className={styles.headerArea}>
-          <button className={styles.headerCell} onClick={handleBack}>
-            戻る
+          <button className={styles.headerBranchButton} onClick={handleBack}>
+            <span className={styles.buttonText}>戻る</span>
           </button>
-          <div className={styles.headerCell + " " + styles.headerTitle}>マーキング</div>
-          <div className={styles.headerCell + " " + styles.genreTitle}>{genreDisplayName}</div>
-          <div className={styles.headerCell + " " + styles.headerSubTitle}>問題選択</div>
+          <div className={styles.headerLeafCell}>
+            <span className={styles.buttonText}>マーキング</span>
+          </div>
+          <div className={styles.headerLeafCell}>
+            <span className={styles.buttonText}>{genreDisplayName}</span>
+          </div>
+          <div className={styles.headerLeafCell}>
+            <span className={styles.buttonText}>問題選択</span>
+          </div>
         </div>
 
         {/* メインコンテンツ */}
         <div className={styles.contentArea}>
-          <div className={styles.quizListContainer}>
-            {isLoading ? (
-              <div className={styles.loadingText}>読み込み中...</div>
-            ) : markedQuizzes.length === 0 ? (
-              <div className={styles.emptyText}>マーキングされた問題はありません</div>
-            ) : (
-              markedQuizzes.map((quiz, index) => {
-                const quizId = Number(quiz.quizId ?? quiz.quiz_id ?? quiz.id);
-                const quizText = quiz.quizText || quiz.question || quiz.quiz_text || `問題 ${index + 1}`;
+          {/* 左側：切り株の案内コーナー（立体感あり） */}
+          <div className={styles.stumpContainer}>
+            <div className={styles.stumpInner}>
+              <div className={styles.leafDecoration}>🍃</div>
+              <p className={styles.stumpText}>
+                復習したい問題を<br />
+                <span className={styles.highlightText}>選んでね</span>
+              </p>
+            </div>
+          </div>
 
-                return (
-                  <button
-                    key={quizId}
-                    className={styles.quizSelectButton}
-                    onClick={() => handleQuizSelect(quizId)}
-                    title={quizText}
-                  >
-                    {quizText}
-                  </button>
-                );
-              })
-            )}
+          {/* 右側：問題一覧ラッパー（幹とスクロールリスト） */}
+          <div className={styles.quizListWrapper}>
+            {/* 途切れない固定の幹 */}
+            <div className={styles.treeTrunk}></div>
+
+            {/* スクロールする問題リスト */}
+            <div className={styles.quizListContainer}>
+              {isLoading ? (
+                <div className={styles.loadingText}>読み込み中...</div>
+              ) : markedQuizzes.length === 0 ? (
+                <div className={styles.emptyText}>マーキングされた問題はありません</div>
+              ) : (
+                markedQuizzes.map((quiz, index) => {
+                  const quizId = Number(quiz.quizId ?? quiz.quiz_id ?? quiz.id);
+                  const quizText = quiz.quizText || quiz.question || quiz.quiz_text || `問題 ${index + 1}`;
+
+                  return (
+                    <button
+                      key={quizId}
+                      className={styles.quizSelectButton}
+                      onClick={() => handleQuizSelect(quizId)}
+                      title={quizText}
+                    >
+                      <span className={styles.buttonText}>{quizText}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>

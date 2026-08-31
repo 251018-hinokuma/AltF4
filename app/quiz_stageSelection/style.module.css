@@ -1,248 +1,406 @@
-.page {
-  width: 1000px;
-  min-height: 650px;
-  height: auto;
-
-  margin: 30px auto;
-
-  border: 2px solid #000;
-  background: #fff;
-
-  box-sizing: border-box;
-}
-
-/* =========================================
-   ヘッダー
-========================================= */
-
-.top {
-  display: flex;
-  height: 60px;
-  width: fit-content;
-}
-
-.menu,
-.title {
-  border-right: 2px solid #000;
-  border-bottom: 2px solid #000;
-
-  background: #fff;
-
+/* 全体コンテナ */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
 
+.loading {
+  position: relative;
+  z-index: 10;
   font-size: 18px;
-  color: #000;
-
-  text-decoration: none;
-
-  box-sizing: border-box;
-}
-
-.menu {
-  width: 90px;
-}
-
-.title {
-  padding: 0 30px;
-}
-
-
-/* =========================================
-   テスト用エリア
-========================================= */
-
-.testArea {
-  width: 100%;
-  box-sizing: border-box;
-
-  padding: 20px 40px;
-
-  border-bottom: 1px solid #000;
-}
-
-.testTitle {
-  font-size: 16px;
   font-weight: bold;
-
-  margin-bottom: 10px;
+  color: #381a05;
 }
 
-.testButtons {
+/* 背景 (空・雲・山・森・地面) */
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #63b8ff 0%, #9fdcff 55%, #dff7ff 100%);
+  z-index: 0;
+}
+
+.cloud1,
+.cloud2 {
+  position: absolute;
+  width: 220px;
+  height: 75px;
+  background: white;
+  border-radius: 60px;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.cloud1 { top: 80px; left: 10%; }
+.cloud2 { top: 160px; right: 12%; }
+
+.mountain {
+  position: absolute;
+  bottom: 150px;
+  width: 100%;
+  height: 200px;
+  background: #7d8c6a;
+  clip-path: polygon(0 100%, 15% 40%, 28% 80%, 45% 25%, 60% 75%, 75% 30%, 100% 100%);
+  z-index: 1;
+}
+
+.forest {
+  position: absolute;
+  bottom: 110px;
+  width: 100%;
+  height: 120px;
+  background: #2d6b35;
+  z-index: 2;
+}
+
+.ground {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 120px;
+  background: #7b5131;
+  border-top: 12px solid #44af44;
+  z-index: 2;
+}
+
+/* メイン外枠カード */
+.mainCard {
+  border: 5px solid #2d6b35;
+  border-radius: 20px;
+  background-color: #f4ece1;
+  min-height: 560px;
+  width: 92%;
+  max-width: 940px;
   display: flex;
+  flex-direction: column;
+  padding: 28px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+/* ヘッダーエリア */
+.headerArea {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  gap: 16px;
+  align-self: flex-start;
+  z-index: 20;
   flex-wrap: wrap;
+}
+
+.headerBranchButton {
+  position: relative;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, #b87b3e 0%, #8b5a2b 50%, #542d0c 100%);
+  border: 3.5px solid #381a05;
+  border-radius: 16px 8px 16px 10px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: 1px 1px 3px #281203;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  z-index: 2;
+}
+
+.headerBranchButton:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.headerBranchButton::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  width: 20px;
+  height: 8px;
+  background: #7a461b;
+  border: 2px solid #381a05;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  z-index: -1;
+}
+
+.headerLeafCell {
+  position: relative;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #81c784 0%, #4caf50 50%, #2e7d32 100%);
+  border: 3px solid #1b5e20;
+  border-radius: 36px 5px 36px 5px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.headerLeafCell:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  width: 20px;
+  height: 8px;
+  background: #7a461b;
+  border: 2px solid #381a05;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  z-index: -1;
+}
+
+.buttonText {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* メインコンテンツ */
+.contentArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 10px 5px 10px;
+  box-sizing: border-box;
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* 切り株 */
+.stumpContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 800px;
+}
+
+.stumpInner {
+  position: relative;
+  width: 260px;
+  height: 200px;
+  background: radial-gradient(circle, #f2dbbe 0%, #ebd0ac 25%, #dfba8e 50%, #c99a63 75%, #b37e46 100%);
+  border: 10px solid #542d0c;
+  border-radius: 50% 48% 52% 49% / 49% 52% 48% 51%;
+  transform: rotateX(28deg) rotate(-4deg);
+  box-shadow: 0 8px 0 #4a270a, 0 16px 0 #3c1e06, 0 24px 0 #2d1604, 0 32px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.leafDecoration {
+  position: absolute;
+  top: -20px;
+  right: 15px;
+  font-size: 32px;
+}
+
+.stumpText {
+  margin: 0;
+  text-align: center;
+}
+
+.highlightText {
+  color: #1b5e20;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* ステージ一覧 */
+.stageListWrapper {
+  position: relative;
+  width: 470px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+}
+
+.treeTrunk {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  background: linear-gradient(180deg, #a56c34 0%, #8b5a2b 50%, #542d0c 100%);
+  border: 3.5px solid #381a05;
+  border-radius: 15px;
+  z-index: 1;
+}
+
+.stageListContainer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-height: 100%;
+  padding-right: 52px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.stageCard {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(180deg, #fef8ec 0%, #f4e3c9 100%);
+  border: 3.5px solid #8b5a2b;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.testButtons button {
-  padding: 6px 10px;
-
-  background: #fff;
-  border: 1px solid #000;
-
-  cursor: pointer;
-
-  font-size: 13px;
+.stageCard::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -52px;
+  width: 52px;
+  height: 10px;
+  background: #7a461b;
+  border: 2.5px solid #381a05;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  z-index: -1;
 }
 
-.testButtons button:hover {
-  background: #f2f2f2;
+.bossCard {
+  background: linear-gradient(180deg, #f3e5f5 0%, #e1bee7 100%);
+  border-color: #6a1b9a;
 }
 
+.lastCard {
+  background: linear-gradient(180deg, #fbe9e7 0%, #ffccbc 100%);
+  border-color: #bf360c;
+}
 
-/* =========================================
-   ステージ一覧
-========================================= */
+.stageTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #381a05;
+  border-bottom: 2px dashed #b87b3e;
+  padding-bottom: 4px;
+}
 
-.content {
-  width: 100%;
-
-  box-sizing: border-box;
-
+.modeArea {
   display: flex;
-  flex-direction: column;
-
-  align-items: center;
-
-  padding: 30px 40px;
-
-  overflow-x: hidden;
+  gap: 12px;
 }
 
-
-/* =========================================
-   ステージカード
-========================================= */
-
-.stageBox {
-  width: 550px;
-  max-width: 100%;
-
-  height: 110px;
-
-  border: 2px solid #000;
-
-  display: grid;
-
-  /*
-    ステージ名
-    ノーマル
-    ハード
-    スター
-  */
-  grid-template-columns:
-    minmax(0, 2.2fr)
-    50px
-    50px
-    minmax(0, 2.2fr);
-
-  box-sizing: border-box;
-
-  background: #fff;
-}
-
-.stageBox:hover {
-  background: #f2f2f2;
-}
-
-
-/* =========================================
-   ステージ名・モード・結果
-========================================= */
-
-.stage,
-.mode,
-.result {
-  min-width: 0;
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  border-right: 2px solid #000;
-
-  font-size: 18px;
-
-  box-sizing: border-box;
-}
-
-.stage {
-  font-weight: normal;
-}
-
-
-/* =========================================
-   ノーマル・ハード
-========================================= */
-
-.mode {
-  writing-mode: vertical-rl;
-
-  font-size: 15px;
-
-  letter-spacing: 2px;
-
-  color: #000;
-
+.modeButtonNormal,
+.modeButtonHard {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
   text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+  border-radius: 20px 4px 20px 4px;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.mode:hover {
-  background: #f2f2f2;
+.modeButtonNormal {
+  background: linear-gradient(135deg, #81c784 0%, #4caf50 100%);
+  border: 2.5px solid #1b5e20;
 }
 
-
-/* =========================================
-   スターエリア
-========================================= */
-
-.result {
-  border-right: none;
-
-  flex-direction: column;
-
-  justify-content: center;
-
-  padding: 0 10px;
+.modeButtonHard {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border: 2.5px solid #e65100;
 }
 
+.modeButtonNormal:hover,
+.modeButtonHard:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
 
-/* 星3つ */
-.starArea {
+.resultArea {
+  background: rgba(139, 90, 43, 0.1);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.starRow {
   display: flex;
-
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-
-  width: 100%;
-
-  min-width: 0;
-
-  font-size: 32px;
-
-  line-height: 1;
 }
 
-
-/* =========================================
-   スターの名前
-========================================= */
-
-.labelArea {
+.starItem {
   display: flex;
-
-  justify-content: space-between;
   align-items: center;
+  gap: 4px;
+}
 
-  width: 100%;
+.starIcon {
+  color: #fbc02d;
+  font-size: 16px;
+}
 
-  min-width: 0;
-
+.starLabel {
   font-size: 12px;
+  font-weight: bold;
+  color: #5d4037;
+}
 
-  margin-top: 2px;
-
-  white-space: nowrap;
+/* スマホ対応 */
+@media (max-width: 600px) {
+  .mainCard {
+    width: 95%;
+    padding: 12px;
+  }
+  .headerArea {
+    width: 100%;
+    gap: 6px;
+  }
+  .headerBranchButton,
+  .headerLeafCell {
+    flex: 1;
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+  .contentArea {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stumpInner {
+    width: 100%;
+    max-width: 280px;
+    min-height: 70px;
+    height: auto;
+    transform: none;
+  }
+  .stageListWrapper {
+    width: 100%;
+    height: 270px;
+  }
 }

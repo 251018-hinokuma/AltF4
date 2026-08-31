@@ -1,115 +1,476 @@
 /* =========================================
-   全体コンテナ（幅800px統一）
+   全体コンテナ
    ========================================= */
 .container {
-  max-width: 800px;
-  width: 90%;
-  margin: 40px auto;
-  box-sizing: border-box;
-}
-
-/* メイン外枠カード */
-.mainCard {
-  border: 2px solid #333333;
-  background-color: #ffffff;
-  min-height: 480px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
   position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: sans-serif;
 }
 
 /* =========================================
-   左上ヘッダー（戻る | マーキング | ジャンル選択）
+   背景描画 (空・雲・山・森・地面)
+   ========================================= */
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    #63b8ff 0%,
+    #9fdcff 55%,
+    #dff7ff 100%
+  );
+  z-index: 0;
+}
+
+.cloud1,
+.cloud2 {
+  position: absolute;
+  width: 220px;
+  height: 75px;
+  background: white;
+  border-radius: 60px;
+  opacity: .8;
+  z-index: 1;
+}
+
+.cloud1 {
+  top: 80px;
+  left: 10%;
+}
+
+.cloud2 {
+  top: 160px;
+  right: 12%;
+}
+
+.mountain {
+  position: absolute;
+  bottom: 150px;
+  width: 100%;
+  height: 200px;
+  background: #7d8c6a;
+  clip-path: polygon(
+    0 100%,
+    15% 40%,
+    28% 80%,
+    45% 25%,
+    60% 75%,
+    75% 30%,
+    100% 100%
+  );
+  z-index: 1;
+}
+
+.forest {
+  position: absolute;
+  bottom: 110px;
+  width: 100%;
+  height: 120px;
+  background: #2d6b35;
+  z-index: 2;
+}
+
+.ground {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 120px;
+  background: #7b5131;
+  border-top: 12px solid #44af44;
+  z-index: 2;
+}
+
+/* =========================================
+   メイン外枠カード
+   ========================================= */
+.mainCard {
+  border: 5px solid #2d6b35;
+  border-radius: 20px;
+  background-color: #f4ece1; /* 薄茶色 */
+  min-height: 560px;
+  width: 92%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+/* =========================================
+   左上ヘッダー（枝と葉っぱの連結）
    ========================================= */
 .headerArea {
   display: inline-flex;
-  border-right: 2px solid #333333;
-  border-bottom: 2px solid #333333;
-  align-self: flex-start; /* 左上に寄せる */
-  box-sizing: border-box;
+  align-items: center;
+  position: relative;
+  gap: 20px;
+  align-self: flex-start;
+  z-index: 20;
 }
 
-.headerCell {
+.headerBranchButton {
+  position: relative;
   padding: 12px 24px;
-  border-right: 2px solid #333333;
-  font-size: 16px;
+  background: linear-gradient(180deg, #b87b3e 0%, #8b5a2b 50%, #542d0c 100%);
+  border: 3.5px solid #381a05;
+  border-radius: 16px 8px 16px 10px;
+  font-size: 17px;
   font-weight: bold;
-  color: #333333;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px #281203;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.25);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  background-color: #ffffff;
+  white-space: nowrap;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  z-index: 2;
 }
 
-.headerCell:last-child {
-  border-right: none;
+.headerBranchButton:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 
-/* 戻るボタン */
-.backButton {
-  cursor: pointer;
-  border: none;
-  border-right: 2px solid #333333;
-  transition: background-color 0.15s ease;
+.headerBranchButton:active {
+  transform: translateY(1px);
 }
 
-.backButton:hover {
-  background-color: #f5f5f5;
+.headerBranchButton::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -24px;
+  width: 24px;
+  height: 8px;
+  background: #7a461b;
+  border: 2px solid #381a05;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  z-index: -1;
+}
+
+.headerLeafCell {
+  position: relative;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #81c784 0%, #4caf50 50%, #2e7d32 100%);
+  border: 3px solid #1b5e20;
+  border-radius: 36px 5px 36px 5px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.headerLeafCell::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  width: 75%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateY(-50%) rotate(-2deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.headerLeafCell:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -24px;
+  width: 24px;
+  height: 8px;
+  background: #7a461b;
+  border: 2px solid #381a05;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  z-index: -1;
+}
+
+.buttonText {
+  position: relative;
+  z-index: 2;
 }
 
 /* =========================================
-   コンテンツエリア＆ジャンルボタン群
+   コンテンツエリア（左右分割）
    ========================================= */
 .contentArea {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* 右側に配置（ラフ再現） */
-  padding: 40px 80px 40px 40px;
+  justify-content: space-between;
+  padding: 20px 20px 10px 20px;
   box-sizing: border-box;
+  gap: 20px;
 }
 
-/* ジャンル一覧コンテナ */
-.genreListContainer {
+/* =========================================
+   左側：切り株デザイン（3D・立体感）
+   ========================================= */
+.stumpContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 800px;
+}
+
+.stumpInner {
+  position: relative;
+  width: 280px;
+  height: 250px;
+  background: radial-gradient(
+    circle,
+    #f2dbbe 0%,
+    #ebd0ac 25%,
+    #dfba8e 50%,
+    #c99a63 75%,
+    #b37e46 100%
+  );
+  border: 10px solid #542d0c;
+  border-radius: 50% 48% 52% 49% / 49% 52% 48% 51%;
+  transform: rotateX(28deg) rotate(-4deg);
+  transform-style: preserve-3d;
+  box-shadow: 
+    0 8px 0 #4a270a,
+    0 16px 0 #3c1e06,
+    0 24px 0 #2d1604,
+    0 32px 18px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(84, 45, 12, 0.3);
   display: flex;
   flex-direction: column;
-  width: 220px;
-  border: 2px solid #333333;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
   box-sizing: border-box;
-  background-color: #ffffff;
+  text-align: center;
 }
 
-/* ジャンル選択ボタン */
-.genreSelectButton {
-  width: 100%;
-  padding: 20px 16px;
-  background-color: #ffffff;
-  border: none;
-  border-bottom: 2px solid #333333;
-  font-size: 16px;
+.leafDecoration {
+  position: absolute;
+  top: -20px;
+  right: 15px;
+  font-size: 32px;
+  transform: rotate(20deg) translateZ(10px);
+  filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.3));
+}
+
+.stumpInner::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  border: 2px dashed rgba(84, 45, 12, 0.2);
+  pointer-events: none;
+}
+
+.stumpInner::after {
+  content: "";
+  position: absolute;
+  inset: 35px;
+  border-radius: 50%;
+  border: 2px solid rgba(84, 45, 12, 0.12);
+  pointer-events: none;
+}
+
+.stumpText {
+  position: relative;
+  z-index: 2;
+  font-size: 17px;
   font-weight: bold;
-  color: #333333;
+  color: #381a05;
+  line-height: 1.6;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.highlightText {
+  color: #1b5e20;
+  font-size: 18px;
+}
+
+/* =========================================
+   右側：ジャンル一覧コンテナ
+   ========================================= */
+.genreListContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 320px;
+  padding-right: 42px;
+  box-sizing: border-box;
+}
+
+.genreListContainer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  background: linear-gradient(180deg, #a56c34 0%, #8b5a2b 50%, #542d0c 100%);
+  border: 3.5px solid #381a05;
+  border-radius: 15px;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.genreSelectButton {
+  position: relative;
+  width: 100%;
+  padding: 16px 22px;
+  background: linear-gradient(135deg, #81c784 0%, #4caf50 50%, #2e7d32 100%);
+  border: 3.5px solid #1b5e20;
+  border-radius: 60px 5px 60px 5px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.15s ease;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
+  box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.25);
+  z-index: 2;
 }
 
-.genreSelectButton:last-child {
-  border-bottom: none;
+.genreSelectButton::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  width: 75%;
+  height: 2.5px;
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateY(-50%) rotate(-2deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.genreSelectButton::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -34px;
+  width: 34px;
+  height: 10px;
+  background: #7a461b;
+  border: 2.5px solid #381a05;
+  border-radius: 5px;
+  transform: translateY(-50%);
+  z-index: -1;
 }
 
 .genreSelectButton:hover {
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #a5d6a7 0%, #66bb6a 50%, #388e3c 100%);
+  transform: scale(1.04) rotate(-1.5deg);
+  box-shadow: 4px 8px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* 読み込み・空状態 */
+.genreSelectButton:active {
+  transform: scale(0.98);
+}
+
 .loadingText,
 .emptyText {
-  padding: 20px;
+  padding: 24px;
   text-align: center;
-  font-size: 14px;
-  color: #666666;
+  font-size: 16px;
+  color: #2e7d32;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
+  border: 2px dashed #4caf50;
+}
+
+/* =========================================
+   スマートフォン対応 (max-width: 600px)
+   ========================================= */
+@media (max-width: 600px) {
+  .container {
+    height: 100dvh;
+  }
+
+  .mainCard {
+    min-height: auto;
+    width: 95%;
+    padding: 14px;
+  }
+
+  .headerArea {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .headerBranchButton,
+  .headerLeafCell {
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .headerBranchButton::after,
+  .headerLeafCell:not(:last-child)::after {
+    right: -14px;
+    width: 14px;
+    height: 5px;
+  }
+
+  .contentArea {
+    flex-direction: column;
+    justify-content: center;
+    padding: 15px 10px;
+    gap: 15px;
+  }
+
+  .stumpInner {
+    width: 100%;
+    max-width: 290px;
+    height: auto;
+    min-height: 100px;
+    padding: 15px;
+    transform: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .stumpText {
+    font-size: 14px;
+  }
+
+  .highlightText {
+    font-size: 15px;
+  }
+
+  .genreListContainer {
+    width: 100%;
+    max-width: 290px;
+  }
+
+  .genreSelectButton {
+    padding: 14px 14px;
+    font-size: 15px;
+  }
 }

@@ -1,56 +1,137 @@
-/* =========================================
-   全体コンテナ（quiz_answerのサイズ感に統一）
-   ========================================= */
+/* 全体コンテナ（全画面背景ベース） */
 .container {
-  width: 900px; /* ★quiz_answer画面と同じ 900px に統一 */
-  margin: 30px auto;
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 40px 0;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   box-sizing: border-box;
 }
 
-/* =========================================
-   ヘッダーエリア
-   ========================================= */
+.container *,
+.container *::before,
+.container *::after {
+  box-sizing: border-box;
+}
+
+/*==========================
+  背景イラストスタイル
+==========================*/
+.sky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #60a5fa, #93c5fd);
+  z-index: 1;
+}
+
+.cloud1,
+.cloud2 {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50px;
+  z-index: 2;
+}
+
+.cloud1 {
+  top: 10%;
+  left: 8%;
+  width: 220px;
+  height: 60px;
+}
+
+.cloud2 {
+  top: 18%;
+  right: 10%;
+  width: 280px;
+  height: 70px;
+}
+
+.mountain {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 160px;
+  background: #4ab076;
+  clip-path: polygon(0% 100%, 15% 30%, 35% 80%, 55% 20%, 80% 75%, 100% 100%);
+  z-index: 3;
+}
+
+.forest {
+  position: fixed;
+  bottom: 80px;
+  width: 100%;
+  height: 70px;
+  background: #2d8a53;
+  z-index: 4;
+}
+
+.ground {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 90px;
+  background: #8b5a2b;
+  border-top: 6px solid #4a2e13;
+  z-index: 5;
+}
+
+/*==========================
+  メインクイズカード (木枠風ベース)
+==========================*/
+.mainCard {
+  position: relative;
+  z-index: 10;
+  width: 900px;
+  background: #d3a369; /* 木枠の濃いブラウン */
+  border: 4px solid #2c1a0e; /* ダークブラウンの外枠 */
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  margin: auto;
+}
+
+/*==========================
+  ヘッダー（木板カラー）
+==========================*/
 .markingHeader {
   display: flex;
-  width: 100%;
-  border: 2px solid #333333;
-  background-color: #ffffff;
-  box-sizing: border-box;
+  align-items: center;
+  height: 70px;
+  border-bottom: 2px solid #2c1a0e;
+  background: #e8c89b;
 }
 
 .headerCell {
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 12px 20px;
-  border-right: 2px solid #333333;
-  font-size: 18px;
+  align-items: center;
+  height: 100%;
+  border-right: 2px solid #2c1a0e;
+  color: #2c1a0e;
   font-weight: bold;
-  color: #333333;
-  box-sizing: border-box;
 }
 
 .markTextCell {
-  white-space: nowrap;
+  width: 110px;
+  font-size: 14px;
 }
 
 .markBtnCell {
+  width: 60px;
   background: transparent;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  border-right: 2px solid #333333;
+  border: none;
+  border-right: 2px solid #2c1a0e;
+  font-size: 24px;
+  color: #e67e22;
   cursor: pointer;
-  font-size: 22px;
-  color: #333333;
-  padding: 0 20px;
-  transition: background-color 0.15s ease;
-}
-
-.markBtnCell:hover {
-  background-color: #f5f5f5;
 }
 
 .headerSpacer {
@@ -58,138 +139,156 @@
 }
 
 .genreCell {
+  width: 220px;
+  font-size: 16px;
   border-right: none;
-  white-space: nowrap;
+  padding: 0 12px;
 }
 
-/* =========================================
-   問題文エリア（ヘッダーと枠線を連結）
-   ========================================= */
+/*==========================
+  問題文エリア（明るめの木の板）
+==========================*/
 .quiz_text {
-  border: 2px solid #333333;
-  border-top: none; /* ヘッダーの底辺と重ねる */
-  padding: 48px 24px;
-  font-size: 20px;
+  min-height: 140px;
+  border-bottom: 2px solid #2c1a0e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
   font-weight: bold;
   text-align: center;
-  background-color: #ffffff;
-  box-sizing: border-box;
-  min-height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 24px;
+  line-height: 1.5;
+  background: #f4e3c3;
+  color: #2c1a0e;
 }
 
-/* =========================================
-   選択肢＆解説テーブルエリア（★Gridレイアウトに修正）
-   ========================================= */
+/*==========================
+  選択肢エリア
+==========================*/
 .answerArea {
   width: 100%;
-  /* ★番号:70px, 選択肢:410px, 解説:残り1fr(約416px) で配置バランスを他画面と統一 */
-  display: grid;
-  grid-template-columns: 70px 410px 1fr;
-  border-left: 2px solid #333333;
-  border-right: 2px solid #333333;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: #d3a369;
 }
 
 .answerRow {
-  display: contents; /* Gridアイテムとして直下セルを透過配置 */
+  display: grid;
+  grid-template-columns: 60px 240px 1fr;
+  width: 100%;
+  min-height: 60px;
+  border-bottom: 2px solid #2c1a0e;
+  color: #2c1a0e;
 }
 
-.choiceNo,
-.quiz_choices,
-.quiz_explanation {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 2px solid #333333;
-  box-sizing: border-box;
+.answerRow:last-child {
+  border-bottom: none;
+}
+
+.rowDefault {
+  background: #faf0db;
+}
+
+.rowCorrect {
+  background: #d4edda;
 }
 
 .choiceNo {
+  display: flex;
   justify-content: center;
-  border-right: 2px solid #333333;
+  align-items: center;
+  font-size: 18px;
   font-weight: bold;
-  font-size: 16px;
+  border-right: 2px solid #2c1a0e;
 }
 
 .quiz_choices {
-  border-right: 2px solid #333333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
   font-weight: bold;
-  font-size: 15px;
-  /* 長文の選択肢でも解説を圧迫しないよう自動折り返しを許可 */
-  white-space: normal;
-  word-break: break-word;
+  padding: 10px;
+  text-align: center;
+  border-right: 2px solid #2c1a0e;
 }
 
 .quiz_explanation {
+  display: flex;
+  align-items: center;
   font-size: 14px;
-  color: #333333;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  padding: 10px 16px;
+  line-height: 1.4;
 }
 
-
-
-/* =========================================
-   下部ナビゲーションボタン
-   ========================================= */
+/*==========================
+  下部ナビゲーション
+==========================*/
 .bottomNav {
   display: flex;
-  width: 100%;
-  border: 2px solid #333333;
-  border-top: none;
-  box-sizing: border-box;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #e8c89b;
+  border-top: 2px solid #2c1a0e;
 }
 
-.bottomNav button {
-  flex: 1;
-  padding: 14px 0;
-  background-color: #ffffff;
-  border: none;
-  border-right: 2px solid #333333;
+.quiz_move_beforebutton,
+.quiz_move_nextbutton,
+.homebutton {
+  background: #8b5a2b;
+  color: #ffffff;
+  border: 2px solid #2c1a0e;
+  border-radius: 6px;
+  padding: 10px 24px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 0 #4a2e13;
 }
 
-.bottomNav button:last-child {
-  border-right: none;
+.quiz_move_beforebutton:hover:not(:disabled),
+.quiz_move_nextbutton:hover:not(:disabled),
+.homebutton:hover {
+  background: #a06a37;
 }
 
-.bottomNav button:hover:not(:disabled) {
-  background-color: #f5f5f5;
+.quiz_move_beforebutton:active:not(:disabled),
+.quiz_move_nextbutton:active:not(:disabled),
+.homebutton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #4a2e13;
 }
 
-.bottomNav button:disabled {
-  color: #cccccc;
+.quiz_move_beforebutton:disabled,
+.quiz_move_nextbutton:disabled {
+  background: #a0a0a0;
+  box-shadow: 0 4px 0 #666666;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
-/* =========================================
-   データなし・読み込み中エリア
-   ========================================= */
+/* 該当問題がない場合のエリア */
 .emptyArea {
-  border: 2px solid #333333;
-  border-top: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 60px 20px;
-  text-align: center;
-  background-color: #ffffff;
+  background: #f4e3c3;
+  color: #2c1a0e;
+  gap: 20px;
 }
 
-.emptyArea h2 {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.emptyArea .homebutton {
-  padding: 10px 24px;
-  border: 2px solid #333333;
-  background-color: #ffffff;
-  font-weight: bold;
-  cursor: pointer;
+/* ローディング画面 */
+.loadingWrapper {
+  position: relative;
+  z-index: 10;
+  background: #f4e3c3;
+  color: #2c1a0e;
+  padding: 40px;
+  border-radius: 8px;
+  border: 3px solid #2c1a0e;
 }

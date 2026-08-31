@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
 
-export default function QuizReview() {
+function QuizReviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { game, toggleMarking } = useGame();
@@ -23,7 +23,7 @@ export default function QuizReview() {
   const quizzes = game.quizzes || [];
   const currentQuiz = quizzes[reviewIndex] || null;
 
-  // 問題個別のstageIdではなく、現在プレイ中・選択中のステージIDを優先取得
+  // 現在プレイ中・選択中のステージIDを優先取得
   const currentGenreId = Number(queryGenreId || game.genreId || currentQuiz?.genreId || 1);
   const currentStageNum = Number(queryStageId || game.stageId || 1);
 
@@ -53,7 +53,7 @@ export default function QuizReview() {
     loadGenres();
   }, [game.genres]);
 
-  // 問題IDの取得（数値に統一できるように準備）
+  // 問題IDの取得
   const rawQuizId = currentQuiz ? (currentQuiz.quizId ?? currentQuiz.id) : null;
   const quizId = rawQuizId !== null ? Number(rawQuizId) : null;
 
@@ -88,7 +88,7 @@ export default function QuizReview() {
   );
   const genreName = foundGenreObj?.genreName || foundGenreObj?.name || "";
 
-  // マーキング状態の取得（数値キャストで安全に比較）
+  // マーキング状態の取得
   const isMarked = quizId !== null 
     ? (game.user?.markingQuizIds || []).some((id) => Number(id) === quizId)
     : false;
@@ -132,7 +132,6 @@ export default function QuizReview() {
   const answerStatus = useMemo(() => {
     if (!currentQuiz || quizId === null) return "unanswered";
 
-    // 数値として結果ID一覧に含まれるか検索
     const isAnswered = (game.user?.resultQuizIds || []).some((id) => Number(id) === quizId);
 
     if (!isAnswered) {
@@ -149,21 +148,26 @@ export default function QuizReview() {
 
   if (!currentQuiz || quizzes.length === 0) {
     return (
-      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
-        <h2>復習する問題がありません</h2>
-      </main>
+      <div className={styles.mainCard}>
+        <div className={styles.emptyArea}>
+          <h2>復習する問題がありません</h2>
+          <button className={styles.quiz_move_nextbutton} onClick={handleGoToStageSelection}>
+            ステージ選択へ戻る
+          </button>
+        </div>
+      </div>
     );
   }
 
   // ステータスに応じたスタイルの決定
-  const statusStyle = {
-    correct: { text: "正解", bg: "#e8f5e9", color: "#2e7d32" },
-    incorrect: { text: "不正解", bg: "#ffebee", color: "#c62828" },
-    unanswered: { text: "未回答", bg: "#f5f5f5", color: "#757575" },
+  const statusInfo = {
+    correct: { text: "正解", badgeClass: styles.badgeCorrect },
+    incorrect: { text: "不正解", badgeClass: styles.badgeIncorrect },
+    unanswered: { text: "未回答", badgeClass: styles.badgeUnanswered },
   }[answerStatus];
 
   return (
-    <main className={styles.container}>
+    <div className={styles.mainCard}>
       {/* ヘッダー */}
       <div className={styles.header}>
         {/* マーキングボタン */}
@@ -178,29 +182,23 @@ export default function QuizReview() {
         </div>
 
         {/* 判定結果 */}
-        <div 
-          className={styles.quiz_result} 
-          style={{ 
-            backgroundColor: statusStyle.bg,
-            color: statusStyle.color
-          }}
-        >
-          {statusStyle.text}
+        <div className={`${styles.quiz_result} ${statusInfo.badgeClass}`}>
+          {statusInfo.text}
         </div>
 
         {/* ジャンル名・ステージ数・問題番号 */}
-        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+        <div className={styles.quiz_now}>
           {genreName && (
-            <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+            <div className={styles.genreSubTitle}>
               {genreName}
             </div>
           )}
           {currentStageNum && (
-            <div style={{ fontSize: "0.8rem", fontWeight: "bold", opacity: 0.85, marginBottom: "2px", color: isBossStage ? "#d63031" : "inherit" }}>
+            <div className={isBossStage ? styles.stageBossTitle : styles.stageNumTitle}>
               {isBossStage ? "ボスステージ" : `ステージ ${currentStageNum}`}
             </div>
           )}
-          <div>
+          <div className={styles.progressText}>
             {reviewIndex + 1}問 / {quizzes.length}問
           </div>
         </div>
@@ -231,23 +229,23 @@ export default function QuizReview() {
             ? (currentQuiz.explanation[index] || "")
             : (currentQuiz.explanations?.find((e) => e.choice === choiceText)?.explanation || "");
 
-          // 背景色の指定
-          let rowBgColor = "#fff";
+          // クラス名の切り替え
+          let rowClass = styles.rowDefault;
           if (isRealAnswer) {
-            rowBgColor = "#e8f5e9"; // 正解行（緑）
+            rowClass = styles.rowCorrect; // 正解行（緑）
           } else if (isUserSelected) {
-            rowBgColor = "#ffebee"; // 間違えて選択した行（赤）
+            rowClass = styles.rowIncorrect; // 間違えて選択した行（赤）
           }
 
           return (
-            <div key={index} className={styles.answerRow}>
-              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={`${styles.answerRow} ${rowClass}`}>
+              <div className={styles.choiceNo}>
                 {index + 1}
               </div>
-              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices}>
                 {choiceText}
               </div>
-              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation}>
                 {explanationText}
               </div>
             </div>
@@ -277,6 +275,28 @@ export default function QuizReview() {
           次の問題
         </button>
       </div>
+    </div>
+  );
+}
+
+export default function QuizReview() {
+  return (
+    <main className={styles.container}>
+      {/* 背景要素 */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      <Suspense fallback={
+        <div className={styles.loadingWrapper}>
+          <h2>読み込み中...</h2>
+        </div>
+      }>
+        <QuizReviewContent />
+      </Suspense>
     </main>
   );
 }
