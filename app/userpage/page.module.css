@@ -1,4 +1,3 @@
-
 /* ==================================================
    全体
 ================================================== */
@@ -11,12 +10,20 @@
     height: 100dvh;
 
     overflow: hidden;
+
+    font-family:
+        "Courier New",
+        "MS Gothic",
+        monospace,
+        sans-serif;
+
+    background:
+        #8ac9ed;
 }
 
 
 /* ==================================================
    空
-   朝9時ごろの明るい空
 ================================================== */
 
 .sky {
@@ -69,6 +76,7 @@
     opacity: .95;
 }
 
+
 /* ==================================================
    雲
 ================================================== */
@@ -101,10 +109,7 @@
 }
 
 
-/* ==================================================
-   雲1
-   左 → 右
-================================================== */
+/* 雲1 */
 
 .cloud1 {
     top: 15%;
@@ -116,10 +121,7 @@
 }
 
 
-/* ==================================================
-   雲2
-   右 → 左
-================================================== */
+/* 雲2 */
 
 .cloud2 {
     top: 29%;
@@ -135,11 +137,7 @@
 }
 
 
-/* ==================================================
-   雲3
-   左 → 右
-   雲1とは違う高さ・速度
-================================================== */
+/* 雲3 */
 
 .cloud3 {
     top: 43%;
@@ -162,7 +160,8 @@
 @keyframes cloudMove1 {
 
     0% {
-        transform: translateX(0);
+        transform:
+            translateX(0);
     }
 
     100% {
@@ -202,6 +201,7 @@
             scale(.65);
     }
 }
+
 
 /* ==================================================
    山
@@ -289,7 +289,8 @@
     width: 110px;
     height: 65px;
 
-    background: #edf4ef;
+    background:
+        #edf4ef;
 
     clip-path:
         polygon(
@@ -306,43 +307,61 @@
 }
 
 
-.forest{
+/* ==================================================
+   森
+================================================== */
 
-    position:absolute;
+.forest {
+    position: absolute;
 
-    bottom:100px;
+    z-index: 3;
 
-    width:100%;
+    bottom: 100px;
 
-    height:90px;
+    width: 100%;
+    height: 90px;
 
-    background:#2c6b35;
-
-}
-
-.ground{
-
-    position:absolute;
-
-    bottom:0;
-
-    width:100%;
-
-    height:100px;
-
-    background:#775236;
-
-    border-top:10px solid #42b442;
-
+    background:
+        linear-gradient(
+            to bottom,
+            #3d813d,
+            #28632f
+        );
 }
 
 
 /* ==================================================
-   ステータス画面
+   地面
+================================================== */
+
+.ground {
+    position: absolute;
+
+    z-index: 4;
+
+    bottom: 0;
+
+    width: 100%;
+    height: 100px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #775236,
+            #5d3b21
+        );
+
+    border-top:
+        10px solid #42b442;
+}
+
+
+/* ==================================================
+   メインウィンドウ
+   送ってもらったコードの木製RPG配色
 ================================================== */
 
 .window {
-
     position: absolute;
 
     z-index: 10;
@@ -354,7 +373,7 @@
         translate(-50%, -50%);
 
     width:
-        min(920px, calc(100% - 50px));
+        min(900px, calc(100% - 50px));
 
     max-height:
         calc(100vh - 70px);
@@ -366,63 +385,65 @@
         auto;
 
     padding:
-        28px;
+        32px;
 
     color:
-        #f5f7ff;
+        #4b2e18;
 
     background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, .025) 0 3px,
+            transparent 3px 11px
+        ),
         linear-gradient(
-            145deg,
-            rgba(35, 45, 66, .98),
-            rgba(17, 23, 37, .98)
+            135deg,
+            #c98a4b,
+            #b8753a 50%,
+            #a96632
         );
 
     border:
-        2px solid #8c9bb7;
+        7px solid #6a3919;
 
     border-radius:
-        12px;
+        8px;
 
     box-shadow:
-        0 12px 35px rgba(0, 0, 0, .5),
-        inset 0 0 0 1px rgba(255,255,255,.08),
-        inset 0 0 25px rgba(0,0,0,.4);
-}
-
-
-/* 上部の装飾ライン */
-
-.window::before {
-
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 35px;
-    right: 35px;
-
-    height: 3px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #8fa9d8,
-            transparent
-        );
-
-    opacity:
-        .8;
+        inset 0 0 0 3px #e0a866,
+        inset 0 0 0 6px #8b4f24,
+        0 8px 0 #4d2813,
+        0 14px 35px rgba(0, 0, 0, .35);
 }
 
 
 /* ==================================================
-   戻る
+   木目風の内側ライン
+================================================== */
+
+.window::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 12px;
+
+    pointer-events: none;
+
+    border:
+        2px solid rgba(74, 37, 15, .35);
+
+    border-radius:
+        6px;
+}
+
+
+/* ==================================================
+   戻るボタン
 ================================================== */
 
 .back {
+    position: relative;
 
     display:
         inline-flex;
@@ -434,19 +455,27 @@
         8px;
 
     padding:
-        7px 13px;
+        8px 15px;
 
     color:
-        #cdd8eb;
+        #fff7e4;
 
     background:
-        rgba(255,255,255,.05);
+        linear-gradient(
+            to bottom,
+            #a96734,
+            #824820
+        );
 
     border:
-        1px solid #586982;
+        2px solid #5a2d13;
 
     border-radius:
-        6px;
+        5px;
+
+    box-shadow:
+        inset 0 0 0 1px #c78345,
+        0 3px 0 #49240f;
 
     text-decoration:
         none;
@@ -454,24 +483,31 @@
     font-size:
         16px;
 
+    font-weight:
+        bold;
+
+    text-shadow:
+        1px 1px 0 #4a250f;
+
     transition:
-        .15s ease;
+        transform .15s ease,
+        background .15s ease;
 }
 
 
 .back:hover {
-
     color:
-        white;
+        #ffe09a;
 
     background:
-        rgba(120,150,200,.2);
-
-    border-color:
-        #a9bddd;
+        linear-gradient(
+            to bottom,
+            #bf7b3d,
+            #9b5828
+        );
 
     transform:
-        translateX(-2px);
+        translateY(-2px);
 }
 
 
@@ -480,6 +516,7 @@
 ================================================== */
 
 .errorMessage {
+    position: relative;
 
     margin-top:
         15px;
@@ -488,140 +525,58 @@
         10px 14px;
 
     color:
-        #ffdede;
+        #fff;
 
     background:
-        rgba(150, 35, 35, .35);
+        #9c3f32;
 
     border:
-        1px solid #d56a6a;
+        2px solid #6b281f;
 
     border-radius:
         6px;
+
+    box-shadow:
+        0 3px 0 #5a211b;
 }
 
 
 /* ==================================================
-   プレイヤーステータス全体
+   プレイヤープロフィール
 ================================================== */
 
 .profile {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        180px 1fr;
-
-    gap:
-        28px;
-
-    align-items:
-        center;
+    position: relative;
 
     margin-top:
         25px;
 
     padding:
-        24px;
+        25px;
 
     background:
-        rgba(8, 13, 24, .65);
+        #f0d39a;
 
     border:
-        1px solid #586982;
+        4px solid #6a3919;
 
     border-radius:
         8px;
 
     box-shadow:
-        inset 0 0 20px rgba(0,0,0,.3);
+        inset 0 0 15px rgba(96, 55, 20, .2),
+        0 4px 0 #4d2813;
 }
 
 
 /* ==================================================
-   プレイヤーアイコン
+   アカウントアイコン
+   非表示
 ================================================== */
 
 .userIcon {
-
-    width:
-        160px;
-
-    height:
-        160px;
-
     display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    margin:
-        auto;
-}
-
-
-/* SVG */
-
-.userIconSvg {
-
-    width:
-        150px;
-
-    height:
-        150px;
-}
-
-
-/* 外側 */
-
-.userIconFrame {
-
-    fill:
-        rgba(125, 155, 200, .08);
-
-    stroke:
-        #9fb5d8;
-
-    stroke-width:
-        3;
-}
-
-
-/* 頭 */
-
-.userIconHead {
-
-    fill:
         none;
-
-    stroke:
-        #dbe7fa;
-
-    stroke-width:
-        3;
-}
-
-
-/* 体 */
-
-.userIconBody {
-
-    fill:
-        none;
-
-    stroke:
-        #dbe7fa;
-
-    stroke-width:
-        3;
-
-    stroke-linecap:
-        round;
 }
 
 
@@ -630,48 +585,59 @@
 ================================================== */
 
 .info {
+    position: relative;
 
-    min-width:
-        0;
+    width:
+        100%;
+
+    box-sizing:
+        border-box;
 
     padding:
-        20px 24px;
+        22px 25px;
 
     background:
-        rgba(30, 40, 59, .7);
+        rgba(255, 247, 228, .78);
 
     border:
-        1px solid #647692;
+        3px solid #815225;
 
     border-radius:
         7px;
+
+    box-shadow:
+        inset 0 0 12px rgba(100, 60, 20, .15);
 }
 
 
-/* STATUSタイトル */
+/* ==================================================
+   タイトル
+================================================== */
 
 .info h2 {
-
     margin:
-        0 0 18px;
+        0 0 20px;
 
     padding-bottom:
         10px;
 
     color:
-        #e8efff;
+        #573619;
 
     border-bottom:
-        1px solid #7186a8;
+        3px solid #8b4f24;
 
     font-size:
-        24px;
+        25px;
+
+    font-weight:
+        bold;
 
     letter-spacing:
         2px;
 
     text-shadow:
-        2px 2px 3px #000;
+        1px 1px 0 rgba(255, 255, 255, .3);
 }
 
 
@@ -680,7 +646,6 @@
 ================================================== */
 
 .userNameArea {
-
     display:
         flex;
 
@@ -693,16 +658,15 @@
     min-width:
         0;
 
-    margin-bottom:
-        20px;
-
     min-height:
-        45px;
+        50px;
+
+    margin-bottom:
+        10px;
 }
 
 
 .userNameField {
-
     min-width:
         0;
 
@@ -725,10 +689,10 @@
         center;
 
     color:
-        #f3f6ff;
+        #4b2e18;
 
     font-size:
-        23px;
+        24px;
 
     font-weight:
         bold;
@@ -745,7 +709,6 @@
 
 
 h3.userNameField {
-
     padding:
         0;
 
@@ -755,9 +718,8 @@ h3.userNameField {
 
 
 h3.userNameField:hover {
-
     color:
-        #b9d4ff;
+        #9b5828;
 }
 
 
@@ -766,7 +728,6 @@ h3.userNameField:hover {
 ================================================== */
 
 .editNameButton {
-
     flex:
         0 0 43px;
 
@@ -789,41 +750,53 @@ h3.userNameField:hover {
         0;
 
     color:
-        #dce7f9;
+        #fff7e4;
 
     background:
-        #29364c;
+        linear-gradient(
+            to bottom,
+            #a96734,
+            #824820
+        );
 
     border:
-        1px solid #7285a4;
+        2px solid #5a2d13;
 
     border-radius:
-        6px;
+        5px;
+
+    box-shadow:
+        inset 0 0 0 1px #c78345,
+        0 3px 0 #49240f;
 
     font-size:
         21px;
+
+    font-weight:
+        bold;
 
     cursor:
         pointer;
 
     transition:
-        .15s ease;
+        transform .15s ease,
+        background .15s ease;
 }
 
 
 .editNameButton:hover {
-
     color:
-        white;
+        #ffe09a;
 
     background:
-        #3a4d6a;
-
-    border-color:
-        #b4c9e8;
+        linear-gradient(
+            to bottom,
+            #bf7b3d,
+            #9b5828
+        );
 
     transform:
-        scale(1.04);
+        scale(1.05);
 }
 
 
@@ -832,18 +805,17 @@ h3.userNameField:hover {
 ================================================== */
 
 input.userNameField {
-
     width:
         min(320px, 100%);
 
     color:
-        white;
+        #432817;
 
     background:
-        #151e2e;
+        #fff7e4;
 
     border:
-        1px solid #788cab;
+        2px solid #815225;
 
     border-radius:
         5px;
@@ -854,80 +826,23 @@ input.userNameField {
 
 
 input.userNameField:focus {
-
     border-color:
-        #b9d4ff;
+        #c78345;
 
     box-shadow:
-        0 0 8px rgba(130, 170, 230, .25);
+        0 0 6px rgba(164, 105, 44, .35);
 }
 
 
 /* ==================================================
-   HP
+   HP関連は非表示
 ================================================== */
 
-.info p {
-
-    margin:
-        0 0 7px;
-
-    color:
-        #d5dfef;
-
-    font-size:
-        14px;
-
-    font-weight:
-        bold;
-
-    letter-spacing:
-        1px;
-}
-
-
-.hpBar {
-
-    width:
-        100%;
-
-    max-width:
-        450px;
-
-    height:
-        20px;
-
-    overflow:
-        hidden;
-
-    background:
-        #111824;
-
-    border:
-        2px solid #687b99;
-
-    border-radius:
-        4px;
-}
-
-
+.info p,
+.hpBar,
 .hp {
-
-    width:
-        100%;
-
-    height:
-        100%;
-
-    background:
-        linear-gradient(
-            to bottom,
-            #ff6262,
-            #c92d36
-        );
-
-    box-shadow:
-        inset 0 2px rgba(255,255,255,.25);
+    display:
+        none;
 }
 
 
@@ -936,51 +851,54 @@ input.userNameField:focus {
 ================================================== */
 
 .menuBox {
+    position: relative;
 
     margin-top:
-        22px;
+        25px;
 
     padding:
-        22px;
+        25px;
 
     background:
-        rgba(8, 13, 24, .65);
+        #d9ad6c;
 
     border:
-        1px solid #586982;
+        4px solid #6a3919;
 
     border-radius:
         8px;
 
     box-shadow:
-        inset 0 0 20px rgba(0,0,0,.3);
+        inset 0 0 15px rgba(91, 54, 25, .2),
+        0 4px 0 #4d2813;
 }
 
 
-/* メニュータイトル */
+/* ==================================================
+   メニュータイトル
+================================================== */
 
 .menuBox::before {
-
     content:
-        "プレイヤーデータ";
+        "冒険者データ";
 
     display:
         block;
 
     margin-bottom:
-        15px;
+        18px;
 
     padding-bottom:
-        9px;
+        10px;
 
     color:
-        #dfe8fa;
+        #573619;
 
     border-bottom:
-        1px solid #7186a8;
+        3px solid #8b4f24;
 
     font-size:
-        18px;
+        20px;
 
     font-weight:
         bold;
@@ -995,7 +913,6 @@ input.userNameField:focus {
 ================================================== */
 
 .menu {
-
     display:
         grid;
 
@@ -1003,7 +920,7 @@ input.userNameField:focus {
         repeat(3, 1fr);
 
     gap:
-        12px;
+        15px;
 }
 
 
@@ -1012,12 +929,11 @@ input.userNameField:focus {
 ================================================== */
 
 .menuItem {
-
     min-width:
         0;
 
     min-height:
-        58px;
+        70px;
 
     display:
         flex;
@@ -1029,30 +945,30 @@ input.userNameField:focus {
         center;
 
     padding:
-        10px;
+        12px;
 
     box-sizing:
         border-box;
 
     color:
-        #dce7f8;
+        #fff7e4;
 
     background:
         linear-gradient(
             to bottom,
-            #34445e,
-            #26344a
+            #a96734,
+            #824820
         );
 
     border:
-        1px solid #6d81a2;
+        3px solid #5a2d13;
 
     border-radius:
         6px;
 
     box-shadow:
-        inset 0 1px rgba(255,255,255,.08),
-        0 3px 0 #151d2a;
+        inset 0 0 0 1px #c78345,
+        0 4px 0 #49240f;
 
     text-decoration:
         none;
@@ -1061,35 +977,41 @@ input.userNameField:focus {
         center;
 
     font-size:
-        16px;
+        17px;
 
     font-weight:
         bold;
 
+    text-shadow:
+        1px 1px 0 #4a250f;
+
     transition:
-        .15s ease;
+        transform .15s ease,
+        background .15s ease;
 }
 
 
-/* ホバー */
+/* ==================================================
+   ホバー
+================================================== */
 
 .menuItem:hover {
-
     color:
-        white;
+        #ffe09a;
 
     background:
         linear-gradient(
             to bottom,
-            #4a5f80,
-            #344965
+            #bf7b3d,
+            #9b5828
         );
 
-    border-color:
-        #a4badc;
-
     transform:
-        scale(1.03);
+        scale(1.04);
+
+    box-shadow:
+        inset 0 0 0 1px #e0a866,
+        0 5px 0 #49240f;
 }
 
 
@@ -1098,23 +1020,20 @@ input.userNameField:focus {
 ================================================== */
 
 .window::-webkit-scrollbar {
-
     width:
         7px;
 }
 
 
 .window::-webkit-scrollbar-track {
-
     background:
-        rgba(0,0,0,.25);
+        rgba(74, 37, 15, .2);
 }
 
 
 .window::-webkit-scrollbar-thumb {
-
     background:
-        #687b99;
+        #6a3919;
 
     border-radius:
         10px;
@@ -1128,7 +1047,6 @@ input.userNameField:focus {
 @media (max-width: 800px) {
 
     .window {
-
         width:
             calc(100% - 30px);
 
@@ -1138,49 +1056,26 @@ input.userNameField:focus {
 
 
     .profile {
-
-        grid-template-columns:
-            130px 1fr;
-
-        gap:
-            20px;
-
         padding:
             18px;
     }
 
 
-    .userIcon {
-
-        width:
-            120px;
-
-        height:
-            120px;
-    }
-
-
-    .userIconSvg {
-
-        width:
-            115px;
-
-        height:
-            115px;
-    }
-
-
     .info {
-
         padding:
             18px;
     }
 
 
     .menu {
-
         grid-template-columns:
             1fr;
+    }
+
+
+    .menuItem {
+        min-height:
+            58px;
     }
 }
 
@@ -1191,10 +1086,7 @@ input.userNameField:focus {
 
 @media (max-width: 600px) {
 
-    /* 背景 */
-
     .mountain {
-
         bottom:
             145px;
 
@@ -1204,7 +1096,6 @@ input.userNameField:focus {
 
 
     .forest {
-
         bottom:
             85px;
 
@@ -1214,18 +1105,14 @@ input.userNameField:focus {
 
 
     .ground {
-
         height:
             90px;
     }
 
 
-    /* ==================================================
-       メインウィンドウ
-    ================================================== */
+    /* メインウィンドウ */
 
     .window {
-
         top:
             10px;
 
@@ -1245,10 +1132,10 @@ input.userNameField:focus {
             none;
 
         padding:
-            15px;
+            14px;
 
         border-width:
-            2px;
+            4px;
 
         border-radius:
             8px;
@@ -1264,12 +1151,9 @@ input.userNameField:focus {
     }
 
 
-    /* ==================================================
-       戻る
-    ================================================== */
+    /* 戻る */
 
     .back {
-
         padding:
             6px 10px;
 
@@ -1278,78 +1162,29 @@ input.userNameField:focus {
     }
 
 
-    /* ==================================================
-       プロフィール
-    ================================================== */
+    /* プロフィール */
 
     .profile {
-
-        display:
-            flex;
-
-        flex-direction:
-            column;
-
-        align-items:
-            stretch;
-
-        gap:
-            12px;
-
         margin-top:
             15px;
 
         padding:
-            12px;
+            10px;
+
+        border-width:
+            3px;
     }
 
 
-    /* ==================================================
-       アイコン
-    ================================================== */
-
-    .userIcon {
-
-        width:
-            85px;
-
-        height:
-            85px;
-
-        margin:
-            0 auto;
-    }
-
-
-    .userIconSvg {
-
-        width:
-            85px;
-
-        height:
-            85px;
-    }
-
-
-    /* ==================================================
-       情報
-    ================================================== */
+    /* 情報 */
 
     .info {
-
-        width:
-            100%;
-
-        box-sizing:
-            border-box;
-
         padding:
             14px;
     }
 
 
     .info h2 {
-
         margin-bottom:
             12px;
 
@@ -1358,33 +1193,29 @@ input.userNameField:focus {
 
         font-size:
             19px;
+
+        letter-spacing:
+            1px;
     }
 
 
-    /* ==================================================
-       ユーザー名
-    ================================================== */
+    /* ユーザー名 */
 
     .userNameArea {
-
         width:
             100%;
 
         gap:
             7px;
 
-        margin-bottom:
-            14px;
+        min-height:
+            40px;
     }
 
 
     .userNameField {
-
-        min-width:
-            0;
-
         max-width:
-            calc(100% - 50px);
+            calc(100% - 48px);
 
         height:
             40px;
@@ -1395,7 +1226,6 @@ input.userNameField:focus {
 
 
     input.userNameField {
-
         width:
             100%;
 
@@ -1408,7 +1238,6 @@ input.userNameField:focus {
 
 
     .editNameButton {
-
         flex:
             0 0 40px;
 
@@ -1423,49 +1252,21 @@ input.userNameField:focus {
     }
 
 
-    /* ==================================================
-       HP
-    ================================================== */
-
-    .info p {
-
-        font-size:
-            13px;
-    }
-
-
-    .hpBar {
-
-        width:
-            100%;
-
-        max-width:
-            none;
-
-        height:
-            17px;
-
-        box-sizing:
-            border-box;
-    }
-
-
-    /* ==================================================
-       メニュー
-    ================================================== */
+    /* メニュー */
 
     .menuBox {
-
         margin-top:
             15px;
 
         padding:
             14px;
+
+        border-width:
+            3px;
     }
 
 
     .menuBox::before {
-
         margin-bottom:
             10px;
 
@@ -1473,15 +1274,11 @@ input.userNameField:focus {
             7px;
 
         font-size:
-            15px;
-
-        letter-spacing:
-            1px;
+            16px;
     }
 
 
     .menu {
-
         display:
             flex;
 
@@ -1489,26 +1286,22 @@ input.userNameField:focus {
             column;
 
         gap:
-            9px;
+            10px;
     }
 
 
     .menuItem {
-
         width:
             100%;
 
         min-height:
-            46px;
+            48px;
 
         padding:
             8px;
 
         font-size:
             15px;
-
-        box-sizing:
-            border-box;
     }
 }
 
@@ -1520,7 +1313,6 @@ input.userNameField:focus {
 @media (max-width: 380px) {
 
     .window {
-
         top:
             7px;
 
@@ -1534,56 +1326,29 @@ input.userNameField:focus {
             7px;
 
         padding:
-            11px;
+            10px;
     }
 
 
     .profile {
-
         padding:
-            10px;
-
-        gap:
-            10px;
-    }
-
-
-    .userIcon {
-
-        width:
-            70px;
-
-        height:
-            70px;
-    }
-
-
-    .userIconSvg {
-
-        width:
-            70px;
-
-        height:
-            70px;
+            8px;
     }
 
 
     .info {
-
         padding:
-            11px;
+            10px;
     }
 
 
     .info h2 {
-
         font-size:
             17px;
     }
 
 
     .userNameField {
-
         font-size:
             16px;
 
@@ -1593,7 +1358,6 @@ input.userNameField:focus {
 
 
     .editNameButton {
-
         flex-basis:
             37px;
 
@@ -1608,24 +1372,15 @@ input.userNameField:focus {
     }
 
 
-    .hpBar {
-
-        height:
-            15px;
-    }
-
-
     .menuBox {
-
         padding:
-            11px;
+            10px;
     }
 
 
     .menuItem {
-
         min-height:
-            43px;
+            44px;
 
         font-size:
             14px;
