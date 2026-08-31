@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
 
-export default function QuizQuestion() {
+function QuizQuestionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  //=========================================
-  // URLクエリパラメータ & Context
-  //=========================================
   const queryGenreId = searchParams.get("genreId");
   const queryStageId = searchParams.get("stageId");
   const queryDifficulty = searchParams.get("difficulty") || searchParams.get("Difficulty");
@@ -25,49 +22,34 @@ export default function QuizQuestion() {
     setHp
   } = useGame();
 
-  // ステート管理
   const [genres, setGenres] = useState([]);
   const [stageInfo, setStageInfo] = useState(null);
 
-  // ジャンル・ステージID
-  // 【修正ポイント】queryGenreId が "0" の場合にデフォルト値(1)へ倒れないよう明示的に判定
   const rawGenreId = queryGenreId ?? game.genreId;
   const currentGenreId = rawGenreId !== undefined && rawGenreId !== null ? Number(rawGenreId) : 1;
   const currentStageNum = Number(queryStageId || game.stageId || 1);
 
-  // ラストステージ判定 (例: genreIdが0、または最終ステージ番号)
   const isLastStage = currentGenreId === 0 || currentStageNum === 7;
 
-  // 難易度判定 (1: Normal, 2: Hard)
   const currentDifficulty = Number(queryDifficulty || game.difficulty || 1);
   const isHardMode = currentDifficulty === 2 || game.difficulty === "hard" || game.mode === "hard" || !!game.isHard;
   const difficultyLabel = isHardMode ? "ハード" : "ノーマル";
 
-  // ボスステージ判定
   const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
 
-  // 最大HPの決定
   const maxHp = isHardMode
     ? (stageInfo?.hardHp || (isBossStage ? 7 : 3))
     : (stageInfo?.normalHp || (isBossStage ? 10 : 5));
 
-  //=========================================
-  // 【クイズ取得 ＆ ゲーム初期化・リセット判定】
-  //=========================================
   useEffect(() => {
-    // 【修正ポイント】currentGenreId === 0 (全ジャンル) のときに !currentGenreId で弾かれないよう判定変更
     if (currentGenreId === undefined || currentGenreId === null || Number.isNaN(currentGenreId) || !currentStageNum) return;
 
-    // 1. クイズデータが存在しない
     const isNoQuizzes = !game.quizzes || game.quizzes.length === 0;
-    // 2. 前回のゲームでHPが0以下、またはゲーム終了フラグ（isFinished）が立っている
     const isGameOverOrFinished = game.hp <= 0 || game.isFinished;
-    // 3. 別ジャンル・別ステージが選択された
     const isStageChanged =
       (game.genreId !== undefined && Number(game.genreId) !== currentGenreId) ||
       (game.stageId !== undefined && Number(game.stageId) !== currentStageNum);
 
-    // 上記いずれかの場合はクイズを再読み込みして1問目からやり直す
     if (isNoQuizzes || isGameOverOrFinished || isStageChanged) {
       fetchQuizzes(currentGenreId, currentStageNum, maxHp);
     }
@@ -83,9 +65,6 @@ export default function QuizQuestion() {
     fetchQuizzes,
   ]);
 
-  //=========================================
-  // 【HPの補正・同期処理】
-  //=========================================
   useEffect(() => {
     if (stageInfo && game.currentQuestion === 1 && !game.isFinished && game.hp > 0) {
       if (game.hp !== maxHp && typeof setHp === "function") {
@@ -94,9 +73,6 @@ export default function QuizQuestion() {
     }
   }, [stageInfo, maxHp, game.currentQuestion, game.isFinished, game.hp, setHp]);
 
-  //=========================================
-  // 【1. Genreモデルからジャンル一覧を取得】
-  //=========================================
   useEffect(() => {
     async function loadGenres() {
       if (game.genres && game.genres.length > 0) {
@@ -117,11 +93,7 @@ export default function QuizQuestion() {
     loadGenres();
   }, [game.genres]);
 
-  //=========================================
-  // 【2. Stage情報を取得】
-  //=========================================
   useEffect(() => {
-    // 【修正ポイント】genreId = 0 でも通過するように判定を変更
     if (currentGenreId === undefined || currentGenreId === null || Number.isNaN(currentGenreId) || !currentStageNum) return;
 
     async function loadStageInfo() {
@@ -142,9 +114,6 @@ export default function QuizQuestion() {
     loadStageInfo();
   }, [currentGenreId, currentStageNum]);
 
-  //=========================================
-  // タイマー開始
-  //=========================================
   useEffect(() => {
     const timer = setInterval(() => {
       updateElapsedTime();
@@ -153,20 +122,17 @@ export default function QuizQuestion() {
     return () => clearInterval(timer);
   }, [updateElapsedTime]);
 
-  // 現在の問題データ
   const quizIndex = game.currentQuestion > 0 ? game.currentQuestion - 1 : 0;
   const currentQuizData = game.quizzes && game.quizzes.length > 0 ? game.quizzes[quizIndex] : null;
 
   const [choices, setChoices] = useState([]);
 
-  // mm:ss 経過時間フォーマット
   const formattedTime = useMemo(() => {
     const minute = String(Math.floor(game.elapsedTime / 60)).padStart(2, "0");
     const second = String(game.elapsedTime % 60).padStart(2, "0");
     return `${minute}:${second}`;
   }, [game.elapsedTime]);
 
-  // 制限時間 mm:ss フォーマット
   const formattedSpeedLimit = useMemo(() => {
     const limitSec = isHardMode
       ? (stageInfo?.hardSpeedLimit || (isBossStage ? 250 : 100))
@@ -178,7 +144,6 @@ export default function QuizQuestion() {
     return `${minute}:${second}`;
   }, [stageInfo, isBossStage, isHardMode]);
 
-  // 選択肢のシャッフル処理
   useEffect(() => {
     if (currentQuizData) {
       const copy = currentQuizData.choices.map((text, index) => ({ text, originalIndex: index }));
@@ -190,7 +155,6 @@ export default function QuizQuestion() {
     }
   }, [currentQuizData]);
 
-  // シャッフル後の解説データ作成
   const explanations = useMemo(() => {
     if (!currentQuizData || choices.length === 0) return [];
     
@@ -200,7 +164,6 @@ export default function QuizQuestion() {
     }));
   }, [choices, currentQuizData]);
 
-  // 回答ボタンクリック処理
   const choiceClick = (choice) => {
     if (!currentQuizData) return;
 
@@ -218,19 +181,16 @@ export default function QuizQuestion() {
     router.push(`/quiz_answer?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
   };
 
-  // ローディング表示
   if (!currentQuizData) {
     return (
-      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <div className={styles.loadingWrapper}>
         <h2>問題を読み込み中...</h2>
-      </main>
+      </div>
     );
   }
 
-  // 表示用HP
   const displayHp = game.hp <= 0 ? maxHp : game.hp;
 
-  // 【修正ポイント】ジャンル名取得（ラストステージ時は「全ジャンル」と表示）
   const allGenres = genres.length > 0 ? genres : (game.genres || []);
   const foundGenreObj = allGenres.find(
     (g) => Number(g.genreId ?? g.id) === Number(currentGenreId)
@@ -240,13 +200,13 @@ export default function QuizQuestion() {
     : (foundGenreObj?.genreName || foundGenreObj?.name || "");
 
   return (
-    <main className={styles.container}>
+    <div className={styles.mainCard}>
       {/* ヘッダー */}
       <div className={styles.header}>
-        <div className={styles.blankArea} style={{ width: "180px", borderRight: "2px solid black", height: "100%" }}></div>
-        <div className={styles.blankArea} style={{ flex: 1, borderRight: "2px solid black", height: "100%" }}></div>
+        <div className={styles.blankArea}></div>
+        <div className={styles.blankArea}></div>
 
-        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+        <div className={styles.quiz_now}>
           {genreName && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
               {genreName}
@@ -262,10 +222,7 @@ export default function QuizQuestion() {
           </div>
         </div>
 
-        <div 
-          className={styles.quiz_HP} 
-          style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
-        >
+        <div className={styles.quiz_HP}>
           <div style={{ 
             fontSize: "0.75rem", 
             fontWeight: "bold", 
@@ -315,6 +272,28 @@ export default function QuizQuestion() {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+export default function QuizQuestion() {
+  return (
+    <main className={styles.container}>
+      {/* 背景要素 */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      <Suspense fallback={
+        <div className={styles.loadingWrapper}>
+          <h2>問題を読み込み中...</h2>
+        </div>
+      }>
+        <QuizQuestionContent />
+      </Suspense>
     </main>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGame } from "../context/GameContext";
 import styles from "./page.module.css";
 
-export default function QuizAnswer() {
+function QuizAnswerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { game, toggleMarking, decreaseHp, addResultQuiz, nextQuestion, finishGame } = useGame();
@@ -140,12 +140,11 @@ export default function QuizAnswer() {
     return isLast || isDead;
   }, [game.currentQuestion, game.totalQuestion, game.quizzes, game.hp]);
 
-  // データ未ロード時のフォールバック表示
   if (!currentQuiz) {
     return (
-      <main className={styles.container} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px" }}>
+      <div className={styles.loadingWrapper}>
         <h2>データを読み込み中...</h2>
-      </main>
+      </div>
     );
   }
 
@@ -162,7 +161,6 @@ export default function QuizAnswer() {
   // 下部ボタンクリック処理
   const handleNext = () => {
     if (isLastOrDead) {
-      // ★ ゲームオーバーまたは全問終了時に finishGame() でフラグを立てる
       if (typeof finishGame === "function") {
         finishGame();
       }
@@ -174,7 +172,7 @@ export default function QuizAnswer() {
   };
 
   return (
-    <main className={styles.container}>
+    <div className={styles.mainCard}>
       {/* ヘッダー */}
       <div className={styles.header}>
         <div className={styles.markArea}>
@@ -187,11 +185,11 @@ export default function QuizAnswer() {
           </button>
         </div>
 
-        <div className={styles.quiz_result} style={{ backgroundColor: isCorrect ? "#e8f5e9" : "#ffebee" }}>
+        <div className={`${styles.quiz_result} ${isCorrect ? styles.resultCorrect : styles.resultIncorrect}`}>
           {isCorrect ? "正解" : "不正解"}
         </div>
 
-        <div className={styles.quiz_now} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+        <div className={styles.quiz_now}>
           {genreName && (
             <div style={{ fontSize: "0.8rem", opacity: 0.85 }}>
               {genreName}
@@ -207,10 +205,7 @@ export default function QuizAnswer() {
           </div>
         </div>
 
-        <div 
-          className={styles.quiz_HP} 
-          style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
-        >
+        <div className={styles.quiz_HP}>
           <div style={{ 
             fontSize: "0.75rem", 
             fontWeight: "bold", 
@@ -219,7 +214,7 @@ export default function QuizAnswer() {
           }}>
             {difficultyLabel}
           </div>
-          <div style={{ color: displayHp <= 1 ? "#ff4757" : "#000" }}>
+          <div style={{ color: displayHp <= 1 ? "#ff4757" : "#2c1a0e" }}>
             HP {displayHp} / {maxHp}
           </div>
         </div>
@@ -248,25 +243,25 @@ export default function QuizAnswer() {
           const isUserSelected = game.selectedAnswer === choiceText;
           const isRealAnswer = currentQuiz.answer === choiceText;
           
-          let rowBgColor = "#fff";
+          let rowClass = styles.rowDefault;
           if (isRealAnswer) {
-            rowBgColor = "#e8f5e9";
+            rowClass = styles.rowCorrect;
           } else if (isUserSelected) {
-            rowBgColor = "#ffebee";
+            rowClass = styles.rowIncorrect;
           }
 
           const expObj = currentQuiz.explanations?.find((e) => e.choice === choiceText);
           const explanationText = expObj ? expObj.explanation : "";
 
           return (
-            <div key={index} className={styles.answerRow}>
-              <div className={styles.choiceNo} style={{ backgroundColor: rowBgColor }}>
+            <div key={index} className={`${styles.answerRow} ${rowClass}`}>
+              <div className={styles.choiceNo}>
                 {index + 1}
               </div>
-              <div className={styles.quiz_choices} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_choices}>
                 {choiceText}
               </div>
-              <div className={styles.quiz_explanation} style={{ backgroundColor: rowBgColor }}>
+              <div className={styles.quiz_explanation}>
                 {explanationText}
               </div>
             </div>
@@ -280,6 +275,28 @@ export default function QuizAnswer() {
           {isLastOrDead ? "結果へ" : "次の問題"}
         </button>
       </div>
+    </div>
+  );
+}
+
+export default function QuizAnswer() {
+  return (
+    <main className={styles.container}>
+      {/* 背景要素 */}
+      <div className={styles.sky}></div>
+      <div className={styles.cloud1}></div>
+      <div className={styles.cloud2}></div>
+      <div className={styles.mountain}></div>
+      <div className={styles.forest}></div>
+      <div className={styles.ground}></div>
+
+      <Suspense fallback={
+        <div className={styles.loadingWrapper}>
+          <h2>データを読み込み中...</h2>
+        </div>
+      }>
+        <QuizAnswerContent />
+      </Suspense>
     </main>
   );
 }
