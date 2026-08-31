@@ -101,21 +101,10 @@ export default function StarStatusPage() {
       <div className={styles.forest}></div>
       <div className={styles.ground}></div>
 
-      {/* ユーザー名表示 */}
-      <div className={styles.userBox}>
-        {loading
-          ? "読み込み中..."
-          : error
-            ? "エラーが発生しました"
-            : userData?.userName || "ユーザー名"
-        }
-      </div>
-
       {/* メインウィンドウ */}
       <section className={styles.menupage}>
         {/* ナビゲーションタブ */}
         <nav className={styles.starTabs}>
-          {/* 戻るボタンの遷移先を /userpage に変更 */}
           <Link href="/userpage" className={styles.tabButton}>
             🔙 戻る
           </Link>
