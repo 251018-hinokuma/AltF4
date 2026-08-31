@@ -1,203 +1,497 @@
-/* 全体のコンテナ（外枠の再現） */
-.achievement-container {
-  width: 100%;
-  max-width: 900px;
-  margin: 20px auto;
-  border: 2px solid #333333;
-  box-sizing: border-box;
-  font-family: sans-serif;
-  background-color: #ffffff;
+/* ==================================================
+   全体コンテナ & レトロ背景
+================================================== */
+.container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: "Courier New", "MS Gothic", monospace, sans-serif;
+    background: #8ac9ed;
 }
 
-/* ヘッダー・タブのレイアウト */
-.page-header {
-  display: flex;
-  border-bottom: 2px solid #333333;
+.sky {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(to bottom, #55afe8 0%, #78c7ee 30%, #a7dcf1 65%, #d9edf0 100%);
 }
 
-.back-button, .tab {
-  padding: 15px 25px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  background: none;
-  border: none;
-  border-right: 2px solid #333333;
-  box-sizing: border-box;
+.sky::before {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    top: 9%;
+    right: 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fffde0 0%, #fff3aa 55%, #ffd66a 100%);
+    box-shadow: 0 0 20px rgba(255, 234, 140, .7), 0 0 50px rgba(255, 225, 110, .35);
+    opacity: .95;
 }
 
-.back-button {
-  cursor: pointer;
-  background-color: #ffffff;
-  transition: background-color 0.2s;
+.cloud1, .cloud2, .cloud3 {
+    position: absolute;
+    z-index: 1;
+    width: 240px;
+    height: 58px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, .95), rgba(240, 248, 250, .82));
+    border-radius: 50px;
+    box-shadow: 35px -22px 0 rgba(255, 255, 255, .88), 80px -30px 0 rgba(255, 255, 255, .92), 135px -16px 0 rgba(255, 255, 255, .84);
+    filter: blur(.4px);
 }
 
-.back-button:hover {
-  background-color: #f0f0f0;
+.cloud1 { top: 15%; left: -300px; animation: cloudMove1 140s linear infinite; }
+.cloud2 { top: 29%; right: -300px; transform: scale(.8); opacity: .65; animation: cloudMove2 170s linear infinite; }
+.cloud3 { top: 43%; left: -350px; transform: scale(.65); opacity: .5; animation: cloudMove3 190s linear infinite; }
+
+@keyframes cloudMove1 { 0% { transform: translateX(0); } 100% { transform: translateX(calc(100vw + 700px)); } }
+@keyframes cloudMove2 { 0% { transform: translateX(0) scale(.8); } 100% { transform: translateX(calc(-100vw - 700px)) scale(.8); } }
+@keyframes cloudMove3 { 0% { transform: translateX(0) scale(.65); } 100% { transform: translateX(calc(100vw + 700px)) scale(.65); } }
+
+.mountain {
+    position: absolute;
+    z-index: 2;
+    bottom: 185px;
+    left: -5%;
+    width: 110%;
+    height: 240px;
+    background: linear-gradient(to bottom, #7795a0, #607b83);
+    clip-path: polygon(0 100%, 8% 70%, 17% 82%, 29% 35%, 39% 70%, 51% 20%, 63% 68%, 75% 38%, 87% 75%, 100% 50%, 100% 100%);
 }
 
-.tab {
-  background-color: #ffffff;
-  color: #333333;
+.mountain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(220, 235, 230, .4), transparent 60%);
+    clip-path: polygon(0 100%, 8% 70%, 17% 82%, 29% 35%, 39% 70%, 51% 20%, 63% 68%, 75% 38%, 87% 75%, 100% 50%, 100% 100%);
 }
 
-.border-left-none {
-  border-left: none;
+.mountain::after {
+    content: "";
+    position: absolute;
+    left: 39%;
+    top: 40px;
+    width: 110px;
+    height: 65px;
+    background: #edf4ef;
+    clip-path: polygon(50% 0, 100% 100%, 77% 76%, 61% 91%, 45% 65%, 29% 81%, 0 100%);
+    opacity: .65;
 }
 
-/* アクティブなタブ（現在の画面）のスタイル */
-.tab.active-tab {
-  background-color: #f5f5f5;
+.forest { position: absolute; bottom: 100px; width: 100%; height: 90px; background: #2c6b35; }
+.ground { position: absolute; bottom: 0; width: 100%; height: 100px; background: #775236; border-top: 10px solid #42b442; }
+
+/* ==================================================
+   メイン看板（木目調ウィンドウ）
+================================================== */
+.menupage {
+    position: absolute;
+    z-index: 10;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(880px, calc(100% - 40px));
+    height: min(82vh, 660px);
+    padding: 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 3px, transparent 3px 11px), linear-gradient(to bottom, #c98a4b, #a96632);
+    border: 7px solid #6a3919;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 3px #e0a866, inset 0 0 0 6px #8b4f24, 0 8px 0 #4d2813, 0 14px 35px rgba(0, 0, 0, .35);
 }
 
-/* メインコンテンツ領域 */
-.achievement-content {
-  padding: 40px 20px;
+/* ==================================================
+   ナビゲーションタブ
+================================================== */
+.starTabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-/* 横並びのグリッドレイアウト（ワイヤーフレームの4列を再現） */
-.trophy-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+.tabButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    color: #fff7e4;
+    font-size: 13.5px;
+    font-weight: bold;
+    text-decoration: none;
+    background: linear-gradient(to bottom, #a96734, #824820);
+    border: 2px solid #5a2d13;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px #c78345, 0 3px 0 #49240f;
+    text-shadow: 1px 1px 0 #4a250f;
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease;
 }
 
-/* 各トロフィーと達成状況のセット */
-.trophy-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* トロフィーの共通スタイル（正円形） */
-.trophy-circle {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  border: 2px solid #333333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-bottom: 30px;
-  text-align: center;
-  font-size: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease-in-out;
-}
-
-/* ホバー時のちょっとした演出（獲得済みのみ） */
-.trophy-circle:not(.locked):hover {
-  transform: scale(1.05);
-}
-
-/* トロフィーの各状態スタイル */
-.locked {
-  background-color: #d3d3d3 !important;
-  color: #777777 !important;
-  border-color: #aaaaaa !important;
-  box-shadow: none !important;
-}
-
-.bronze {
-  background: linear-gradient(135deg, #cd7f32, #b87333);
-  color: #ffffff;
-  animation: trophyPulse 2s infinite ease-in-out;
-}
-
-.silver {
-  background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
-  color: #333333;
-  animation: trophyPulse 2s infinite ease-in-out;
-}
-
-.gold {
-  background: linear-gradient(135deg, #ffd700, #ffa500);
-  color: #333333;
-  animation: trophyPulse 2s infinite ease-in-out;
-}
-
-.rainbow {
-  background: linear-gradient(45deg, #ffadad, #ffd6a5, #fdffb6, #caffbf, #9bf6ff, #a0c4ff, #bdb2ff);
-  color: #333333;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
-  animation: trophyPulse 2s infinite ease-in-out;
-}
-
-/* 達成状況の枠（四角形） */
-.status-box {
-  width: 150px;
-  height: 150px;
-  border: 2px solid #333333;
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #ffffff;
-}
-
-.status-title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: bold;
-  border-bottom: 1px dashed #333333;
-  width: 100%;
-  text-align: center;
-  padding-bottom: 4px;
-}
-
-.description-text {
-  margin: 5px 0;
-  font-size: 11px;
-  color: #555555;
-  text-align: center;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-}
-
-.status-badge {
-  font-size: 11px;
-  font-weight: bold;
-}
-
-.unlocked-text {
-  color: #2e7d32;
-}
-
-.locked-text {
-  color: #c62828;
-}
-
-/* 獲得時の輝き/パルスアニメーション設定 */
-@keyframes trophyPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
-    transform: scale(1);
-  }
-  70% {
-    box-shadow: 0 0 10px 15px rgba(255, 215, 0, 0);
+.tabButton:hover {
     transform: scale(1.03);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
-    transform: scale(1);
-  }
+    background: linear-gradient(to bottom, #bf7b3d, #9b5828);
 }
 
-/* レスポンシブ対応（モバイル表示） */
-@media (max-width: 768px) {
-  .trophy-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px 10px;
-  }
-  
-  .trophy-circle {
-    width: 120px;
-    height: 120px;
+.tabButtonActive {
+    background: linear-gradient(to bottom, #6a3819, #4d2813);
+    border-color: #f0c47b;
+    box-shadow: inset 0 0 0 1px #8b4f24;
+    color: #ffe09a;
+}
+
+.debugButton {
+    background: linear-gradient(to bottom, #4a250f, #2d1305);
+    border-color: #8b4f24;
+}
+
+/* ==================================================
+   スクロールコンテンツエリア
+================================================== */
+.starContent {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.starContent::-webkit-scrollbar {
+    width: 8px;
+}
+.starContent::-webkit-scrollbar-thumb {
+    background: #6a3919;
+    border-radius: 4px;
+}
+
+/* ==================================================
+   全体の進捗サマリー
+================================================== */
+.summarySection {
+    background: rgba(90, 45, 19, 0.45);
+    border: 2px solid #6a3919;
+    border-radius: 6px;
+    padding: 12px 18px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summaryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff1b0;
+    font-size: 15px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #4b260f;
+}
+
+.summaryCount {
+    color: #ffe09a;
+    font-size: 17px;
+}
+
+.progressBarBg {
+    width: 100%;
+    height: 14px;
+    background-color: #4a250f;
+    border: 2px solid #321607;
+    border-radius: 7px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffca28, #ff9800);
+    box-shadow: 0 0 8px rgba(255, 202, 40, 0.6);
+    transition: width 0.4s ease;
+}
+
+/* ==================================================
+   トロフィーグリッド & 木目調カード
+================================================== */
+.trophyGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.trophyCard {
+    background: linear-gradient(to bottom, #824820, #6a3819);
+    border: 2px solid #4a250f;
+    border-radius: 6px;
+    padding: 12px 8px;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px #a96734, 0 3px 6px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trophyCard:hover {
+    transform: translateY(-3px);
+    box-shadow: inset 0 0 0 1px #c78345, 0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* ==================================================
+   勲章・バッジ（メダル）デザイン
+================================================== */
+.badgeWrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+/* メダル本体 */
+.badgeBody {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    transition: transform 0.2s ease;
+}
+
+/* メダルの輝きハイライト */
+.badgeBody::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    width: 30px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 15px 15px 0 0;
+    transform: rotate(-25deg);
+    pointer-events: none;
+}
+
+/* メダル内アイコン */
+.badgeIcon {
+    font-size: 32px;
+    z-index: 1;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+}
+
+/* メダル下部のリボンプレート */
+.badgeRibbon {
+    position: absolute;
+    bottom: -8px;
+    padding: 2px 10px;
+    font-size: 9.5px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    border-radius: 3px;
+    border: 1px solid #321607;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    z-index: 2;
+    text-transform: uppercase;
+}
+
+/* --------------------------------------------------
+   レアリティ別バッジスタイル
+-------------------------------------------------- */
+
+/* 未解禁 (LOCKED) */
+.locked .badgeBody {
+    background: linear-gradient(135deg, #4a3324, #2d1b10);
+    border: 4px solid #231208;
+    box-shadow: inset 0 0 0 2px #5d4030, 0 3px 6px rgba(0,0,0,0.5);
+}
+
+.locked .badgeIcon {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.locked .badgeRibbon {
+    background: #231208;
+    color: #8c6e58;
+    border-color: #120803;
+}
+
+/* 銅バッジ (BRONZE) */
+.bronze .badgeBody {
+    background: linear-gradient(135deg, #e59866 0%, #b06a3b 50%, #783e19 100%);
+    border: 4px solid #4a2108;
+    box-shadow: inset 0 0 0 2px #f5b084, 0 4px 8px rgba(0,0,0,0.4);
+    animation: badgeFloat 3s infinite ease-in-out;
+}
+
+.bronze .badgeRibbon {
+    background: linear-gradient(to bottom, #8c4a1e, #592c0e);
+    color: #ffe0c2;
+    border-color: #3b1c08;
+}
+
+/* 銀バッジ (SILVER) */
+.silver .badgeBody {
+    background: linear-gradient(135deg, #ffffff 0%, #d6d6d6 45%, #8e9eab 100%);
+    border: 4px solid #2c3e50;
+    box-shadow: inset 0 0 0 2px #ffffff, 0 4px 8px rgba(0,0,0,0.4);
+    animation: badgeFloat 3s infinite ease-in-out;
+}
+
+.silver .badgeRibbon {
+    background: linear-gradient(to bottom, #5d6d7e, #2c3e50);
+    color: #ffffff;
+    border-color: #1a252f;
+}
+
+/* 金バッジ (GOLD) */
+.gold .badgeBody {
+    background: linear-gradient(135deg, #fff176 0%, #ffd54f 40%, #ffb300 70%, #ff6f00 100%);
+    border: 4px solid #5d4037;
+    box-shadow: inset 0 0 0 2px #fff9c4, 0 0 12px rgba(255, 213, 79, 0.6);
+    animation: badgeFloat 3s infinite ease-in-out;
+}
+
+.gold .badgeRibbon {
+    background: linear-gradient(to bottom, #e65100, #bf360c);
+    color: #fffde7;
+    border-color: #4e1d08;
+}
+
+/* 虹バッジ (LEGEND) */
+.rainbow .badgeBody {
+    background: linear-gradient(135deg, #ff1744, #ff9100, #ffea00, #00e676, #00b0ff, #d500f9);
+    background-size: 200% 200%;
+    border: 4px solid #fff;
+    box-shadow: inset 0 0 0 2px #ffffff, 0 0 15px rgba(255, 255, 255, 0.8);
+    animation: rainbowGlow 3s ease infinite, badgeFloat 3s infinite ease-in-out;
+}
+
+.rainbow .badgeRibbon {
+    background: linear-gradient(90deg, #d500f9, #2979ff, #00e676);
+    color: #ffffff;
+    border-color: #ffffff;
+    text-shadow: 0 1px 2px #000;
+}
+
+/* タイトル & 説明文 */
+.badgeTitle {
+    color: #ffe09a;
     font-size: 13px;
-    margin-bottom: 15px;
-  }
+    font-weight: bold;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    text-shadow: 1px 1px 0 #4a250f;
+}
+
+.statusBox {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.descriptionText {
+    color: #fff7e4;
+    font-size: 10.5px;
+    line-height: 1.3;
+    margin: 0;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statusBadge {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #4a250f;
+    display: inline-block;
+}
+
+.unlockedText {
+    color: #00e676;
+    background-color: rgba(0, 50, 20, 0.6);
+    border-color: #00e676;
+    text-shadow: 0 0 4px rgba(0, 230, 118, 0.4);
+}
+
+.lockedText {
+    color: #ff5252;
+    background-color: rgba(60, 10, 10, 0.6);
+    border-color: #ff5252;
+}
+
+/* アニメーション */
+@keyframes badgeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes rainbowGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ==================================================
+   レスポンシブ対応
+================================================== */
+@media (max-width: 768px) {
+    .trophyGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .badgeBody {
+        width: 68px;
+        height: 68px;
+    }
+
+    .badgeIcon {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 600px) {
+    .menupage {
+        width: calc(100% - 20px);
+        height: min(84vh, 580px);
+        top: 54%;
+        padding: 15px 10px;
+    }
+
+    .tabButton {
+        padding: 6px 10px;
+        font-size: 11.5px;
+    }
+
+    .badgeBody {
+        width: 62px;
+        height: 62px;
+    }
+
+    .badgeIcon {
+        font-size: 24px;
+    }
+
+    .descriptionText {
+        font-size: 10px;
+    }
 }
