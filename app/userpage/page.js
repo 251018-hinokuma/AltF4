@@ -145,6 +145,9 @@ export default function UserPage() {
             
             {/* 背景 */}
             <div className={styles.sky}></div>
+            <div className={styles.cloud1}></div>
+            <div className={styles.cloud2}></div>
+            <div className={styles.cloud3}></div>
             <div className={styles.mountain}></div>
             <div className={styles.forest}></div>
             <div className={styles.ground}></div>
@@ -204,7 +207,7 @@ export default function UserPage() {
 
                     {/* ユーザー情報 */}
                     <div className={styles.info}>
-                        <h2>ユーザー情報</h2>
+                        <h2>プレイヤー情報</h2>
 
                         {/* ユーザー名 */}
                         <div>
@@ -254,13 +257,13 @@ export default function UserPage() {
                 <div className={styles.menuBox}>
                     <nav className={styles.menu}>
                         <Link href="/genre_percentage" className={styles.menuItem}>
-                            ▶ ジャンル別正答率
+                            ジャンル別正答率
                         </Link>
                         <Link href="/star_correct" className={styles.menuItem}>
-                            ▶ スター獲得状況
+                            スター獲得状況
                         </Link>
                         <Link href="/achievement" className={styles.menuItem}>
-                            ▶ 実績
+                            実績
                         </Link>
                     </nav>
                 </div>

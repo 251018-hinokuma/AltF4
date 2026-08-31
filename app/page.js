@@ -55,6 +55,7 @@ export default function Home() {
       <div className={styles.sky}></div>
       <div className={styles.cloud1}></div>
       <div className={styles.cloud2}></div>
+      <div className={styles.cloud3}></div>
       <div className={styles.mountain}></div>
       <div className={styles.forest}></div>
       <div className={styles.ground}></div>
@@ -78,7 +79,7 @@ export default function Home() {
           ～ 社会人スキル育成 E-learning ～
         </p>
         <Link href="/quiz_genreSelection" className={styles.button}>
-          ▶ クイズ開始
+          🧭 クイズ開始
         </Link>
         <Link href="/marking_genreSelection" className={styles.button}>
           📖 マーキングクイズ一覧
@@ -88,5 +89,5 @@ export default function Home() {
         </Link>
       </section>
     </main>
-  );
+  )
 }
