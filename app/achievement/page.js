@@ -1,20 +1,32 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation'; 
-import { useGame } from '../context/GameContext'; 
+import Link from 'next/link';
+
+import { useGame } from '../context/GameContext';
 import styles from './page.module.css';
 
 export default function AchievementPage() {
-  const router = useRouter();
-  const { game } = useGame();
-  
+  let game = null;
+  try {
+    const gameContext = useGame ? useGame() : null;
+    game = gameContext?.game || null;
+  } catch (e) {
+    console.warn("useGame is not available during SSR/Evaluation:", e);
+  }
+
   const [stagesProgress, setStagesProgress] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [showDebug, setShowDebug] = useState(false); // デバッグパネル開閉フラグ
+  const [showDebug, setShowDebug] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // DBから全ジャンル(1〜6)のステージ進行状況を取得
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     async function loadAllStageData() {
       setIsLoading(true);
       const userId = game?.user?.userId || 1;
@@ -24,13 +36,33 @@ export default function AchievementPage() {
       try {
         await Promise.all(
           genresList.map(async (genreId) => {
-            const res = await fetch(`/api/user/stages?userId=${userId}&genreId=${genreId}`);
-            if (res.ok) {
-              const data = await res.json();
-              progressMap[genreId] = data.stages || [];
-            } else {
-              // データがない場合のデフォルト初期構造（各ジャンル6ステージ分を仮設定）
-              progressMap[genreId] = Array.from({ length: 6 }, () => ({
+            try {
+              const res = await fetch(`/api/user/stages?userId=${userId}&genreId=${genreId}`);
+              let fetchedStages = [];
+
+              if (res.ok) {
+                const data = await res.json();
+                fetchedStages = data.stages || [];
+              }
+
+              const targetLength = genreId === 6 ? 1 : 6;
+
+              progressMap[genreId] = Array.from({ length: targetLength }, (_, index) => {
+                if (fetchedStages[index]) {
+                  return fetchedStages[index];
+                }
+                return {
+                  clear: false,
+                  perfect: false,
+                  speed: false,
+                  correct: 0,
+                  total: index === 5 ? 25 : 10
+                };
+              });
+            } catch (err) {
+              console.warn(`Genre ${genreId} fetch error:`, err);
+              const targetLength = genreId === 6 ? 1 : 6;
+              progressMap[genreId] = Array.from({ length: targetLength }, () => ({
                 clear: false,
                 perfect: false,
                 speed: false,
@@ -42,66 +74,15 @@ export default function AchievementPage() {
         );
         setStagesProgress(progressMap);
       } catch (error) {
-        console.error("実績データの取得に失敗しました:", error);
+        console.error("ステージデータの取得に失敗しました:", error);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadAllStageData();
-  }, [game?.user?.userId]);
-  useEffect(() => {
-  async function loadAllStageData() {
-    setIsLoading(true);
-    const userId = game?.user?.userId || 1;
-    const genresList = [1, 2, 3, 4, 5, 6]; 
-    const progressMap = {};
+  }, [isMounted, game?.user?.userId]);
 
-    try {
-      await Promise.all(
-        genresList.map(async (genreId) => {
-          const res = await fetch(`/api/user/stages?userId=${userId}&genreId=${genreId}`);
-          let fetchedStages = [];
-
-          if (res.ok) {
-            const data = await res.json();
-            fetchedStages = data.stages || [];
-          }
-
-          // 通常ジャンル(1〜5)はインデックス0〜5(6件)、ラストステージ(6)はインデックス0(1件)
-          const targetLength = genreId === 6 ? 1 : 6;
-
-          // 足りないインデックスのステージデータをデフォルト値で埋める
-          progressMap[genreId] = Array.from({ length: targetLength }, (_, index) => {
-            if (fetchedStages[index]) {
-              return fetchedStages[index];
-            }
-            return {
-              clear: false,
-              perfect: false,
-              speed: false,
-              correct: 0,
-              total: index === 5 ? 25 : 10 // インデックス5(ボスステージ)は25問、それ以外は10問
-            };
-          });
-        })
-      );
-      setStagesProgress(progressMap);
-    } catch (error) {
-      console.error("ステージデータの取得に失敗しました:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  loadAllStageData();
-}, [game?.user?.userId]);
-
-  // =========================================
-  // デバッグ用データ操作関数
-  // =========================================
-  
-  // 個別スターの切り替え
   const toggleStar = (genreId, stageIndex, key) => {
     setStagesProgress((prev) => {
       const currentGenre = [...(prev[genreId] || [])];
@@ -116,12 +97,11 @@ export default function AchievementPage() {
     });
   };
 
-  // 全ジャンルの全スターを一括ON / OFF
   const setAllStarsGlobal = (isFull) => {
     setStagesProgress((prev) => {
       const nextProgress = {};
       Object.keys(prev).forEach((genreId) => {
-        nextProgress[genreId] = prev[genreId].map((stage) => ({
+        nextProgress[genreId] = (prev[genreId] || []).map((stage) => ({
           ...stage,
           clear: isFull,
           perfect: isFull,
@@ -132,7 +112,6 @@ export default function AchievementPage() {
     });
   };
 
-  // 特定ジャンルを全達成にする
   const setGenreFull = (genreId) => {
     setStagesProgress((prev) => ({
       ...prev,
@@ -145,7 +124,6 @@ export default function AchievementPage() {
     }));
   };
 
-  // stageDetailSchemaのプロパティ (clear, perfect, speed) を使用した実績判定
   const userAchievement = useMemo(() => {
     const achievements = {};
 
@@ -160,27 +138,22 @@ export default function AchievementPage() {
     genreMappings.forEach(({ genreId, bronzeId, silverId }) => {
       const stages = stagesProgress[genreId] || [];
 
-      // 銅トロフィー: 各ジャンルのボスステージ（インデックス5 / ステージ6）の clear が true
       const bossStage = stages[5];
       achievements[bronzeId] = Boolean(bossStage && bossStage.clear);
 
-      // 獲得スター総数 (clear + perfect + speed)
       const totalStars = stages.reduce((sum, stage) => {
         return sum + (stage.clear ? 1 : 0) + (stage.perfect ? 1 : 0) + (stage.speed ? 1 : 0);
       }, 0);
 
-      // 銀トロフィー: スター合計数 > 17 かつ 全ステージの全スター取得
       achievements[silverId] = 
-        totalStars > 17 && 
+        totalStars >= 18 && 
         stages.length > 0 && 
         stages.every((stage) => stage.clear && stage.perfect && stage.speed);
     });
 
-    // 11. 金トロフィー: ラストステージ (ジャンル6 / ステージ1) の clear が true
     const lastStageList = stagesProgress[6] || [];
     achievements[11] = Boolean(lastStageList.length > 0 && lastStageList[0]?.clear);
 
-    // 12. 虹トロフィー: 全ジャンル(1〜6)の全ステージで clear, perfect, speed がすべて true
     const allGenres = [1, 2, 3, 4, 5, 6];
     achievements[12] = allGenres.every((genreId) => {
       const stages = stagesProgress[genreId] || [];
@@ -191,135 +164,180 @@ export default function AchievementPage() {
     return achievements;
   }, [stagesProgress]);
 
-  // 実績マスターデータ一覧
+  // 実績バッジのマスター定義
   const trophies = [
-    { id: 1, name: 'プログラミング 銅', className: 'bronze', description: 'プログラミングのボスステージをクリアする' },
-    { id: 2, name: 'プログラミング 銀', className: 'silver', description: 'プログラミングのスターをすべて取得する' },
-    { id: 3, name: 'ビジネスマナー 銅', className: 'bronze', description: 'ビジネスマナーのボスステージをクリアする' },
-    { id: 4, name: 'ビジネスマナー 銀', className: 'silver', description: 'ビジネスマナーのスターをすべて取得する' },
-    { id: 5, name: 'セキュリティ 銅', className: 'bronze', description: '情報セキュリティ・モラルのボスステージをクリアする' },
-    { id: 6, name: 'セキュリティ 銀', className: 'silver', description: '情報セキュリティ・モラルのスターをすべて取得する' },
-    { id: 7, name: 'ITリテラシー 銅', className: 'bronze', description: 'ITリテラシー・オフィスのボスステージをクリアする' },
-    { id: 8, name: 'ITリテラシー 銀', className: 'silver', description: 'ITリテラシー・オフィスのスターをすべて取得する' },
-    { id: 9, name: '仕事術 銅', className: 'bronze', description: 'コミュニケーション・仕事術のボスステージをクリアする' },
-    { id: 10, name: '仕事術 銀', className: 'silver', description: 'コミュニケーション・仕事術のスターをすべて取得する' },
-    { id: 11, name: '金トロフィー', className: 'gold', description: 'ラストステージをクリアする' },
-    { id: 12, name: '虹トロフィー', className: 'rainbow', description: '全てのスターを取得する' },
+    { id: 1, name: 'プログラミング 銅', rank: 'bronze', rankLabel: 'BRONZE', icon: '🥉', description: 'プログラミングのボスステージをクリアする' },
+    { id: 2, name: 'プログラミング 銀', rank: 'silver', rankLabel: 'SILVER', icon: '🥈', description: 'プログラミングのスターをすべて取得する' },
+    { id: 3, name: 'ビジネスマナー 銅', rank: 'bronze', rankLabel: 'BRONZE', icon: '🥉', description: 'ビジネスマナーのボスステージをクリアする' },
+    { id: 4, name: 'ビジネスマナー 銀', rank: 'silver', rankLabel: 'SILVER', icon: '🥈', description: 'ビジネスマナーのスターをすべて取得する' },
+    { id: 5, name: 'セキュリティ 銅', rank: 'bronze', rankLabel: 'BRONZE', icon: '🥉', description: '情報セキュリティのボスステージをクリアする' },
+    { id: 6, name: 'セキュリティ 銀', rank: 'silver', rankLabel: 'SILVER', icon: '🥈', description: '情報セキュリティのスターをすべて取得する' },
+    { id: 7, name: 'ITリテラシー 銅', rank: 'bronze', rankLabel: 'BRONZE', icon: '🥉', description: 'ITリテラシーのボスステージをクリアする' },
+    { id: 8, name: 'ITリテラシー 銀', rank: 'silver', rankLabel: 'SILVER', icon: '🥈', description: 'ITリテラシーのスターをすべて取得する' },
+    { id: 9, name: '仕事術 銅', rank: 'bronze', rankLabel: 'BRONZE', icon: '🥉', description: 'コミュニケーション・仕事術のボスをクリア' },
+    { id: 10, name: '仕事術 銀', rank: 'silver', rankLabel: 'SILVER', icon: '🥈', description: 'コミュニケーション・仕事術の全スター獲得' },
+    { id: 11, name: 'ラストステージ 覇者', rank: 'gold', rankLabel: 'GOLD', icon: '🥇', description: 'ラストステージをクリアする' },
+    { id: 12, name: '全知全能の証', rank: 'rainbow', rankLabel: 'LEGEND', icon: '👑', description: '全てのスターを取得する' },
   ];
 
-  const handleBack = () => {
-    router.push('/userpage');
-  };
+  const unlockedCount = useMemo(() => {
+    return Object.values(userAchievement).filter(Boolean).length;
+  }, [userAchievement]);
+
+  const unlockPercentage = Math.round((unlockedCount / trophies.length) * 100);
+
+  const getStyle = (key) => (styles && styles[key] ? styles[key] : '');
 
   return (
-    <div className={styles['achievement-container']}>
-      {/* ヘッダー */}
-      <header className={styles['page-header']}>
-        <button className={styles['back-button']} onClick={handleBack}>
-          戻る
-        </button>
-        <div className={`${styles.tab} ${styles['border-left-none']}`}>ユーザーページ</div>
-        <div className={`${styles.tab} ${styles['active-tab']}`}>実績</div>
-        <button 
-          onClick={() => setShowDebug(!showDebug)}
-          style={{ marginLeft: 'auto', background: '#333', color: '#fff', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          {showDebug ? '⚙️ デバッグ閉じる' : '⚙️ デバッグ開く'}
-        </button>
-      </header>
+    <div className={getStyle('container')}>
+      <div className={getStyle('sky')}></div>
+      <div className={getStyle('cloud1')}></div>
+      <div className={getStyle('cloud2')}></div>
+      <div className={getStyle('cloud3')}></div>
+      <div className={getStyle('mountain')}></div>
+      <div className={getStyle('forest')}></div>
+      <div className={getStyle('ground')}></div>
 
-      {/* =========================================
-          デバッグ用操作パネル 
-      ========================================= */}
-      {showDebug && (
-        <div style={{ background: '#222', color: '#fff', padding: '15px', margin: '10px', borderRadius: '8px', fontSize: '12px' }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#00ffcc' }}>🛠️ 実績テスト用デバッグパネル</h3>
-          
-          <div style={{ marginBottom: '10px', display: 'flex', gap: '10px' }}>
-            <button onClick={() => setAllStarsGlobal(true)} style={{ background: '#28a745', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>
-              全ジャンル スター全獲得
-            </button>
-            <button onClick={() => setAllStarsGlobal(false)} style={{ background: '#dc3545', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>
-              全ジャンル スター初期化
-            </button>
+      <div className={getStyle('menupage')}>
+        <nav className={getStyle('starTabs')}>
+          <Link href="/userpage" className={getStyle('tabButton')}>
+            🔙 戻る
+          </Link>
+          <Link href="/star_correct" className={getStyle('tabButton')}>
+            ⭐ スター獲得状況
+          </Link>
+          <Link href="/genre_percentage" className={getStyle('tabButton')}>
+            📊 ジャンル別正答率
+          </Link>
+          <div className={`${getStyle('tabButton')} ${getStyle('tabButtonActive')}`}>
+            🏆 実績
           </div>
+          <button 
+            type="button"
+            onClick={() => setShowDebug(!showDebug)}
+            className={`${getStyle('tabButton')} ${getStyle('debugButton')}`}
+          >
+            {showDebug ? '⚙️ 閉じる' : '⚙️ デバッグ'}
+          </button>
+        </nav>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
-            {[1, 2, 3, 4, 5, 6].map((genreId) => {
-              const stages = stagesProgress[genreId] || [];
-              const starCount = stages.reduce((sum, s) => sum + (s.clear ? 1 : 0) + (s.perfect ? 1 : 0) + (s.speed ? 1 : 0), 0);
+        <div className={getStyle('starContent')}>
+          {showDebug && (
+            <div style={{ background: '#111', color: '#fff', padding: '12px', borderRadius: '6px', fontSize: '11px', border: '1px solid #4a250f' }}>
+              <h3 style={{ margin: '0 0 8px 0', color: '#ffca28' }}>🛠️ デバッグパネル</h3>
+              <div style={{ marginBottom: '8px', display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => setAllStarsGlobal(true)} style={{ background: '#2e7d32', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '3px', cursor: 'pointer' }}>
+                  全獲得
+                </button>
+                <button type="button" onClick={() => setAllStarsGlobal(false)} style={{ background: '#c62828', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '3px', cursor: 'pointer' }}>
+                  初期化
+                </button>
+              </div>
 
-              return (
-                <div key={genreId} style={{ border: '1px solid #444', padding: '8px', borderRadius: '4px', background: '#111' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <strong>ジャンル {genreId} (★ {starCount})</strong>
-                    <button onClick={() => setGenreFull(genreId)} style={{ fontSize: '10px', cursor: 'pointer' }}>全★GET</button>
-                  </div>
-                  
-                  {stages.map((stage, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' }}>
-                      <span>ST{idx + 1}:</span>
-                      {['clear', 'perfect', 'speed'].map((key) => (
-                        <button
-                          key={key}
-                          onClick={() => toggleStar(genreId, idx, key)}
-                          style={{
-                            background: stage[key] ? '#ffd700' : '#444',
-                            color: stage[key] ? '#000' : '#fff',
-                            border: 'none',
-                            borderRadius: '3px',
-                            fontSize: '10px',
-                            padding: '2px 4px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {key[0].toUpperCase()}
-                        </button>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '6px' }}>
+                {[1, 2, 3, 4, 5, 6].map((genreId) => {
+                  const stages = stagesProgress[genreId] || [];
+                  return (
+                    <div key={genreId} style={{ border: '1px solid #333', padding: '6px', borderRadius: '4px', background: '#222' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span>ジャンル {genreId}</span>
+                        <button type="button" onClick={() => setGenreFull(genreId)} style={{ fontSize: '9px', cursor: 'pointer' }}>全★</button>
+                      </div>
+                      {stages.map((stage, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: '3px', alignItems: 'center', marginBottom: '2px' }}>
+                          <span>ST{idx + 1}:</span>
+                          {['clear', 'perfect', 'speed'].map((key) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => toggleStar(genreId, idx, key)}
+                              style={{
+                                background: stage[key] ? '#ffca28' : '#444',
+                                color: stage[key] ? '#000' : '#fff',
+                                border: 'none',
+                                borderRadius: '2px',
+                                fontSize: '9px',
+                                padding: '1px 3px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {key[0].toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
                       ))}
                     </div>
-                  ))}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className={getStyle('summarySection')}>
+            <div className={getStyle('summaryHeader')}>
+              <span>🎖️ 実績バッジ獲得数</span>
+              <span className={getStyle('summaryCount')}>
+                {unlockedCount} / {trophies.length} ({unlockPercentage}%)
+              </span>
+            </div>
+            <div className={getStyle('progressBarBg')}>
+              <div 
+                className={getStyle('progressBarFill')} 
+                style={{ width: `${unlockPercentage}%` }}
+              />
+            </div>
           </div>
+
+          {!isMounted || isLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#fff7e4', fontWeight: 'bold' }}>
+              バッジデータを読み込み中...
+            </div>
+          ) : (
+            <div className={getStyle('trophyGrid')}>
+              {trophies.map((trophy) => {
+                const isUnlocked = Boolean(userAchievement[trophy.id]);
+
+                const cardClass = `${getStyle('trophyCard')} ${
+                  isUnlocked ? getStyle(trophy.rank) : getStyle('locked')
+                }`;
+
+                const statusBadgeClass = `${getStyle('statusBadge')} ${
+                  isUnlocked ? getStyle('unlockedText') : getStyle('lockedText')
+                }`;
+
+                return (
+                  <div key={trophy.id} className={cardClass}>
+                    {/* バッジ（メダル＋リボン）表示部 */}
+                    <div className={getStyle('badgeWrapper')}>
+                      <div className={getStyle('badgeBody')}>
+                        <span className={getStyle('badgeIcon')}>
+                          {isUnlocked ? trophy.icon : '🔒'}
+                        </span>
+                      </div>
+                      <div className={getStyle('badgeRibbon')}>
+                        {isUnlocked ? trophy.rankLabel : 'LOCKED'}
+                      </div>
+                    </div>
+
+                    {/* バッジ名 */}
+                    <div className={getStyle('badgeTitle')}>
+                      {trophy.name}
+                    </div>
+
+                    {/* 条件 & ステータス */}
+                    <div className={getStyle('statusBox')}>
+                      <p className={getStyle('descriptionText')}>{trophy.description}</p>
+                      <span className={statusBadgeClass}>
+                        {isUnlocked ? '獲得！' : '未獲得'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
-
-      {/* メインコンテンツ */}
-      <main className={styles['achievement-content']}>
-        {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '50px' }}>実績情報を読み込み中...</div>
-        ) : (
-          <div className={styles['trophy-grid']}>
-            {trophies.map((trophy) => {
-              const isUnlocked = Boolean(userAchievement[trophy.id]);
-
-              const trophyCircleClass = `${styles['trophy-circle']} ${
-                isUnlocked ? styles[trophy.className] : styles.locked
-              }`;
-
-              const statusBadgeClass = `${styles['status-badge']} ${
-                isUnlocked ? styles['unlocked-text'] : styles['locked-text']
-              }`;
-
-              return (
-                <div key={trophy.id} className={styles['trophy-card']}>
-                  <div className={trophyCircleClass}>
-                    {trophy.name}
-                  </div>
-                  <div className={styles['status-box']}>
-                    <p className={styles['status-title']}>達成状況</p>
-                    <p className={styles['description-text']}>{trophy.description}</p>
-                    <span className={statusBadgeClass}>
-                      {isUnlocked ? '【達成！】' : '【未達成】'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }
