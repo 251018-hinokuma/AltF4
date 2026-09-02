@@ -53,7 +53,11 @@ export default function QuizGenre() {
           }
           counts[genre.genreId] = totalStars;
 
-          const bossStage = stages[5];
+          // stageId === 6（ボスステージ）を確実に検索して判定
+          const bossStage = Array.isArray(stages)
+            ? stages.find((s) => Number(s.stageId) === 6)
+            : null;
+
           bossMap[genre.genreId] = !!(bossStage && bossStage.clear);
 
         } catch (error) {
@@ -92,6 +96,7 @@ export default function QuizGenre() {
 
   const normalGenres = genres.filter((g) => Number(g.genreId) !== 6);
 
+  // 全ての通常ジャンルのステージId6がクリアされている場合のみ解放
   const isLastStageUnlocked =
     normalGenres.length > 0 &&
     normalGenres.every((g) => bossClearedMap[g.genreId] === true);
@@ -159,6 +164,7 @@ export default function QuizGenre() {
                 );
               })}
 
+              {/* 解放条件達成時のみ表示 */}
               {isLastStageUnlocked && (
                 <Link
                   href={`/quiz_stageSelection?genreId=6&genreName=${encodeURIComponent(

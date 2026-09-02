@@ -17,7 +17,6 @@ export default function AchievementPage() {
 
   const [stagesProgress, setStagesProgress] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [showDebug, setShowDebug] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -82,47 +81,6 @@ export default function AchievementPage() {
 
     loadAllStageData();
   }, [isMounted, game?.user?.userId]);
-
-  const toggleStar = (genreId, stageIndex, key) => {
-    setStagesProgress((prev) => {
-      const currentGenre = [...(prev[genreId] || [])];
-      if (!currentGenre[stageIndex]) return prev;
-
-      currentGenre[stageIndex] = {
-        ...currentGenre[stageIndex],
-        [key]: !currentGenre[stageIndex][key],
-      };
-
-      return { ...prev, [genreId]: currentGenre };
-    });
-  };
-
-  const setAllStarsGlobal = (isFull) => {
-    setStagesProgress((prev) => {
-      const nextProgress = {};
-      Object.keys(prev).forEach((genreId) => {
-        nextProgress[genreId] = (prev[genreId] || []).map((stage) => ({
-          ...stage,
-          clear: isFull,
-          perfect: isFull,
-          speed: isFull,
-        }));
-      });
-      return nextProgress;
-    });
-  };
-
-  const setGenreFull = (genreId) => {
-    setStagesProgress((prev) => ({
-      ...prev,
-      [genreId]: (prev[genreId] || []).map((s) => ({
-        ...s,
-        clear: true,
-        perfect: true,
-        speed: true,
-      })),
-    }));
-  };
 
   const userAchievement = useMemo(() => {
     const achievements = {};
@@ -212,67 +170,9 @@ export default function AchievementPage() {
           <div className={`${getStyle('tabButton')} ${getStyle('tabButtonActive')}`}>
             🏆 実績
           </div>
-          <button 
-            type="button"
-            onClick={() => setShowDebug(!showDebug)}
-            className={`${getStyle('tabButton')} ${getStyle('debugButton')}`}
-          >
-            {showDebug ? '⚙️ 閉じる' : '⚙️ デバッグ'}
-          </button>
         </nav>
 
         <div className={getStyle('starContent')}>
-          {showDebug && (
-            <div style={{ background: '#111', color: '#fff', padding: '12px', borderRadius: '6px', fontSize: '11px', border: '1px solid #4a250f' }}>
-              <h3 style={{ margin: '0 0 8px 0', color: '#ffca28' }}>🛠️ デバッグパネル</h3>
-              <div style={{ marginBottom: '8px', display: 'flex', gap: '8px' }}>
-                <button type="button" onClick={() => setAllStarsGlobal(true)} style={{ background: '#2e7d32', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '3px', cursor: 'pointer' }}>
-                  全獲得
-                </button>
-                <button type="button" onClick={() => setAllStarsGlobal(false)} style={{ background: '#c62828', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '3px', cursor: 'pointer' }}>
-                  初期化
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '6px' }}>
-                {[1, 2, 3, 4, 5, 6].map((genreId) => {
-                  const stages = stagesProgress[genreId] || [];
-                  return (
-                    <div key={genreId} style={{ border: '1px solid #333', padding: '6px', borderRadius: '4px', background: '#222' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span>ジャンル {genreId}</span>
-                        <button type="button" onClick={() => setGenreFull(genreId)} style={{ fontSize: '9px', cursor: 'pointer' }}>全★</button>
-                      </div>
-                      {stages.map((stage, idx) => (
-                        <div key={idx} style={{ display: 'flex', gap: '3px', alignItems: 'center', marginBottom: '2px' }}>
-                          <span>ST{idx + 1}:</span>
-                          {['clear', 'perfect', 'speed'].map((key) => (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() => toggleStar(genreId, idx, key)}
-                              style={{
-                                background: stage[key] ? '#ffca28' : '#444',
-                                color: stage[key] ? '#000' : '#fff',
-                                border: 'none',
-                                borderRadius: '2px',
-                                fontSize: '9px',
-                                padding: '1px 3px',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {key[0].toUpperCase()}
-                            </button>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           <div className={getStyle('summarySection')}>
             <div className={getStyle('summaryHeader')}>
               <span>🎖️ 実績バッジ獲得数</span>

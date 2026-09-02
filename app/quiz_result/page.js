@@ -28,6 +28,10 @@ function ResultContent() {
   const [stageInfo, setStageInfo] = useState(null);
   const isBossStage = stageInfo?.isBoss || currentStageNum === 6;
 
+  // ゲームデータの取得
+  const hp = game?.hp ?? 0;
+  const elapsedTime = game?.elapsedTime ?? 0;
+
   //=========================================
   // 【QuizAnswer側のコード変更なしで正答数を安全計算】
   //=========================================
@@ -68,21 +72,6 @@ function ResultContent() {
     return game?.totalQuestion || (game?.quizzes ? game.quizzes.length : 10);
   }, [game]);
 
-  //=========================================
-  // 【デバッグ用ステート & Context同期】
-  //=========================================
-  const [mockHp, setMockHp] = useState(0);
-  const [mockTime, setMockTime] = useState(0);
-  const [mockCorrectCount, setMockCorrectCount] = useState(0);
-
-  useEffect(() => {
-    if (game) {
-      setMockHp(game.hp ?? 0);
-      setMockTime(game.elapsedTime ?? 0);
-      setMockCorrectCount(calculatedCorrectCount);
-    }
-  }, [game, calculatedCorrectCount]);
-
   // Stage情報の取得 API
   useEffect(() => {
     if (!currentGenreId || !currentStageNum) return;
@@ -115,10 +104,10 @@ function ResultContent() {
 
   // mm:ss フォーマット
   const formattedTime = useMemo(() => {
-    const minute = String(Math.floor(mockTime / 60)).padStart(2, "0");
-    const second = String(Math.floor(mockTime % 60)).padStart(2, "0");
+    const minute = String(Math.floor(elapsedTime / 60)).padStart(2, "0");
+    const second = String(Math.floor(elapsedTime % 60)).padStart(2, "0");
     return `${minute}:${second}`;
-  }, [mockTime]);
+  }, [elapsedTime]);
 
   //=========================================
   // 【スター判定処理】
@@ -126,16 +115,16 @@ function ResultContent() {
   const starsStatus = useMemo(() => {
     if (!game) return { clear: false, allCorrect: false, speedClear: false };
 
-    const currentRunClear = mockHp > 0;
-    const currentRunPerfect = mockCorrectCount === totalQuestionsCount && totalQuestionsCount > 0;
-    const currentRunSpeed = mockHp > 0 && mockTime <= targetSpeedLimit;
+    const currentRunClear = hp > 0;
+    const currentRunPerfect = calculatedCorrectCount === totalQuestionsCount && totalQuestionsCount > 0;
+    const currentRunSpeed = hp > 0 && elapsedTime <= targetSpeedLimit;
 
     return {
       clear: currentRunClear,
       allCorrect: currentRunPerfect,
       speedClear: currentRunSpeed
     };
-  }, [game, mockHp, mockTime, mockCorrectCount, totalQuestionsCount, targetSpeedLimit]);
+  }, [game, hp, elapsedTime, calculatedCorrectCount, totalQuestionsCount, targetSpeedLimit]);
 
   //=========================================
   // 【★ UserModel へのスター獲得保存処理】
@@ -146,7 +135,7 @@ function ResultContent() {
     if (!currentGenreId || !currentStageNum) return;
 
     // 現在のステータスキーを生成（重複保存防止）
-    const statusKey = `${currentGenreId}_${currentStageNum}_${starsStatus.clear}_${starsStatus.allCorrect}_${starsStatus.speedClear}_${mockCorrectCount}_${totalQuestionsCount}`;
+    const statusKey = `${currentGenreId}_${currentStageNum}_${starsStatus.clear}_${starsStatus.allCorrect}_${starsStatus.speedClear}_${calculatedCorrectCount}_${totalQuestionsCount}`;
     if (lastSavedRef.current === statusKey) return;
 
     async function saveStageResultToUser() {
@@ -163,7 +152,7 @@ function ResultContent() {
             clear: starsStatus.clear,
             perfect: starsStatus.allCorrect,
             speed: starsStatus.speedClear,
-            correct: mockCorrectCount,
+            correct: calculatedCorrectCount,
             total: totalQuestionsCount,
           }),
         });
@@ -178,7 +167,7 @@ function ResultContent() {
     }
 
     saveStageResultToUser();
-  }, [currentGenreId, currentStageNum, starsStatus, mockCorrectCount, totalQuestionsCount, game?.user?.userId]);
+  }, [currentGenreId, currentStageNum, starsStatus, calculatedCorrectCount, totalQuestionsCount, game?.user?.userId]);
 
   const handleReview = () => {
     router.push(`/quiz_review?genreId=${currentGenreId}&stageId=${currentStageNum}&difficulty=${currentDifficulty}`);
@@ -198,22 +187,11 @@ function ResultContent() {
 
   return (
     <div className={styles.mainCard}>
-      
-      {/* 🛠️ デバッグ・テスト用コントローラー 🛠️ */}
-      <div className={styles.testerContainer}>
-        <strong style={{ color: '#d32f2f' }}>[RESULT TESTER] QuizAnswer から送られたデータを操作・検証:</strong>
-        <div className={styles.testerInputs}>
-          <label><strong>HP (hp):</strong> <input type="range" min="0" max="10" value={mockHp} onChange={(e) => setMockHp(Number(e.target.value))} /></label>
-          <label><strong>Time (elapsedTime):</strong> <input type="range" min="0" max="300" value={mockTime} onChange={(e) => setMockTime(Number(e.target.value))} /></label>
-          <label><strong>Correct Count (正解数):</strong> <input type="range" min="0" max={totalQuestionsCount} value={mockCorrectCount} onChange={(e) => setMockCorrectCount(Number(e.target.value))} /></label>
-        </div>
-      </div>
-
       {/* ヘッダー情報 */}
       <header className={styles.resultHeader}>
         <div className={styles.headerSpacer}></div>
         <div className={`${styles.headerBox} ${styles.stageName}`}>結果発表</div>
-        <div className={styles.headerBox}>残HP: {mockHp}</div>
+        <div className={styles.headerBox}>残HP: {hp}</div>
         <div className={styles.timeBox}>
           <div className={styles.timeTitle}>経過時間</div>
           <div className={styles.timeValue}>{formattedTime}</div>
@@ -240,10 +218,10 @@ function ResultContent() {
 
         {/* 正答数表示 */}
         <div className={styles.scoreBox}>
-          {totalQuestionsCount}問中{mockCorrectCount}問正解
+          {totalQuestionsCount}問中{calculatedCorrectCount}問正解
         </div>
 
-        {/* マーキング問題確認ボタン（文字のみに変更） */}
+        {/* マーキング問題確認ボタン */}
         <button className={styles.reviewButton} onClick={handleReview}>
           問題を復習する
         </button>
