@@ -244,6 +244,7 @@ export default function ResultPage() {
       <div className={styles.sky}></div>
       <div className={styles.cloud1}></div>
       <div className={styles.cloud2}></div>
+      <div className={styles.cloud3}></div>
       <div className={styles.mountain}></div>
       <div className={styles.forest}></div>
       <div className={styles.ground}></div>
